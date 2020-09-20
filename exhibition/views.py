@@ -1,3 +1,8 @@
 from django.shortcuts import render
 
-# Create your views here.
+def index(request):
+	classesList = ['home','is-nav']
+	context = {
+		'classes': classesList,
+	}
+	return render(request, 'index.html', context)
