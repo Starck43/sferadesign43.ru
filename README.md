@@ -1,4 +1,4 @@
-<h1>Template for Django project</h1>
+<h1>sferadesign43.ru web project</h1>
 
 ## Available Scripts
 
