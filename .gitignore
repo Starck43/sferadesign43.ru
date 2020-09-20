@@ -8,9 +8,9 @@
 /build
 
 # development
-src/
 resources/
 media/
+static/admin/
 
 # Django #
 __pycache__/
