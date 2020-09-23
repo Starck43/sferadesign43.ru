@@ -30,10 +30,11 @@ def get_image_html(obj)
 
 	"""Abstract model for Participant"""
 class Participant(models.Model):
-	name = models.CharField('ФИО', max_length=150)
-	slug = models.SlugField('Ярлык', max_length=150, unique=True)
-	description = models.TextField('Краткая информация', db_index=True, blank=True)
-
+	name = models.CharField('ФИО', max_length=100)
+	slug = models.SlugField('Ярлык', max_length=100, unique=True)
+	description = models.TextField('Описание', db_index=True, blank=True)
+	photo = models.ImageField('Аватар', upload_to=avatar_upload_folder, null=True, blank=True)
+	
 	class Meta:
 		ordering = ['name'] # '-' for DESC ordering
 
@@ -49,6 +50,10 @@ class Participant(models.Model):
 			self.slug = uuslug(self.name, instance=self)
 		super().save(*args, **kwargs)
 
+	def photo_thumb(self):
+			get_image_html(self.photo)
+
+		photo_thumb.short_description = 'Портрет'
 
 
 class Exhibitors(Participant):
@@ -59,7 +64,7 @@ class Exhibitors(Participant):
 	vk = models.URLField('Вконтакте', max_length=150)
 	fb = models.URLField('Facebook', max_length=150)
 	instagram = models.URLField('Instagram', max_length=150)
-	photo = models.ImageField('Аватар', upload_to=avatar_upload_folder, null=True, blank=True)
+	
 	logo = models.ImageField('Логотип', upload_to=logo_upload_folder, null=True, blank=True)
 
 	# Metadata
@@ -71,10 +76,6 @@ class Exhibitors(Participant):
 		pass
 		#return reverse('exhibitor-detail', kwargs={'slug': self.slug })
 
-	def photo_thumb(self):
-		get_image_html(self.photo)
-
-	photo_thumb.short_description = 'Портрет'
 
 	def logo_thumb(self):
 		get_image_html(self.logo)
@@ -82,39 +83,21 @@ class Exhibitors(Participant):
 	logo_thumb.short_description = 'Логотип'
 
 
-class Jury(models.Model):
-	name = models.CharField('Член жюри', max_length=150,)
-	slug = models.SlugField('Ярлык', max_length=150, unique=True)
-	description = models.TextField('Краткая информация', db_index=True, blank=True)
-	photo = models.ImageField('Аватар', upload_to=avatar_upload_folder, null=True, blank=True)
-
+class Jury(Participant):
+	
 	# Metadata
-	class Meta:
+	class Meta(Participant.Meta):
 		ordering = ['name'] # '-' for DESC ordering
 		verbose_name = 'Жюри'
 
-	def save(self, *args, **kwargs):
-		if not self.slug:
-			self.slug = uuslug(self.name, instance=self)
-		super().save(*args, **kwargs)
-
-	def __str__(self):
-		return self.name
 
 	def get_absolute_url(self):
 		pass
 		#return reverse('Jury-detail', kwargs={'slug': self.slug })
 
-	def photo_thumb(self):
-		get_image_html(self.photo)
+	
 
-	photo_thumb.short_description = 'Портрет'
-
-
-class Partners(models.Model):
-	name = models.CharField('Партнер', max_length=150)
-	slug = models.SlugField('Ярлык', max_length=150, unique=True)
-	description = models.TextField('Краткая информация', db_index=True, blank=True)
+class Partners(Participant):
 	address = models.CharField('Адрес', max_length=150, blank=True)
 	phone = models.PhoneNumberField('Контактный телефон')
 	email = models.EmailField('E-mail', max_length=75)
@@ -125,18 +108,11 @@ class Partners(models.Model):
 	logo = models.ImageField('Логотип', upload_to=logo_upload_folder, null=True, blank=True)
 
 	# Metadata
-	class Meta:
+	class Meta(Participant.Meta):
 		ordering = ['name'] # '-' for DESC ordering
 		verbose_name = 'Партнер выставки'
 		verbose_name_plural = 'Партнеры выставки'
 
-	def save(self, *args, **kwargs):
-		if not self.slug:
-			self.slug = uuslug(self.name, instance=self)
-		super().save(*args, **kwargs)
-
-	def __str__(self):
-		return self.name
 
 	def get_absolute_url(self):
 		pass
