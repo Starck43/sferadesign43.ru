@@ -10,8 +10,10 @@ urlpatterns = [
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),
 	# path('design/', views.design, name='design-url'),
 	# # path('styling/', include('design.urls')),
-	# path('design/<str:category>/',views.project_list.as_view(), name='projects-url'),
-	# path('design/<str:category>/<str:slug>/', views.project_detail.as_view(), name='project-detail-url'),
+	path('exhibitors/',views.exhibitors_list.as_view(), name='exhibitors-list-url'),
+	path('exhibitors/<exh_year>/',views.exhibitors_list.as_view(), name='exhibitors-list-url'),
+	path('winners/', views.winners_list.as_view(), name='winners-list-url'),
+	path('winners/<exh_year>/', views.winners_list.as_view(), name='winners-list-url'),
 	# path('<str:section>/contacts/', views.contacts, name='contacts-url'),
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),
 ]
