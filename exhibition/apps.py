@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class ExhibitionConfig(AppConfig):
-    name = 'exhibition'
+	name = 'exhibition'
+	verbose_name = 'Сфера дизайна'

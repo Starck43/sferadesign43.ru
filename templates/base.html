@@ -2,10 +2,10 @@
 {% load custom_tags %}
 
 <!DOCTYPE html>
-<html lang="ru" class="{{ classes|to_string }}">
+<html lang="ru" class="{{ html_classes|to_string }}">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 	<link rel="apple-touch-icon" sizes="76x76" href="{% static 'favicons/apple-touch-icon.png' %}">
 	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicons/favicon-32x32.png' %}">
@@ -19,14 +19,19 @@
 	<meta name="msapplication-config" content="{% static 'favicons/browserconfig.xml' %}">
 	<meta name="theme-color" content="#ffffff">
 
-
 	<style>
 		@font-face {
 			font-family: 'Tahoma';
 		}
 	</style>
-	<link href="{% static 'css/base.css' %}" rel="stylesheet" type="text/css" media="screen"/>
-	<script src="{% static 'js/base.js' %}"></script>
+	<!-- CSS only -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
+	<link href="{% static 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+
+	<!-- JavaScript Bundle with Popper.js -->
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js" integrity="sha384-BOsAfwzjNJHrJ8cZidOg56tcQWfp6y72vEJ8xQ9w6Quywb24iOsW913URv1IS4GD" crossorigin="anonymous"></script>
+	<script src="{% static 'js/base.min.js' %}"></script>
+
 
 	{% block styles %}
 	{% endblock %}
@@ -79,21 +84,21 @@
 		<symbol id="close-icon" height="30" viewBox="0 0 24 24">
 			<path d="M1 1 L23 23 M23 1 L1 23"/>
 		</symbol>
-		<symbol id="login-icon" height="30" viewBox="-1 -1 10 10" fill="none">
+		<symbol id="login-icon" height="30" viewBox="-1 -1 10 10" fill="black">
 			<path d="M3.5 0l-.5 1.19c-.1.03-.19.08-.28.13l-1.19-.5-.72.72.5 1.19c-.05.1-.09.18-.13.28l-1.19.5v1l1.19.5c.04.1.08.18.13.28l-.5 1.19.72.72 1.19-.5c.09.04.18.09.28.13l.5 1.19h1l.5-1.19c.09-.04.19-.08.28-.13l1.19.5.72-.72-.5-1.19c.04-.09.09-.19.13-.28l1.19-.5v-1l-1.19-.5c-.03-.09-.08-.19-.13-.28l.5-1.19-.72-.72-1.19.5c-.09-.04-.19-.09-.28-.13l-.5-1.19h-1zm.5 2.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5z"/>
 		</symbol>
 	</svg>
 	{% endblock %}
 
-	<div class="container">
+	{% block navigation %}{% include "navbar.html" %}{% endblock navigation %}
 
-		{% block navigation %}{% endblock %}
+	<div class="container container-xl my-3">
 
-		{% block header %}{% endblock%}
-
-		{% block content %}{% endblock %}
+		{% block header %}{% endblock header %}
+		{% block content %}{% endblock content %}
 
 	</div>
+
 
 </body>
 </html>

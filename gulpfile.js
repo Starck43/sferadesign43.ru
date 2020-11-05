@@ -36,7 +36,7 @@ var site = {
 
 
 gulp.task('styles', function() { // таск 'styles' обработает все файлы *.sass, вложенные в любые подпапки
-	return gulp.src(path.src+'sass/*.sass')
+	return gulp.src(path.src+'sass/*.+(sass|scss)')
 	// Пример: gulp.src('src/sass/*.+(sass|scss)')
 	// Пример: gulp.src(['src/sass/**/*.sass','!src/sass/libs.sass'])  ! - кроме styles.sass
 	.pipe(sourcemaps.init()) //инициализируем soucemap

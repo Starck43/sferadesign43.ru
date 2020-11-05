@@ -5,7 +5,8 @@
   "dependencies": {
     "@popperjs/core": "^2.4.4",
     "acorn": "^6.4.1",
-    "bootstrap": "^4.4.1",
+    "bootstrap": "^4.5.2",
+    "bootstrap-icons": "^1.0.0",
     "fs-extra": "^8.1.0",
     "in-view": "^0.6.1",
     "jquery": "^3.5.1",

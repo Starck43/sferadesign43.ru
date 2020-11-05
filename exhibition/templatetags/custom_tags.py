@@ -16,3 +16,8 @@ def verbose_name_plural(obj):
 @register.filter
 def to_string(obj):
 	return " ".join(obj)
+
+#return unique query list
+@register.filter
+def distinct(items, attr_name):
+	return set([getattr(i, attr_name) for i in items])
