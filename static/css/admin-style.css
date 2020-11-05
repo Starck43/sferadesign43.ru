@@ -1,0 +1,36 @@
+
+#container{
+	height: 100vh;
+}
+#container .main{
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+	height: auto;
+}
+#nav-sidebar{
+	flex: 1 1 auto;
+	max-width: 285px;
+}
+#toggle-nav-sidebar, #nav-sidebar{
+}
+.app-catalog .content{
+	flex: 1 1 100%;
+}
+#changelist-filter{
+	width: 200px;
+}
+th.column-image_img span, td.field-image_img{
+	text-align: center;
+}
+.form-row.field-image_img{
+	float: left;
+}
+.form-row select{
+	width: 20em;
+}
+.submit-row input{
+	margin: 5px !important;
+}

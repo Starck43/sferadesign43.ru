@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+{% load thumbnail %}
+
+
+{% block header %}
+	<h1>{{ object.name }}</h1>
+{% endblock header %}
+
+
+{% block content %}
+<div class="content">
+	<h2>Профиль участника</h2>
+
+	{% if object.avatar %}
+	<figure class="avatar">
+		{% thumbnail object.avatar "450x450" as avatar %}
+			<img src="{{ avatar.url }}">
+		{% empty %}
+			<img src="/media/no-image.png">
+		{% endthumbnail %}
+	</figure>
+	{% endif %}
+
+	<div class="person-details">
+		{% if object.logo %}
+		<div class="brand-logo">
+			{% thumbnail object.logo "600x" as logo %}
+				<img src="{{ logo.url }}">
+			{% empty %}
+				<img src="/media/no-image.png">
+			{% endthumbnail %}
+		</div>
+		{% endif %}
+
+
+		{% for field_name, field_value in object %}
+		{% if field_value %}
+			<div class="person-details-item">{{field_name}}: <span>{{field_value}}</span></div>
+		{% endif %}
+		{% endfor %}
+
+
+		{% if winners_list %}
+		<div class="winners-list mt-3">
+			<h4>Победы в номинациях: </h4>
+			<ul>
+			{% for item in winners_list %}
+		<li><a href="{% url 'nomination-detail-url' item.exh_year item.slug %}">{{ item.title }}, {{ item.exh_year }}</a></li>
+			{% endfor %}
+			</ul>
+		</div>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}

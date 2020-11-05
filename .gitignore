@@ -11,6 +11,7 @@
 resources/
 media/
 static/admin/
+src/img/
 
 # Django #
 __pycache__/

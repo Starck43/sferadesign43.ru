@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block header %}
+	<h1>{{ object.title }}</h1>
+{% endblock header %}
+
+{% block content %}
+
+<div class="content">
+
+	<div class="exhibition-detail">
+		<div>{{ object.description }}</div>
+		<div>Начало выставки: <span>{{ object.date_start }}</span></div>
+		<div>Окончание выставки: <span>{{ object.date_end }}</span></div>
+		<div>Адрес площадки: <span>{{ object.location }}</span></div>
+	</div>
+
+	<div class="nominations-list">
+		<h2>{{ exhibition.nominations.first|verbose_name_plural }}</h2>
+		<ol>
+			{% for item in nominations_list %}
+			<li><a href="{% url 'nomination-detail-url' object.slug item.slug %}">{{ item.title }}{% if item.exhibitor_name %}</a> - <a href="{% url 'exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}{% endif %}</a></li>
+			{% endfor %}
+		</ol>
+	</div>
+
+	{% if exhibition.exhibitors.count %}
+	<div class="exhibitors-list">
+		<h2>{{ exhibition.exhibitors.first|verbose_name_plural }}</h2>
+		<ol>
+			{% for item in exhibition.exhibitors.all %}
+			<li><a href="{{ item.get_absolute_url }}">{{ item.name }}</a></li>
+			{% endfor %}
+		</ol>
+	</div>
+	{% endif %}
+
+	{% if exhibition.jury.count %}
+	<div class="jury-list">
+		<h2>{{ exhibition.jury.first|verbose_name_plural }}</h2>
+		<ol>
+			{% for item in exhibition.jury.all %}
+			<li>{{ item.name }}{% if item.description %}, {{item.description}} {% endif %}</li>
+			{% endfor %}
+		</ol>
+	</div>
+	{% endif %}
+
+	{% if exhibition.partners.count %}
+	<div class="partners-list">
+		<h2>{{ exhibition.partners.first|verbose_name_plural }}</h2>
+		<ol>
+			{% for item in exhibition.partners.all %}
+			<li>{{ item.name }}</li>
+			{% endfor %}
+		</ol>
+	</div>
+	{% endif %}
+
+	{% if exhibition.events.count %}
+	<div class="events-list">
+		<h2 class="events-title">{{ events_title }}</h2>
+		<ul>
+			{% for item in exhibition.events.all %}
+			<li>
+				<div class="event-datetime">
+					<p>{{ item.date_event }}</p>
+					<p>{{ item.time_event }}</p>
+				</div>
+				<div class="event-details">
+					<p class="event-details-title">{{ item.title }}</p>
+					{% if item.description %}<p class="event-details-description">{{ item.description }}</p>{% endif %}
+					{% if item.location %}<p><span>Площадка: </span>{{ item.location }}</p>{% endif %}
+					{% if item.hoster %}<p><span>Организатор: </span>{{ item.hoster }}</p>{% endif %}
+					{% if item.lector %}<p><span>Ведущий: </span>{{ item.lector }}</p>{% endif %}
+				</div>
+			</li>
+			{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
+
+</div>
+{% endblock %}

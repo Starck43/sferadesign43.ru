@@ -1,0 +1,84 @@
+@import "../../node_modules/bootstrap/scss/functions"
+@import "../../node_modules/bootstrap/scss/variables"
+@import "../../node_modules/bootstrap/scss/mixins"
+
+@import vars
+@import mixins
+
+h1
+	margin: 1em 0 0.5em
+
+a
+	color: darkblue
+	text-decoration: none
+	outline: none
+	&.active
+		font-weight: bold
+
+ul
+	//list-style-type: none
+	//+media-breakpoint-down(xs)
+
+svg.icon
+	width: 30px
+	height: 30px
+
+#brand-logo
+	img
+		width: auto
+		max-height: 100px
+.avatar img
+	max-width: 450px
+
+.container
+	+media-breakpoint-up(sm)
+		--bs-gutter-x: 0em
+		//+make-container()
+
+nav
+	li.nav-item
+		a
+			position: relative
+			&::before
+				content: ''
+				position: absolute
+				display: flex
+				left: 3px
+				top: 50%
+				width: 3px
+				height: 0
+				background-color: transparent
+				transform: translateY(-50%)
+				//border-bottom: 3px #fff solid
+				transition: all 150ms ease-out
+			&:hover
+				&::before
+					background-color: blue
+					height: 1em
+					//border-color: #000
+	+media-breakpoint-down(md)
+		.nav-item
+			width: 100%
+			.nav-link
+				padding-left: 0.5em !important
+				padding-right: 0.5em !important
+		.dropdown-menu li
+			display: inline-flex
+
+.sidebar
+	+media-breakpoint-down(xs)
+		li:first-child
+			width: 100%
+			text-align: center
+
+.nav-pills
+	+media-breakpoint-up(sm)
+		li.nav-item
+			display: table
+			width: 80px
+			text-align: center
+
+.exhibition
+	.content>div
+		margin-bottom: 2em
+

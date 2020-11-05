@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+	{% block styles %}
+	{% endblock %}
+
+	{% block scripts %}
+	{% endblock %}
+
+	{% block sidebar %}{% include "sidebar.html" %}{% endblock sidebar %}
+
+	{% block header %}{% endblock%}
+
+	{% block content %}
+
+		<h2>{{ page_title }}</h2>
+		{% if object_list %}
+			<ul>
+			{% for obj in object_list %}
+				<li><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></li>
+			{% endfor %}
+			</ul>
+		{% else %}
+			<h4>Список пустой</h4>
+		{% endif %}
+
+	{% endblock %}
+

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+{% load thumbnail %}
+
+{% block header %}
+	<h1>{{ object|verbose_name }}:  "{{ object.title }}"</h1>
+{% endblock header %}
+
+{% block content %}
+	<div class="content">
+		<p class="nomination-description">{{ object.description }}</p>
+
+		{% if exhibitors %}
+		<section class="exhibitors-list">
+			<h2>Список участников</h2>
+			<ol>
+			{% for e in exhibitors %}
+				<li><a href="{{ e.get_absolute_url }}">{{ e.name }}</a></li>
+			{% endfor %}
+			</ol>
+		</section>
+		{% endif %}
+
+		{% if winner and not portfolio %}
+		<section class="winner-detail">
+			<h2 class="winner-title">{{ winner|verbose_name  }}:</h2>
+			<div class="winner-name">{{ winner.name }}</div>
+			<div class="winner-description">{{ winner.description }}</div>
+		</section>
+		{% endif %}
+
+		{% if portfolio %}
+		<section class="portfolio">
+			<h2>{{ portfolio.title }}</h2>
+			<div>Автор работы: <a href="{{ portfolio.get_absolute_url }}">{{ portfolio.owner }}</a></div>
+			<div>{{ portfolio.description }}</div>
+
+			{% if portfolio.images %}
+			<div class="portfolio-list my-3">
+				{% for img in portfolio.images.all %}
+					<figure class="image-wrapper">
+						<a href="img.file.url">
+						{% thumbnail img.file "320" as xs %}
+						{% thumbnail img.file "576" as sm %}
+						<img class="image-img lazyload"
+							src="{{ xs.url }}"
+							srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
+							style="max-width: {{sm.x}}px">
+						{% empty %}
+						<img src="/media/no-image.png">
+						{% endthumbnail %}
+						{% endthumbnail %}
+						</a>
+
+						{% if img.title or img.description %}
+						<figcaption>
+							{% if img.title %}
+							<h3 class="image-title">{{ img.title}}</h3>
+							{% endif %}
+							{% if img.description %}
+							<div class="image-description">{{ img.description}}</div>
+							{% endif %}
+						</figcaption>
+						{% endif %}
+
+					</figure>
+
+				{% endfor %}
+			</div>
+			{% endif %}
+		</section>
+		{% endif %}
+	</div>
+{% endblock %}
