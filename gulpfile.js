@@ -9,6 +9,7 @@ var gulp 		 = require('gulp'),
 	browserSync  = require('browser-sync'), // Подключаем Browser Sync
 	concat       = require('gulp-concat'), // Подключаем gulp-concat (для слияния файлов)
 	uglify       = require('gulp-uglify-es').default, // Подключаем плагин для сжатия JS
+	ttf2woff2 	 = require('gulp-ttf2woff2'),
 //	jsRequires   = require('gulp-resolve-dependencies'), // Подключаем пакет для импортирования скриптов через //@requires *.js
 	rigger		 = require('gulp-rigger'), // импорт скриптов через //= filename.js
 	postcss      = require("gulp-postcss"),
@@ -50,6 +51,7 @@ gulp.task('styles', function() { // таск 'styles' обработает вс�
 		overrideBrowserslist: ['last 3 versions']
 	})) // Создаем префиксы
 	.pipe(combineCSS()) //Объединяем медиа запросы
+	.pipe(postcss([ cssImport ])) // Импортируем стили, прописанные через команду @import в начале файла
 	.pipe(sourcemaps.write()) //пропишем sourcemap
 	//.pipe(concat('main.min.css')) // Объединяем все найденные файлы в один
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
@@ -62,13 +64,13 @@ gulp.task('styles', function() { // таск 'styles' обработает вс�
 gulp.task('css-compress', async function() {
 	gulp.src(path.static+'css/*.css') // Сжимаем библиотеки
 	.pipe(cleanCSS({level:2})) // Сжимаем CSS файл
-	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
+	//.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 	.pipe(gulp.dest(path.static+'css'))
 });
 
 // Скрипт запускается только вручную
 gulp.task('scripts-compress', async function() {
-	gulp.src(path.src+'js/*.js') // Сжимаем библиотеки
+	gulp.src(path.static+'js/*.js') // Сжимаем библиотеки
 	.pipe(uglify()) // Сжимаем JS файл
 	.pipe(gulp.dest(path.static+'js'))
 });
@@ -123,14 +125,22 @@ gulp.task('img', function() {
 		.pipe(gulp.dest(path.media+'img')); // Выгружаем в папку dest::/img
 });
 
+
+gulp.task('ttf2woff2', function() {
+	return gulp.src(path.src+'fonts/*.ttf') // Сжимаем библиотеки
+	.pipe(ttf2woff2())
+	.pipe(gulp.dest(path.static+'fonts/'))
+});
+
+
 gulp.task('browser-sync', function() { // Создаем таск browser-sync
 	browserSync({ // Определяем параметры сервера.
 		//server: { baseDir: path.html },  // Нельзя подключать одновремено с proxy
 		host: site.http,
 		proxy: site.http,
-		//tunnel: true, tunnel: 'sferadesign', // Demonstration page: http://projectname.localtunnel.me
+		tunnel: true, tunnel: 'sd43', // Demonstration page: http://projectname.localtunnel.me
 		notify: false, // Отключаем уведомления
-		online: false, // false - work offline without internet connection
+		online: true, // false - work offline without internet connection
 		open: false, // open browser on start
 	});
 });
@@ -145,7 +155,7 @@ gulp.task('watch', function() { //таск слежения изменений �
 
 
 // Deploy - выгрузка готового сайта на хостинг
-gulp.task('rsync', function() {
+gulp.task('deploy', function() {
 	return gulp.src(path.static+'')
 	.pipe(rsync({
 		root: path.static,

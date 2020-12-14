@@ -1,4 +1,4 @@
-<h1>sferadesign43.ru web project</h1>
+<h1>sd43.ru web project</h1>
 
 ## Available Scripts
 
@@ -18,12 +18,11 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## Additional Django packages:
 
-admin-miltiupload
-### `pip install git+git://github.com/gkuhn1/django-admin-multiupload.git`
-
-# Note
-It is nessesary to change below:
-1. venv/lib/python3.8/site-packages/admin-miltiupload/admin.py
-'django.core.urlresolvers' to 'django.urls'
-2. venv/lib/python3.8/site-packages/admin-miltiupload/templates/upload.html
-{% load staticfiles %} to {% load static %}
+`django-environ`
+`python-memcached`
+`django-uuslug`
+`sorl-thumbnail`
+`django-static-jquery-ui`
+`django-smart-selects` - related select inputs on condition in admin
+`django-cleanup` - delete all related files with instance removing on disk
+`django-tabbed-changeform-admin` - tabs structure in admin forms

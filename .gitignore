@@ -9,8 +9,8 @@
 
 # development
 resources/
-media/
-static/admin/
+media/*
+static/*
 src/img/
 
 # Django #
@@ -27,7 +27,7 @@ migrations/
 *.sublime-workspace
 *.sublime-project
 sftp-config.json
-
+package-lock.json
 # npm
 package-lock.json
 
