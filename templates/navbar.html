@@ -1,35 +1,32 @@
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
 	<div class="container-fluid">
-		<a id="brand-logo" class="navbar-brand" href="/"><img src="{{ organizer.avatar.url }}" alt="Сфера Дизайна"></a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse" id="navbarNavDropdown">
 			<ul class="navbar-nav align-items-center">
 
-				{% if user.is_authenticated and user.is_staff %}
-				<li class="nav-item">
-					<a class="nav-link active" aria-current="page" href="/admin"><svg class="icon"><use xlink:href="#login-icon"></use></svg></a>
-				</li>
-				{% endif %}
+				<li class="nav-item dropdown exh-nav-item">
+					<a class="nav-link hidden" href="/exhibitions">Выставки</a>
+					{% if exhibitions_list %}
+						<a class="nav-link dropdown-toggle" href="#" id="exhibitionsMenuLink" role="button" data-toggle="dropdown" aria-expanded="false">Выставки</a>
 
-				{% if exhibitions_list %}
-				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-expanded="false">Выставки</a>
-
-					<ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-						{% for e in exhibitions_list %}
-						<li><a class="dropdown-item" href="{{ e.get_absolute_url }}">
-							{{ e.date_start|date:"Y" }}
-						</a></li>
-						{% endfor %}
-					</ul>
+						<ul class="dropdown-menu navbar-dark" aria-labelledby="exhibitionsMenuLink">
+							{% for e in exhibitions_list %}
+							<li><a class="dropdown-item" href="{{ e.get_absolute_url }}">
+								{{ e.date_start|date:"Y" }}
+							</a></li>
+							{% endfor %}
+						</ul>
+					{% endif %}
 				</li>
-				{% endif %}
 
 				<li class="nav-item">
 					<a class="nav-link" href="{% url 'exhibitors-list-url' %}">Участники</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'nominations-list-url' %}">Работы</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="{% url 'winners-list-url' %}">Победители</a>
@@ -45,6 +42,19 @@
 				</li>
 
 			</ul>
+
+
+			{% if user.is_authenticated and user.is_staff %}
+			<div class="nav-item">
+				<a class="nav-link active" aria-current="page" href="/admin"><svg class="icon"><use xlink:href="#login-icon"></use></svg></a>
+			</div>
+			{% endif %}
+
+			<form class="nav-search form-inline my-2 my-lg-0" action="{% block search-action %}{% endblock %}" method="GET">
+				<input class="form-control mr-sm-2" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск" aria-label="Search">
+				<button class="btn btn btn-outline-light my-2 my-sm-0" type="submit">Поиск</button>
+			</form>
+
 		</div>
 	</div>
 </nav>

@@ -18,14 +18,14 @@ from django.urls import path, re_path, include
 
 from django.conf import settings
 from django.conf.urls.static import static
-from exhibition import views
+from django.views.generic.base import TemplateView
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
 	path('', include('exhibition.urls')),
-	# path('contacts/', views.contacts, name='contacts-url'),
-	# path('about/', views.about_us, name='about-us-url'),
-	# re_path(r'^thanks/$', views.message_thanks, name='thanks-url'),
+	re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+	re_path(r'^chaining/', include('smart_selects.urls')),
+	path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type='text/plain')),
 ]
 
 if settings.DEBUG:

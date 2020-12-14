@@ -10,12 +10,12 @@ urlpatterns = [
 	# path('design/', views.design, name='design-url'),
 	# # path('styling/', include('design.urls')),
 	path('exhibitions/',views.exhibitions_list.as_view(), kwargs={'exh_year': None}, name='exhibitions-list-url'),
-	path('exhibitions/<slug>/',views.exhibition_detail.as_view(), name='exhibition-detail-url'),
-	path('exhibitions/<slug>/<name>/', views.nomination_detail.as_view(), name='nomination-detail-url'),
+	path('exhibition/<exh_year>/',views.exhibition_detail.as_view(), name='exhibition-detail-url'),
+	path('exhibition/<exh_year>/<slug>/', views.winner_project_detail.as_view(), name='winner-project-detail-url'),
 
-	#path('nominations/',views.nominations_list.as_view(), kwargs={'exh_year': None}, name='nominations-list-url'),
-	# path('nominations/<exh_year>/',views.nominations_list.as_view(), name='nominations-by-year-list-url'),
-	# path('nominations/<exh_year>/<name>/detail/', views.nomination_detail.as_view(), name='nomination-detail-url'),
+	path('category/',views.nominations_list.as_view(), kwargs={'slug': None}, name='nominations-list-url'),
+	path('category/<slug>/',views.projects_list.as_view(), name='nomination-detail-url'),
+	path('projects/<owner>/project-<project_id>/', views.project_detail.as_view(), name='project-detail-url'),
 
 	path('jury/',views.jury_list.as_view(), kwargs={'exh_year': None}, name='jury-list-url'),
 	path('jury/<exh_year>/',views.jury_list.as_view(), name='jury-by-year-list-url'),
@@ -40,5 +40,8 @@ urlpatterns = [
 	#path('exhibition/<exh_year>/events/<pk>/', views.event_detail.as_view(), name='event-detail-url'),
 	#
 	path('contacts/', views.contacts, name='contacts-url'),
+	path('upload/', views.portfolio_upload, name='portfolio-upload-url'),
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),
+	# path('about/', views.about_us, name='about-us-url'),
+	re_path(r'^success/$', views.success_message, name='success-message-url'),
 ]

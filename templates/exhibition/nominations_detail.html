@@ -1,74 +1,57 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load custom_tags %}
-{% load thumbnail %}
+
+{% block scripts %}
+<script src="{% static 'js/lazysizes.min.js' %}"></script>
+{% endblock %}
 
 {% block header %}
-	<h1>{{ object|verbose_name }}:  "{{ object.title }}"</h1>
+<h1>Номинация: "{{ nomination }}"</h1>
 {% endblock header %}
 
 {% block content %}
 	<div class="content">
-		<p class="nomination-description">{{ object.description }}</p>
+		<a href="{{parent_link}}" class="back-link"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Назад</a>
+
+		<div class="nomination-description">{{ nomination.description|safe }}</div>
 
 		{% if exhibitors %}
-		<section class="exhibitors-list">
-			<h2>Список участников</h2>
-			<ol>
-			{% for e in exhibitors %}
-				<li><a href="{{ e.get_absolute_url }}">{{ e.name }}</a></li>
-			{% endfor %}
-			</ol>
-		</section>
-		{% endif %}
 
-		{% if winner and not portfolio %}
-		<section class="winner-detail">
-			<h2 class="winner-title">{{ winner|verbose_name  }}:</h2>
-			<div class="winner-name">{{ winner.name }}</div>
-			<div class="winner-description">{{ winner.description }}</div>
-		</section>
-		{% endif %}
-
-		{% if portfolio %}
-		<section class="portfolio">
-			<h2>{{ portfolio.title }}</h2>
-			<div>Автор работы: <a href="{{ portfolio.get_absolute_url }}">{{ portfolio.owner }}</a></div>
-			<div>{{ portfolio.description }}</div>
-
-			{% if portfolio.images %}
-			<div class="portfolio-list my-3">
-				{% for img in portfolio.images.all %}
-					<figure class="image-wrapper">
-						<a href="img.file.url">
-						{% thumbnail img.file "320" as xs %}
-						{% thumbnail img.file "576" as sm %}
-						<img class="image-img lazyload"
-							src="{{ xs.url }}"
-							srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
-							style="max-width: {{sm.x}}px">
-						{% empty %}
-						<img src="/media/no-image.png">
-						{% endthumbnail %}
-						{% endthumbnail %}
-						</a>
-
-						{% if img.title or img.description %}
-						<figcaption>
-							{% if img.title %}
-							<h3 class="image-title">{{ img.title}}</h3>
-							{% endif %}
-							{% if img.description %}
-							<div class="image-description">{{ img.description}}</div>
-							{% endif %}
-						</figcaption>
-						{% endif %}
-
-					</figure>
-
+			<section class="exhibitors-list">
+				<h2>Список участников</h2>
+				<ol>
+				{% for e in exhibitors %}
+					<li><a href="{{ e.get_absolute_url }}"><h3>{{ e.name }}</h3></a></li>
 				{% endfor %}
-			</div>
+				</ol>
+			</section>
+
+		{% else %}
+
+			{% if object and not portfolio %}
+			<section class="winner-detail">
+				<h2 class="winner-title">{{ object.exhibitor|verbose_name  }}:</h2>
+				<a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><h3>{{ object.exhibitor.name }}</h3></a>
+				<div class="winner-description">{{ object.exhibitor.description|safe }}</div>
+			</section>
 			{% endif %}
-		</section>
+
+			{% if portfolio %}
+			<section class="portfolio">
+				<h2>{{ portfolio.title }}</h2>
+				<div>Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></div>
+				<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
+
+				{% if portfolio.images %}
+				<div class="portfolio-list my-3">
+					{% include "exhibition/images_list.html" %}
+				</div>
+				{% endif %}
+
+			</section>
+			{% endif %}
+
 		{% endif %}
 	</div>
 {% endblock %}

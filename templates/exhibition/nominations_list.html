@@ -1,28 +1,43 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load custom_tags %}
+{% load thumbnail %}
 
-	{% block styles %}
-	{% endblock %}
+{% block header %}{% endblock%}
 
-	{% block scripts %}
-	{% endblock %}
+{% block content %}
+<div class="row">
+	{% block sidebar %}{% endblock sidebar %}
 
-	{% block sidebar %}{% include "sidebar.html" %}{% endblock sidebar %}
+	<div class="content">
 
-	{% block header %}{% endblock%}
+		<h1>{{ page_title }}</h1>
 
-	{% block content %}
-
-		<h2>{{ page_title }}</h2>
 		{% if object_list %}
-			<ul>
-			{% for obj in object_list %}
-				<li><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></li>
+			<div class="categories-list grid">
+			{% for e in object_list %}
+				<a class="grid-cell centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
+					{% if e.logo %}
+					{% thumbnail e.logo "320" crop="center" as xs %}
+					{% thumbnail e.logo "576" crop="center" as sm %}
+					<img class="category-cover lazyload"
+						data-src="{{ e.logo.url }}"
+						data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
+						data-sizes="auto"
+						loading="lazy"
+						title="Раздел {{ e.title }}"
+						alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}">
+					{% endthumbnail %}
+					{% endthumbnail %}
+					{% endif %}
+					<h3 class="category-title img-title centered">{{ e }}</h3>
+				</a>
 			{% endfor %}
-			</ul>
+			</div>
 		{% else %}
 			<h4>Список пустой</h4>
 		{% endif %}
 
-	{% endblock %}
-
+	</div>
+</div>
+{% endblock %}

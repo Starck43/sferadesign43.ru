@@ -5,9 +5,14 @@ Django==3.1
 django-admin-tools==0.9.0
 django-appconf==1.0.4
 django-bootstrap4==2.2.0
+django-cleanup==5.1.0
 django-crispy-forms==1.9.2
 django-debug-toolbar==2.2
 django-environ==0.4.5
+django-smart-selects==1.5.9
+django-static-jquery-ui==1.12.1.1
+django-summernote==0.8.11.6
+django-tabbed-changeform-admin==0.1.6
 django-uuslug==1.2.0
 Pillow==7.2.0
 python-memcached==1.59

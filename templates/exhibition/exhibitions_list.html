@@ -9,17 +9,17 @@
 
 	<div class="content col-auto">
 		{% block header %}
-			{{ page_title }}
+			<h1>{{ page_title }}</h1>
 		{% endblock%}
 
 		{% block content %}
 
 			{% if object_list %}
-				<ol>
+				<div class="exhibitions-list grid">
 				{% for obj in object_list %}
-					<li><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></li>
+					<a id="exh-{{obj.slug}}" class="grid-cell centered" href="{{ obj.get_absolute_url }}"><h2 class="exh-title">{{ obj.slug }}</h2></a>
 				{% endfor %}
-				</ol>
+				</div>
 			{% else %}
 				<h4>Список пустой</h4>
 			{% endif %}
