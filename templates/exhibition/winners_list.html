@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+	{% block styles %}
+	{% endblock %}
+
+	{% block scripts %}
+	{% endblock %}
+
+	{% block header %}{% endblock%}
+
+	{% block content %}
+	<div class="row">
+		{% block sidebar %}{% endblock sidebar %}
+
+		<div class="content col-sm-9 col-12">
+
+			<h1>{{ page_title }}</h1>
+
+			{% if object_list %}
+				{% if exhibition %}
+					<h4 class="my-3">{{ exhibition.title }}:</h4>
+					<ol>
+					{% for e in object_list %}
+						<li><a href="{{e.get_absolute_url}}">{{ e }}</a></li>
+					{% endfor %}
+					</ol>
+				{% else %}
+					<ol>
+					{% for e in object_list %}
+						<li><a href="/exhibitor/{{e.exhibitor__slug}}/detail">{{ e.exhibitor__name }}</a></li>
+					{% endfor %}
+					</ol>
+				{% endif %}
+			{% else %}
+				<h4>Список пустой</h4>
+			{% endif %}
+
+		</div>
+	</div>
+	{% endblock %}

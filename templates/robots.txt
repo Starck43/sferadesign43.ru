@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /admin          	# папка на хостинге
+Disallow: */?               # все параметры запроса
+Disallow: *?s=              # поиск
+
+Allow: /media
+Disallow: /media/cache
+Disallow: /assets
+Disallow: /static
+
+
+Sitemap: http://sd43.ru/sitemap.xml

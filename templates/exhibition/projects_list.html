@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load thumbnail %}
+
+
+{% block header %}
+<h1>{% if page_title %}{{ page_title }}{% else %}Категория не существует!{% endif %}</h1>
+{% endblock%}
+
+{% block content %}
+<div class="row">
+	{% block sidebar %}{% endblock sidebar %}
+
+	<div class="content">
+
+
+		{% if object_list %}
+			<div class="projects-list grid">
+			{% for e in object_list %}
+
+				{% if e.images.first %}
+				<a id="project-{{e.owner}}" class="grid-cell" href="{{ e.get_absolute_url }}" title="{{e.title}}{% if e.images.first.title %} - {{ e.images.first.title }}{% endif %}">
+					<div>
+						{% thumbnail e.images.first.file "320" crop="center" as xs %}
+						{% thumbnail e.images.first.file "576" crop="center" as sm %}
+						<img class="project-cover lazyload"
+							data-src="{{ e.images.first.file }}"
+							data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
+							data-sizes="auto"
+							loading="lazy"
+							title="{% if e.images.first.title %}{{ e.images.first.title }}{% endif %}"
+							alt="{% if e.images.first.title %}{{ e.images.first.title }}. {% endif %}Автор проекта {{ e.owner.name }}">
+						{% endthumbnail %}
+						{% endthumbnail %}
+						<h3 class="project-title img-title centered">{{ e.title }}{% if e.owner %}<span>{{ e.owner.name }}</span>{% endif %}</h3>
+					</div>
+				</a>
+				{% endif %}
+
+			{% endfor %}
+			</div>
+		{% else %}
+			<a href="/category/">Вернуться к разделам портфолио</a>
+		{% endif %}
+
+	</div>
+</div>
+{% endblock %}

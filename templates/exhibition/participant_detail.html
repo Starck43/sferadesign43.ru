@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load thumbnail %}
+
+
+{% block header %}
+	<h1>{{ object.name }}</h1>
+	{% if object.excerpt %}<p class="person-excerpt excerpt">{{object.excerpt}}</p>{% endif %}
+{% endblock header %}
+
+{% block svg_icons %}
+	{{ block.super }}
+	<symbol id="logo-instagram" x="0" y="0" width="30" height="30" viewBox="0 0 24 24">
+		<path fill="#112" d="m4.75 24h14.5c2.619 0 4.75-2.131 4.75-4.75v-14.5c0-2.619-2.131-4.75-4.75-4.75h-14.5c-2.619 0-4.75 2.131-4.75 4.75v14.5c0 2.619 2.131 4.75 4.75 4.75zm-3.25-19.25c0-1.792 1.458-3.25 3.25-3.25h14.5c1.792 0 3.25 1.458 3.25 3.25v14.5c0 1.792-1.458 3.25-3.25 3.25h-14.5c-1.792 0-3.25-1.458-3.25-3.25z"/>
+		<path d="m12 18.13c3.38 0 6.13-2.75 6.13-6.13s-2.75-6.13-6.13-6.13-6.13 2.75-6.13 6.13 2.75 6.13 6.13 6.13zm0-10.76c2.553 0 4.63 2.077 4.63 4.63s-2.077 4.63-4.63 4.63-4.63-2.077-4.63-4.63 2.077-4.63 4.63-4.63z"/>
+		<path d="m18.358 7.362c.986 0 1.729-.74 1.729-1.721 0-1.023-.782-1.721-1.728-1.721-.986 0-1.729.74-1.729 1.721 0 1.021.778 1.721 1.728 1.721zm.177-1.886c.316.279-.405.618-.405.166 0-.27.367-.2.405-.166z"/>
+	</symbol>
+	<symbol id="logo-vk" x="0" y="0" width="30" height="30" viewBox="0 0 24 24">
+		<path fill="#112" d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"/>
+	</symbol>
+	<symbol id="logo-fb" x="0px" y="0px" viewBox="0 0 512 512">
+		<path fill="#112" d="M384,176h-96v-64c0-17.664,14.336-32,32-32h32V0h-64l0,0c-53.024,0-96,42.976-96,96v80h-64v80h64v256
+h96V256h64L384,176z"/>
+	</symbol>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+
+	<a href="/{{parent_link}}/" class="back-link"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Назад</a>
+
+	<div class="person-details-block">
+		{% if object.logo %}
+		<div class="logo {{ html_classes|to_string }}-logo">
+			{% thumbnail object.logo "300x300" as logo %}
+				<img src="{{ logo.url }}">
+			{% empty %}
+				<img src="{% get_media_prefix %}no-image.png">
+			{% endthumbnail %}
+		</div>
+		{% endif %}
+		<div class="person-description my-3">{{ object.description|safe }}</div>
+		<div class="meta">
+			{% for name, label, value, link in object %}
+				{% if value and label %}
+				<div class="person-details-item">
+					<span>{% if link %}<a href="{{link}}" target="_blank">{{ value }}</a>{% else %}{{ value }}{% endif %}</span>
+				</div>
+				{% endif %}
+
+				{% if not label and link %}
+				<div class="person-details-icon social-link my-2 mr-2">
+					<a href="{{ link }}" target="_blank"><svg class="icon {{name}}"><use xlink:href="#logo-{{name}}"></use></svg></a>
+				</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+
+		{% if winners_list %}
+		<section class="participant-awards my-5">
+			<h2>Победы в номинациях</h2>
+			<ol class="winners-list my-2">
+			{% for item in winners_list %}
+				<li><a href="{% url 'winner-project-detail-url' item.exh_year item.slug %}">{{ item.title }}, {{ item.exh_year }}</a></li>
+			{% endfor %}
+			</ol>
+		</section>
+		{% endif %}
+
+		{% if object_list %}
+		<section class="participant-projects my-5">
+			<h2>Работы участника</h2>
+			<div class="projects-list grid my-2">
+			{% for e in object_list %}
+
+				{% if e.images.first %}
+					<a id="project-{{e.owner}}" class="grid-cell" href="{{ e.get_absolute_url }}">
+						<div>
+							{% thumbnail e.images.first.file "320" crop="center" as xs %}
+							{% thumbnail e.images.first.file "576" crop="center" as sm %}
+							<img  class="project-cover"
+								src="{{ xs.url }}"
+								srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w">
+							{% endthumbnail %}
+							{% endthumbnail %}
+							<h2 class="project-title img-title centered">{{ e.title }}<span>{{ e.exh_year }}</span></h2>
+						</div>
+					</a>
+				{% endif %}
+
+			{% endfor %}
+			</div>
+		</section>
+		{% endif %}
+
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'exhibition/persons_list.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load thumbnail %}
+
+{% block person %}
+<ol class="my-4">
+	{% for e in exhibitions_list.first.partners.all %}
+	<li class="mb-4">
+		<a class="d-flex align-items-center" href="{{ e.get_absolute_url }}">
+			<div class="logo brand-logo mr-2">
+				{% thumbnail e.logo "150x150" as logo %}
+					<img src="{{ logo.url }}">
+				{% empty %}
+					<img src="{% get_media_prefix %}no-person.png">
+				{% endthumbnail %}
+			</div>
+			<h3 class="brand-title">{{ e }}</h3>
+		</a>
+	</li>
+	{% endfor %}
+
+	{% for e in object_list %}
+		<li><h3>{{ e }}</li></h3>
+	{% endfor %}
+	</ol>
+
+{% endblock person %}
+
+

@@ -1,0 +1,81 @@
+
+.navbar
+	li.nav-item
+		.nav-link
+			position: relative
+			&::before
+				content: ''
+				position: absolute
+				left: -3px
+				top: 50%
+				width: 3px
+				height: 0
+				background-color: #fff
+				transform: translateY(-50%)
+				//border-bottom: 3px #fff solid
+				transition: all 150ms ease-out
+			&:hover
+				&::before
+					//background-color: blue
+					height: 1em
+					//border-color: #000
+
+	+media-breakpoint-down(xl)
+		li.nav-item
+			width: 100%
+			.nav-link
+				padding-left: 0.5em !important
+				padding-right: 0.5em !important
+
+		.dropdown-menu
+			background-color: transparent !important
+			&.show
+				display: grid
+				grid-template-columns: repeat(auto-fill, minmax(70px, 1fr) )
+				gap: 2vw
+				li
+					//display: inline-flex
+					//width: 70px
+					//margin: 0 5px 10px
+					border-radius: 5px
+					box-sizing: content-box
+					.dropdown-item
+						padding: .25rem 0
+						text-align: center
+
+		.dropdown-menu.navbar-dark
+			li
+				border: solid 2px transparentize(#fff, 0.45)
+				transition: all 150ms ease-out
+				&:focus,
+				&:hover
+					border-color: #fff
+
+
+.navbar
+	ul.navbar-nav
+		margin: 0 auto
+		li.nav-item
+			padding: 0 .5em
+
+.navbar-dark
+	background-color: $menu-bg
+	.dropdown-menu.show
+		+blur-background(10, $submenu-bg, 0.6)
+		//background-color: $submenu-bg
+	.navbar-toggler
+		border-color: transparent !important
+
+
+.navbar-dark
+	.navbar-nav .nav-link,
+	.dropdown-item
+		color: transparentize(#fff, 0.3)
+		&:focus,
+		&:hover
+			background-color: transparent
+			color: #fff
+
+.nav-search button
+	display: none
+

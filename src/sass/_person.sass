@@ -1,0 +1,52 @@
+
+//participant-detail.html
+
+.person-details-block
+	.logo
+		max-width: 300px
+		&.participant-logo
+			min-height: 150px
+
+	.person-description
+		font-size: 1.2
+		letter-spacing: 1.5px
+
+
+.brand-grid
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) )
+	gap: 1em
+
+.brand-wrapper
+	position: relative
+	flex-direction: column
+	transition: all 200ms linear
+	.brand-logo
+		display: flex
+		align-items: center
+		width: 100%
+		margin: 0 0 auto
+		padding: .5em
+		+responsive-ratio(1,1,0,true)
+		+img-responsive
+		img
+			position: relative
+			max-width: $logo-width
+			left: -50%
+			transform: translateX(-50%)
+
+	.brand-title
+		flex: 1
+		//font-size: 1.2em
+		text-align: center
+		margin: .3em
+
+
+	&:hover
+		background-color: darken(#fff, 10%)
+		.brand-logo
+			mix-blend-mode: darken
+
+.jury .brand-logo
+	filter: grayscale(1)
+	&:hover, &:focus
+		filter: grayscale(0)

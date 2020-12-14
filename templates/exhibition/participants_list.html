@@ -1,0 +1,20 @@
+{% extends 'exhibition/persons_list.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load thumbnail %}
+
+{% block person %}
+	<ol class="my-4">
+	{% for e in object_list %}
+		<li>
+			{% if absolute_url == 'winners' %}
+				<a href="/exhibitor/{{e.exhibitor__slug}}/detail">{{ e.exhibitor__name }}</a>
+			{% else %}
+				<a href="{{ e.get_absolute_url }}">{{ e }}</a>
+			{% endif %}
+		</li>
+	{% endfor %}
+	</ol>
+{% endblock person %}
+
+
