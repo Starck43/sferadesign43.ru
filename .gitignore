@@ -28,8 +28,10 @@ migrations/
 *.sublime-project
 sftp-config.json
 package-lock.json
+datadamp.json
+
 # npm
-package-lock.json
+.sublime-gulp.cache
 
 # Environment
 .env
