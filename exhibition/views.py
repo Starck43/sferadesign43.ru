@@ -8,14 +8,14 @@ from django.views.decorators.cache import cache_page
 from django.views.generic.list import ListView #, MultipleObjectMixin
 from django.views.generic.detail import DetailView
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Q, Prefetch, Max #, Count
+from django.db.models import Q, Prefetch, Max, Count
 from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
 from django import forms
 
 from .models import *
 from .forms import ImagesUploadForm, FeedbackForm
-from .logic import IsMobile, SendEmail
+from .logic import SendEmail
 
 
 def success_message(request):
@@ -372,14 +372,27 @@ class exhibition_detail(DetailView):
 		slug = self.kwargs['exh_year'] # current exhibition year
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['exhibition']
-		context['is_mobile'] = IsMobile(self.request)
 
-		nominations_with_winners = self.object.nominations.filter(nomination_for_winner__exhibition_id=self.object.id).annotate(exhibitor_name=F('nomination_for_winner__exhibitor__name'), exhibitor_slug=F('nomination_for_winner__exhibitor__slug')).values('id','exhibitor_name','exhibitor_slug','title', 'slug') #.filter(nomination_for_winner__exhibition_id=self.object.id).values('nomination_for_winner__exhibition_id', 'nomination_for_winner__exhibitor__name', 'title')#.filter(nomination_for_winner__exhibition_id=self.object.id)
-		if not nominations_with_winners:
-			context['nominations_list'] = self.object.nominations.all
-		else:
+		nominations_with_winners = self.object.nominations.filter(nomination_for_winner__exhibition_id=self.object.id).annotate(exhibitor_name=F('nomination_for_winner__exhibitor__name'), exhibitor_slug=F('nomination_for_winner__exhibitor__slug')).values('id', 'exhibitor_name','exhibitor_slug','title', 'slug') #.filter(nomination_for_winner__exhibition_id=self.object.id).values('nomination_for_winner__exhibition_id', 'nomination_for_winner__exhibitor__name', 'title')#.filter(nomination_for_winner__exhibition_id=self.object.id)
+		if nominations_with_winners:
 			context['nominations_list'] = nominations_with_winners
+		else:
+			context['nominations_list'] = self.object.nominations.all
+
 		context['last_exh'] = Exhibitions.objects.values('slug')[:1].first()
+		banner_slider = []
+		if self.object.banner and self.object.banner.width!=0 :
+			banner_slider.append(self.object.banner)
+			context['banner_height'] = f"{self.object.banner.height / self.object.banner.width * 100}%"
+
+		for winner in nominations_with_winners:
+			query_and = (Q(exhibition=self.object) & Q(nominations=winner['id']) & Q(owner__slug=winner['exhibitor_slug']))
+			first_image = Portfolio.objects.prefetch_related('images').filter(query_and, images__file__isnull=False).values('images__file').first()
+			if first_image:
+				banner_slider.append(first_image['images__file'])
+				#print(first_image)
+
+		context['banner_slider'] = banner_slider
 		context['events_title'] = Events._meta.verbose_name_plural
 		context['gallery_title'] = Gallery._meta.verbose_name_plural
 
@@ -428,7 +441,6 @@ class winner_project_detail(DetailView):
 		#self.portfolio = Portfolio.objects.filter(exhibition__slug=exh_year,nominations__in=q)
 		#self.portfolio = Portfolio.objects.select_related('exhibition').filter(exhibition__slug=exh_year).prefetch_related('nominations')
 		context = super().get_context_data(**kwargs)
-		context['is_mobile'] = IsMobile(self.request)
 		context['html_classes'] = ['portfolio']
 		context['portfolio'] = portfolio
 		context['exhibitors'] = self.exhibitors
@@ -462,13 +474,14 @@ class project_detail(DetailView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['is_mobile'] = IsMobile(self.request)
 		context['html_classes'] = ['portfolio']
-		q = self.object.nominations.filter(category__slug__isnull=False).first()
-		if q and self.object:
-			context['parent_link'] = '/category/%s/' % q.category.slug
-		else:
-			context['parent_link'] = '/category/'
+		context['parent_link'] = self.request.META.get('HTTP_REFERER')
+		if context['parent_link'] == None:
+			q = self.object.nominations.filter(category__slug__isnull=False).first()
+			if q and self.object:
+				context['parent_link'] = '/category/%s/' % q.category.slug
+			else:
+				context['parent_link'] = '/category/'
 
 		return context
 

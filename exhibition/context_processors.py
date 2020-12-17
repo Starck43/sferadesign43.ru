@@ -1,5 +1,6 @@
 from .models import Exhibitions
 from .apps import ExhibitionConfig
+from .logic import IsMobile
 
 
 """ Global context processor variables """
@@ -9,6 +10,7 @@ def common_context(request):
 		'keywords' : "дизайн выставка, сфера дизайна"
 	}
 	context = {
+		'is_mobile' :IsMobile(request),
 		'main_title': ExhibitionConfig.verbose_name,
 		'exhibitions_list' : Exhibitions.objects.all().only('slug', 'date_start'),
 		#'organizer' : Organizer.objects.all().first(),

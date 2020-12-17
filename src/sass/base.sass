@@ -20,7 +20,7 @@ html
 body
 	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
 
-h1, h2, h3, h4, .year-text, #site-title
+h1, h2, h3, h4, .year-text, .site-title
 	font-family: $font-family-header
 	//font-weight: bold
 
@@ -41,13 +41,14 @@ h1
 h3
 	min-height: 0vw
 	font-size: calc(1.1em + .1vw)
+	font-weight: 500
 
 a
 	color: $link-color
 	text-decoration: none
 	outline: none
 	&.active
-		font-weight: bold
+		font-weight: 500
 	&:hover
 		color: lighten($link-color, 20%)
 
@@ -63,10 +64,13 @@ ol
 li, img
 	outline: 0
 
-p img
-	max-width: 100%
-	max-height: auto
-	margin: 1em
+p
+	img
+		max-width: 100%
+		max-height: auto
+		margin: 1em
+	a
+		font-weight: 500
 
 img
 	width: 100%
@@ -125,8 +129,8 @@ svg.icon
 
 .back-link
 	position: absolute
-	top: 6em
-	right: 2em
+	top: 2.5vw
+	right: 2.5vw
 	display: flex
 	align-items: center
 	svg
@@ -135,6 +139,9 @@ svg.icon
 		transform: rotate(180deg)
 		width: 22px
 		height: 22px
+	+media-breakpoint-down(sm)
+		top: 1rem
+		right: 1rem
 
 .social-link
 	display: inline-block
@@ -148,66 +155,96 @@ svg.icon
 		&.instagram
 			//background-color: #ff543e
 
-#site-header
-	position: relative
-	display: flex
-	align-items: center
-	margin: 7em 0.5em 0em
-	//+responsive-ratio(1,1,0, true, absolute)
-	img
-		display: table
-		margin: auto 0
-		width: $content-margin - 60px
-		background-color: transparentize($main-color,1)
-		&.lazyloaded
-			background-color: transparentize($main-color,0)
-		~ *
-			flex: auto
-			margin-left: 20px
 
-	.year-text
-		margin-left: 18%
-		font-size: 2.7rem
-		line-height: 0.6
-		color: $main-color !important
-
-	+media-breakpoint-down(xl)
-		img
-			width: $content-margin - 110px
-		.year-text
-			font-size: 2.1em
-
-	+media-breakpoint-down(lg)
-		margin-top: 5em
-
-	+media-breakpoint-down(md)
-		margin-top: 4em
-		img
-			width: $content-margin - 160px
-		.year-text
-			font-size: 1.4em
-
-	+media-breakpoint-down(sm)
-		margin-bottom: 1em
-		img
-			width: $content-margin - 180px
-
-	#site-title
-		transition: opacity 500ms 300ms ease-out
-		opacity: 0
-
-	&.loaded
-		#site-title
-			opacity: 1
-
+#main-title
+	overflow: visible
 	text
 		fill: $main-color
 		stroke: $main-color
 		stroke-width: 6px
-		font-size: 118px
+		font-size: 121px
 		text-transform: uppercase
-		font-weight: bold
+		font-weight: 500
 		letter-spacing: 1px
+
+#site-header
+	position: relative
+	margin-bottom: 1.5vh
+	//+responsive-ratio(1,1,0, true, absolute)
+	+media-breakpoint-down(sm)
+		margin-bottom: 1em
+
+	#branding
+		position: relative
+		display: flex
+		align-items: center
+		padding-top: 1.5vh
+		.brand-logo
+			display: block
+			//height: 100%
+			margin-left: 0.5em
+			height: $content-margin - 60px
+
+		.site-title
+			transition: opacity 500ms 300ms ease-out
+			opacity: 0
+			flex: auto
+			margin-left: 50px
+			margin-right: $content-margin
+			margin-top: -2em
+			margin-bottom: -2em
+
+		img
+			width: auto
+			height: 100%
+			opacity: 0
+			//background-color: transparentize($main-color,1)
+			&.lazyloaded
+				//background-color: transparentize($main-color,0)
+				opacity: 1
+
+		.year-text
+			margin-left: 18%
+			font-size: 2.7rem
+			line-height: 0.6
+			color: $main-color !important
+
+		&.loaded
+			img
+				opacity: 1
+				//background-color: transparentize($main-color,0)
+			.site-title
+				opacity: 1
+
+
+		+media-breakpoint-down(xl)
+			.brand-logo
+				height: $content-margin - 110px
+			.year-text
+				font-size: 2.1em
+			.site-title
+				margin-left: 25px
+				margin-right: $content-margin - 75px
+
+
+		+media-breakpoint-down(md)
+			padding-top: 1em
+			.brand-logo
+				height: $content-margin - 160px
+			.year-text
+				font-size: 1.4em
+			.site-title
+				margin-right: $content-margin - 125px
+
+
+		+media-breakpoint-down(sm)
+
+			.brand-logo
+				height: $content-margin - 180px
+			.site-title
+				margin-left: 0.75em
+				margin-right: 0.75em
+
 
 .container
 	max-width: none
@@ -306,6 +343,17 @@ svg.icon
 		&:hover
 			filter: invert(100%)
 
+
+.portfolio
+	h1
+		text-transform: uppercase
+		span
+			font-size: 0.8em
+			text-transform: lowercase
+			font-style: normal
+			font-weight: 300
+
+
 .home
 	header
 		text-align: center
@@ -331,6 +379,7 @@ svg.icon
 .participant, .exhibition, .nominations
 	h2
 		margin-bottom: 0
+		font-weight: bold
 		//font-size: 1.5em
 	h3
 		margin: 0

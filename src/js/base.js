@@ -10,8 +10,15 @@ function toggleNavItems(link) {
 	});
 }
 
+function navbarOffset() {
+	// Добавим смещение следущему после меню элементу
+	const navbar = document.querySelector('.navbar');
+	var siblingEl = navbar.nextElementSibling;
+	siblingEl.style.marginTop = navbar.clientHeight + 'px';
+}
 
 document.addEventListener("DOMContentLoaded", function() {
+	navbarOffset();
 
 	const images = document.querySelectorAll("img:not(.lazyload)");
 	images.forEach(img => {
@@ -25,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	(window.innerWidth >= 992) && toggleNavItems(exhibitionsLink);
 
 	window.addEventListener('resize', function(){
+		navbarOffset();
 		toggleNavItems(exhibitionsLink);
 	});
 
@@ -66,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			excerptBlock.classList.add('brief');
 		}
 
-		excerptBlock.lastElementChild.addEventListener('click', (e) => {
+		excerptBlock.lastElementChild && excerptBlock.lastElementChild.addEventListener('click', (e) => {
 			//var parentBlock = e.target.parentNode;
 			excerptBlock.classList.toggle('brief');
 			excerptBlock_h = excerptBlock.scrollHeight + 30;

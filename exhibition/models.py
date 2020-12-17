@@ -24,6 +24,7 @@ from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField, G
 
 
 logo_folder = 'logos/'
+banner_folder = 'banners/'
 
 
 def get_image_html(obj):
@@ -248,6 +249,7 @@ class Nominations(models.Model):
 class Exhibitions(models.Model):
 	title = models.CharField('Название выставки', max_length=150)
 	slug = models.SlugField('Ярлык', max_length=150, unique=True)
+	banner = models.ImageField('Баннер', upload_to=banner_folder, null=True, blank=True)
 	description = RichTextUploadingField('Описание выставки', blank=True)
 	date_start = models.DateField('Начало выставки', unique=True)
 	date_end = models.DateField('Окончание выставки', unique=True)
@@ -292,6 +294,11 @@ class Exhibitions(models.Model):
 
 	def get_absolute_url(self):
 		return reverse('exhibition-detail-url', kwargs={'exh_year': self.slug})
+
+	def banner_thumb(self):
+		return get_image_html(self.banner)
+
+	banner_thumb.short_description = 'Логотип'
 
 
 

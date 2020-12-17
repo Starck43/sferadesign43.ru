@@ -4,16 +4,16 @@
 
 document.addEventListener("DOMContentLoaded", function() {
 
-	const overlay = document.querySelector('#overlay') || null;
-	const portfolio = document.querySelectorAll('.image-link') || null;
+	const overlay = document.querySelector('#overlay');
+	const portfolio = document.querySelectorAll('.image-link');
 	const portfolioArray = Array.prototype.slice.call(portfolio);
-	var zoom = slider = null;
+	var slider = null;
 	var imageIndex = 0;
 	var ontouchPosY = null; // remember Y position on touch start
 	var gesturableImg = null;
 
 
-	portfolio && portfolio.forEach( (link) => {
+	portfolio.length && portfolio.forEach( (link) => {
 
 		link.addEventListener('click', (e) => {
 			e.preventDefault();
@@ -33,22 +33,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	});
 
 
-	if ( !is_mobile ) {
-		//lazySizes.init();
-		var portfolio_grid = document.querySelector('.portfolio-list');
-		if (portfolio_grid) {
-			var msnry = new Masonry( portfolio_grid, {
-				itemSelector: '.grid-item',
-				columnWidth: '.grid-sizer',
-				//fitWidth: true,
-				//horizontalOrder: true,
-				//gutter: '.gutter-sizer',
-				percentPosition: true,
-			});
-		}
-	}
-
-	if (portfolio && (!is_mobile || portfolio[0].classList.contains('gallery-photo'))) {
+	if (portfolio.length && (!is_mobile || portfolio[0].classList.contains('gallery-photo'))) {
 
 		overlay && overlay.classList.add('slider-container', 'peppermint', 'peppermint-inactive');
 		slider = Peppermint( overlay, {
@@ -65,10 +50,10 @@ document.addEventListener("DOMContentLoaded", function() {
 			slidesContainer: overlay.querySelector('#slides-block'),
 			onSetup: function(n) {
 				if (n > 1) {
-					const rightArrow = document.querySelector('#arrow-right');
-					const leftArrow = document.querySelector('#arrow-left');
-					rightArrow.addEventListener('click', this.next, false); //клик по `#rightArrow` переключит на следующий слайд
-					leftArrow.addEventListener('click', this.prev, false); //клик по `#leftArrow` переключит на предыдущий слайд
+					const slider_rightArrow = overlay.querySelector('.arrow-right');
+					const slider_leftArrow = overlay.querySelector('.arrow-left');
+					slider_rightArrow.addEventListener('click', slider.next, false); //клик по `#rightArrow` переключит на следующий слайд
+					slider_leftArrow.addEventListener('click', slider.prev, false); //клик по `#leftArrow` переключит на предыдущий слайд
 				}
 				// для мобильных устройств добавим зум
 				if (is_mobile) {
@@ -84,6 +69,31 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	}
 
+	var banner = document.querySelector('.banner-container');
+	if (banner) {
+		banner.classList.add('slider-container', 'peppermint', 'peppermint-inactive');
+		banner_slider = Peppermint( banner, {
+			//dots: true,
+			//speed: 300,
+			//touchSpeed: 300,
+			slideshow: true,
+			speed: 600,
+			slideshowInterval: 4000,
+			stopSlideshowAfterInteraction: true,
+			startSlide: 0,
+			//disableIfOneSlide: false,
+			slidesContainer: document.querySelector('#banners-block'),
+			onSetup: function(n) {
+				if (n > 1 && !is_mobile) {
+					const banner_rightArrow = banner.querySelector('.arrow-right');
+					const banner_leftArrow = banner.querySelector('.arrow-left');
+					banner_rightArrow && banner_rightArrow.addEventListener('click', banner_slider.next, false); //клик по `#rightArrow` переключит на следующий слайд
+					banner_leftArrow && banner_leftArrow.addEventListener('click', banner_slider.prev, false); //клик по `#leftArrow` переключит на предыдущий слайд
+				}
+			}
+		});
+
+	}
 
 	// Функции фиксации оверлея экрана при касаниях для мобильных устройств
 	function disableRubberBand(event) {

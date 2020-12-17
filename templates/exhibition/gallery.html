@@ -1,0 +1,54 @@
+{% load static %}
+{% load thumbnail %}
+
+{% if not is_mobile and portfolio.images %}
+
+	<div id="overlay" class="modal">
+
+		<div id="slides-block" class="fade">
+			{% for img in portfolio.images.all %}
+			<figure class="slide-wrapper centered">
+
+				{% thumbnail img.file "576" as sm %}
+				{% thumbnail img.file "992" as md %}
+				{% thumbnail img.file "1200" as xl %}
+				<img class="slide-img lazyload"
+					src="{{ img.file.url }}"
+					srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
+					data-sizes="auto"
+					data-expand="-50"
+					loading="lazy"
+					style="max-width: {{ img.file.width }}px"
+					title="{% if img.title %}{{ img.title }}{% endif %}">
+				{% empty %}
+				<img src="{% get_media_prefix %}no-image.png">
+				{% endthumbnail %}
+				{% endthumbnail %}
+				{% endthumbnail %}
+
+				{% if img.title or img.description %}
+				<figcaption class="centered">
+					{% if img.title %}
+					<h3 class="slide-title">{{ img.title }}</h3>
+					{% endif %}
+					{% if img.description %}
+					<p class="slide-description">{{ img.description }}</p>
+					{% endif %}
+				</figcaption>
+				{% endif %}
+
+			</figure>
+			{% endfor %}
+
+		</div>
+
+		<a class="controls-block no-select" href="#">
+			{% if portfolio.images.count > 1 %}
+			<svg class="arrow-left arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+			<svg class="arrow-right arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+			{% endif %}
+			<svg id="close-button" class="close-icon icon"><use xlink:href="#close-icon"></use></svg>
+		</a>
+	</div>
+
+{% endif %}

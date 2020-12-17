@@ -1,12 +1,18 @@
 {% load static %}
 {% load thumbnail %}
 
+{% if portfolio.images %}
+
+<div class="portfolio-list my-3{% if is_mobile %} grid{% endif %}">
+	{% if not is_mobile %}<div class="grid-sizer"></div>{% endif %}
 
 	{% for img in portfolio.images.all %}
-	{% widthratio img.file.height img.file.width 100 as height_ratio %}
-	<a class="image-link grid-item{% if height_ratio|add:"0" < 75 %} grid-item-landscape{% elif height_ratio|add:"0" > 125 %} grid-item-portrait{% endif %}" href="{% get_media_prefix %}{{ img.file }}" title="{% if img.title %}{{ img.title }}{% else %}Проект {{ img.portfolio.title }}{% endif %}">
 
-		<figure class="image-wrapper" style="{% if not is_mobile %}height:0; padding-bottom:{{height_ratio}}%{% endif %}">
+	{% if not is_mobile %}
+		{% widthratio img.file.height img.file.width 100 as height_ratio %}
+		<a class="image-link grid-item{% if height_ratio|add:"0" < 75 %} grid-item-landscape{% elif height_ratio|add:"0" > 125 %} grid-item-portrait{% endif %}" href="{% get_media_prefix %}{{ img.file }}" title="{% if img.title %}{{ img.title }}{% else %}Проект {{ img.portfolio.title }}{% endif %}">
+		{% endif %}
+		<figure class="image-wrapper" style="{% if not is_mobile %}padding-bottom:{{height_ratio}}%{% endif %}">
 			{% thumbnail img.file "320" as xs %}
 			{% thumbnail img.file "576" as sm %}
 			{% thumbnail img.file "992" as md %}
@@ -37,6 +43,10 @@
 			{% endif %}
 		</figure>
 
+	{% if not is_mobile %}
 	</a>
+	{% endif %}
 	{% endfor %}
+</div>
 
+{% endif %}

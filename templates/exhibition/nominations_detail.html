@@ -2,17 +2,34 @@
 {% load static %}
 {% load custom_tags %}
 
-{% block scripts %}
-<script src="{% static 'js/lazysizes.min.js' %}"></script>
+
+{% if not is_mobile %}
+
+{% block styles %}
+<link href="{% static 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 {% endblock %}
 
+{% block script %}
+<script type="text/javascript">var is_mobile = false;</script>
+
+<script type="text/javascript" src="{% static 'js/peppermint.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/masonry.pkgd.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/slider.min.js' %}"></script>
+{% endblock script %}
+
+{% endif %}
+
+{% block site_title %}
+{{ block.super }}
+<a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}{{parent_link}}{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Назад</a>
+{% endblock site_title %}
+
 {% block header %}
-<h1>Номинация: "{{ nomination }}"</h1>
+<h1><span>Номинация </span>{{ nomination }}</h1>
 {% endblock header %}
 
 {% block content %}
 	<div class="content">
-		<a href="{{parent_link}}" class="back-link"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Назад</a>
 
 		<div class="nomination-description">{{ nomination.description|safe }}</div>
 
@@ -21,9 +38,9 @@
 			<section class="exhibitors-list">
 				<h2>Список участников</h2>
 				<ol>
-				{% for e in exhibitors %}
+					{% for e in exhibitors %}
 					<li><a href="{{ e.get_absolute_url }}"><h3>{{ e.name }}</h3></a></li>
-				{% endfor %}
+					{% endfor %}
 				</ol>
 			</section>
 
@@ -40,14 +57,10 @@
 			{% if portfolio %}
 			<section class="portfolio">
 				<h2>{{ portfolio.title }}</h2>
-				<div>Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></div>
+				<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
 				<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
 
-				{% if portfolio.images %}
-				<div class="portfolio-list my-3">
-					{% include "exhibition/images_list.html" %}
-				</div>
-				{% endif %}
+				{% include "exhibition/images_list.html" %}
 
 			</section>
 			{% endif %}
@@ -55,3 +68,8 @@
 		{% endif %}
 	</div>
 {% endblock %}
+
+{% block extra_container %}
+	{% include "exhibition/gallery.html" %}
+{% endblock extra_container %}
+

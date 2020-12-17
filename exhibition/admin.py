@@ -318,7 +318,7 @@ class GalleryAdmin(AdminImageMixin, admin.ModelAdmin):
 @admin.register(Exhibitions)
 class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, admin.ModelAdmin):
 	form = ExhibitionsForm
-	list_display = ('title', 'date_start', 'date_end', )
+	list_display = ('banner_thumb', 'title', 'date_start', 'date_end', )
 	date_hierarchy = 'date_start'
 	filter_horizontal = ('nominations', 'exhibitors',)
 	#list_select_related = ('events',)
@@ -332,7 +332,7 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('basic-tab',),
-			'fields' : ('title', 'slug', 'description', 'date_start', 'date_end', 'location',)
+			'fields' : ('title', 'slug', 'banner', 'description', 'date_start', 'date_end', 'location',)
 		}),
 		(None, {
 			'classes': ('exhibitors-tab','hidden-label',),

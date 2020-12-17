@@ -1,5 +1,6 @@
 
 .navbar
+
 	li.nav-item
 		.nav-link
 			position: relative
@@ -53,6 +54,9 @@
 
 
 .navbar
+	max-height: 100vh
+	overflow-y: auto
+
 	ul.navbar-nav
 		margin: 0 auto
 		li.nav-item
@@ -64,7 +68,14 @@
 		+blur-background(10, $submenu-bg, 0.6)
 		//background-color: $submenu-bg
 	.navbar-toggler
+		position: sticky
+		top: 0
+		margin-left: 0.5em
+		padding: 0.25rem
+		text-align: left
+		+blur-background(10, $menu-bg, 0.4)
 		border-color: transparent !important
+		z-index: 1000
 
 
 .navbar-dark

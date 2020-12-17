@@ -27,18 +27,50 @@ var is_mobile = false;
 {% endblock script %}
 
 {% block site_title %}
-<svg id="site-title" width="100%" height="100%" viewBox="0 -110 1000 140" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-	<text>{{ main_title }}</text>
-</svg>
+{{ block.super }}
+<svg class="site-title"><use xlink:href="#main-title"></use></svg>
 {% endblock site_title %}
 
 {% block header %}
+{% if banner_slider %}
+<div class="banner-container">
+	<div id="banners-block">
+		{% for img in banner_slider %}
+		<figure class="slide-wrapper centered">
+			<div class="image-ratio" style="{% if banner_height %}padding-bottom: {{banner_height}}{% endif %}">
+			{% thumbnail img "320" as xs %}
+			{% thumbnail img "576" as sm %}
+			{% thumbnail img "992" as md %}
+			{% thumbnail img "1200" as xl %}
+			<img class="slide-img lazyload"
+				src="{{ img }}"
+				srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
+				data-sizes="auto"
+				data-expand="-50"
+				loading="lazy">
+			{% empty %}
+			{% endthumbnail %}
+			{% endthumbnail %}
+			{% endthumbnail %}
+			{% endthumbnail %}
+			</div>
+		</figure>
+		{% endfor %}
+	</div>
+	<a class="controls-block no-select" href="#">
+		{% if banner_slider|length > 1 %}
+		<svg class="arrow-left arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+		<svg class="arrow-right arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+		{% endif %}
+	</a>
+</div>
+{% endif %}
 <h1>{{ object.title }}</h1>
+
 {% endblock header %}
 
 
 {% block content %}
-
 <div class="content">
 
 	<div class="exhibition-details">
@@ -184,17 +216,16 @@ var is_mobile = false;
 	<div id="overlay" class="modal">
 
 		{% if object.gallery.count %}
-		<div id="slides-block" class="">
+		<div id="slides-block">
 			{% for img in object.gallery.all %}
 			<figure class="slide-wrapper centered">
 
-				{% thumbnail img.file "320" as xs %}
 				{% thumbnail img.file "576" as sm %}
 				{% thumbnail img.file "992" as md %}
 				{% thumbnail img.file "1200" as xl %}
 				<img class="slide-img lazyload"
-					src="{{ img.file }}"
-					srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
+					src="{{ img.file.url }}"
+					srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
 					data-sizes="auto"
 					data-expand="-50"
 					loading="lazy"
@@ -202,7 +233,6 @@ var is_mobile = false;
 					title="{% if img.title %}{{ img.title }}{% endif %}">
 				{% empty %}
 				<img src="{% get_media_prefix %}no-image.png">
-				{% endthumbnail %}
 				{% endthumbnail %}
 				{% endthumbnail %}
 				{% endthumbnail %}
@@ -224,8 +254,8 @@ var is_mobile = false;
 
 		<a class="controls-block no-select" href="#">
 			{% if object.gallery.count > 1 %}
-			<svg id="arrow-left" class="arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
-			<svg id="arrow-right" class="arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+			<svg class="arrow-left arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+			<svg class="arrow-right arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
 			{% endif %}
 			<svg id="close-button" class="close-icon icon"><use xlink:href="#close-icon"></use></svg>
 		</a>
