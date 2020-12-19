@@ -56,8 +56,12 @@
 	position: $pos
 	top: $p
 	left: $p
-	right: $p
-	bottom: $p
+	@if $p == 0
+		width: 100%
+		height: 100%
+	@else
+		right: $p
+		bottom: $p
 
 @mixin blur-background($blur:10, $color:white, $transparentize:0.8)
 	background-color: transparentize($color, $transparentize)
@@ -166,7 +170,7 @@ $parallax-ios         : true !default
 
 // Миксин для создания масштабируемыхэлементов(обычно изображения/картинки заднего фона),
 // чтобы поддерживать соотношение. Пример: @include responsive-ratio(16,9)
-@mixin responsive-ratio($x, $y, $h:0, $pseudo:false,$pos:relative)
+@mixin responsive-ratio($x:1, $y:1, $h:0, $pseudo:false,$pos:relative)
 	$padding: unquote(( $y / $x )*100+'%')
 	@if $pseudo
 		&::before
@@ -174,6 +178,7 @@ $parallax-ios         : true !default
 			width: 100%
 			padding-top: $padding
 	@else
+		position: $pos
 		width: 100%
 		height: $h
 		padding-top: $padding

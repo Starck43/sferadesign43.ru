@@ -319,6 +319,7 @@ class GalleryAdmin(AdminImageMixin, admin.ModelAdmin):
 class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, admin.ModelAdmin):
 	form = ExhibitionsForm
 	list_display = ('banner_thumb', 'title', 'date_start', 'date_end', )
+	list_display_links = ('banner_thumb', 'title',)
 	date_hierarchy = 'date_start'
 	filter_horizontal = ('nominations', 'exhibitors',)
 	#list_select_related = ('events',)

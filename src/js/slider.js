@@ -2,6 +2,10 @@
 // ../plugins/img-touch-canvas/img-touch-zoom.js
 
 
+function imgLoaded(imgElement) {
+	return imgElement.complete && imgElement.naturalHeight !== 0;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
 
 	const overlay = document.querySelector('#overlay');

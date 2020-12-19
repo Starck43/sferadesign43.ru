@@ -7,6 +7,31 @@
 @import vars
 @import mixins
 
+.portfolio-preloader
+	position: fixed
+	left: 50%
+	top: 75%
+	transform: translate(-50%, -50%)
+	margin: 0
+	padding: 1vw 2vw
+	text-align: center
+	text-transform: uppercase
+	letter-spacing: 2px
+	background-color: #fff
+	transition: all 500ms linear
+	visibility: visible
+	z-index: 1
+	span
+		opacity: 0.3
+		animation: pulsate 2.5s infinite ease-in-out
+		@keyframes pulsate
+			0%
+				opacity: 0.3
+			50%
+				opacity: 1
+			100%
+				opacity: 0.3
+
 
 figure
 	position: relative
@@ -15,6 +40,7 @@ figure
 	margin: 0
 	line-height: 1
 	img
+		height: 100%
 		max-width: 100%
 		margin: auto
 
@@ -25,12 +51,41 @@ figure
 	width: inherit
 	display: flex
 	flex-flow: row wrap
+	>figure
+		flex: 100%
+		width: 100%
+		margin-bottom: 2%
+		&:last-child
+			margin-bottom: 0
+		img
+			position: relative
+
 	.image-link
 		margin: 0.8%
 		transition: all 200ms linear
 		overflow: hidden
 		&:hover
 			transform: scale(1.03)
+
+		figure
+			img
+				position: absolute
+
+	figure
+		img
+			left: 0
+			right: 0
+			top: 0
+			max-height: 85vh
+			object-fit: cover
+			background-color: #ddd
+
+		figcaption
+			margin: 0.5em 0
+			.portfolio-image-title
+				font-size: 1.2rem
+				word-break: break-word
+
 
 	.grid-item
 		display: block
@@ -47,21 +102,6 @@ figure
 		&-portrait
 			width: 25%
 			min-width: 25%
-
-	figure
-		img
-			position: absolute
-			left: 0
-			top: 0
-			height: 100%
-			max-height: 85vh
-			object-fit: cover
-
-		figcaption
-			margin: 0.5em 0
-			.portfolio-image-title
-				font-size: 1.2rem
-				word-break: break-word
 
 
 
@@ -81,12 +121,6 @@ figure
 				transform: unset
 		.grid-item
 			flex: 100%
-		figure
-			padding-bottom: unset !important
-			height: auto
-			img
-				position: relative
-				max-height: 90vh
 
 
 // Slider

@@ -12,29 +12,20 @@
 		letter-spacing: 1.5px
 
 
-.brand-grid
-	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) )
-	gap: 1em
-
-.brand-wrapper
+.person-wrapper
 	position: relative
-	flex-direction: column
 	transition: all 200ms linear
-	.brand-logo
+	.person-logo
 		display: flex
 		align-items: center
-		width: 100%
 		margin: 0 0 auto
-		padding: .5em
-		+responsive-ratio(1,1,0,true)
-		+img-responsive
+		//padding: .5em
 		img
-			position: relative
+			margin: auto
 			max-width: $logo-width
-			left: -50%
-			transform: translateX(-50%)
+			object-position: center
 
-	.brand-title
+	.person-title
 		flex: 1
 		//font-size: 1.2em
 		text-align: center
@@ -43,10 +34,10 @@
 
 	&:hover
 		background-color: darken(#fff, 10%)
-		.brand-logo
+		.logo
 			mix-blend-mode: darken
 
-.jury .brand-logo
+.jury .logo
 	filter: grayscale(1)
 	&:hover, &:focus
 		filter: grayscale(0)

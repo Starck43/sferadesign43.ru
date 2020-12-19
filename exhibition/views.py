@@ -59,7 +59,7 @@ def contacts(request):
 
 
 """ Exhibitons view """
-#@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibitions_list(ListView):
 	model = Exhibitions
 
@@ -82,6 +82,7 @@ class exhibitions_list(ListView):
 
 
 """ Events view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class events_list(ListView):
 	model = Events
 	template_name = 'exhibition/participants_list.html'
@@ -112,6 +113,7 @@ class events_list(ListView):
 
 
 """ Exhibitors view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibitors_list(ListView):
 	model = Exhibitors
 	template_name = 'exhibition/participants_list.html'
@@ -148,7 +150,7 @@ class exhibitors_list(ListView):
 
 
 """ Nominations view """
-#@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class nominations_list(ListView):
 	model = Categories
 	template_name = 'exhibition/nominations_list.html'
@@ -173,6 +175,7 @@ class nominations_list(ListView):
 
 
 """ Projects view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class projects_list(ListView):
 	model = Portfolio
 	template_name = 'exhibition/projects_list.html'
@@ -205,6 +208,7 @@ class projects_list(ListView):
 
 
 """ Winners view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class winners_list(ListView):
 	model = Winners
 	template_name = 'exhibition/participants_list.html'
@@ -243,6 +247,7 @@ class winners_list(ListView):
 
 
 """ Partners view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class partners_list(ListView):
 	model = Partners
 	template_name = 'exhibition/partners_list.html'
@@ -281,6 +286,7 @@ class partners_list(ListView):
 
 
 """ Jury view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class jury_list(ListView):
 	model = Jury
 	template_name = 'exhibition/persons_list.html'
@@ -316,6 +322,7 @@ class jury_list(ListView):
 
 
 """ Exhibitors & Winners detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibitor_detail(DetailView):
 	model = Exhibitors
 	template_name = 'exhibition/participant_detail.html'
@@ -333,6 +340,7 @@ class exhibitor_detail(DetailView):
 
 
 """ Jury detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class jury_detail(DetailView):
 	model = Jury
 	template_name = 'exhibition/participant_detail.html'
@@ -346,6 +354,7 @@ class jury_detail(DetailView):
 
 
 """ Partners detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class partner_detail(DetailView):
 	model = Partners
 	template_name = 'exhibition/participant_detail.html'
@@ -358,6 +367,7 @@ class partner_detail(DetailView):
 
 
 """ Exhibitions detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibition_detail(DetailView):
 	model = Exhibitions
 	def get_object(self, queryset=None):
@@ -400,6 +410,7 @@ class exhibition_detail(DetailView):
 
 
 """ Winner project detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class winner_project_detail(DetailView):
 	model = Winners
 	#slug_url_kwarg = 'name'
@@ -452,6 +463,7 @@ class winner_project_detail(DetailView):
 
 
 """ Project detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class project_detail(DetailView):
 	model = Portfolio
 	#slug_url_kwarg = 'slug'
@@ -487,6 +499,7 @@ class project_detail(DetailView):
 
 
 """ Event detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class event_detail(DetailView):
 	model = Events
 

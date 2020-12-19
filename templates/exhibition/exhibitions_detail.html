@@ -5,7 +5,7 @@
 
 
 {% block styles %}
-<link href="{% static 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+<link href="{% md5url 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 {% endblock %}
 
 {% block script %}
@@ -22,7 +22,7 @@ var is_mobile = false;
 {% endif %}
 
 <script type="text/javascript" src="{% static 'js/peppermint.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/slider.min.js' %}"></script>
+<script type="text/javascript" src="{% md5url 'js/slider.min.js' %}"></script>
 
 {% endblock script %}
 

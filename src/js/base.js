@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	const excerptBlock = document.querySelector('.description');
 	if (excerptBlock) {
 		var excerptBlock_h = excerptBlock.scrollHeight;
-		if (excerptBlock_h > 300) {
+		if (excerptBlock_h/300 > 1.2) {
 			//excerptBlock.style.height = (excerptBlock_h+30) + 'px';
 			let div = document.createElement('a');
 			div.className = "read-more-link";
@@ -81,6 +81,36 @@ document.addEventListener("DOMContentLoaded", function() {
 			excerptBlock.style.height = ((excerptBlock.classList.contains('brief')) ? 300 : excerptBlock_h) + 'px';
 		});
 
+	}
+
+	const firstImg = document.querySelector('.portfolio-list img');
+	const preloader = document.querySelector('.portfolio-preloader');
+	if (preloader) {
+		firstImg.onload = function(){
+		//display ok
+			preloader && preloader.remove();
+		}
+	}
+
+
+	const burger = document.querySelector('.navbar-toggler');
+	burger.addEventListener('click', function (e) {
+		const container = document.querySelector('.container');
+		var navbarNavDropdown =  document.querySelector('.navbar-collapse');
+
+		if (container && e.currentTarget.ariaExpanded == "true") {
+			navbarNavDropdown.style.maxHeight = navbarNavDropdown.scrollHeight + 'px';
+			container.addEventListener('click', containerListener, false);
+		}
+		if (container && e.currentTarget.ariaExpanded == "false") {
+			navbarNavDropdown.style.maxHeight = 0;
+			container.removeEventListener('click', containerListener, false);
+		}
+	})
+
+	var containerListener = function(e) {
+		console.log('click container');
+		burger.click();
 	}
 /*	filterItems.on('click', '.filter__title', function(e) {
 		if ( $(this).hasClass(collapsed) || $(this).hasClass(expanded) ) {

@@ -14,21 +14,20 @@
 {% endblock%}
 
 {% block content %}
-<div class="row">
 	{% block sidebar %}{% endblock sidebar %}
 
-	<div class="content col-12">
+	<div class="content">
 
 		{% if object_list %}
 
 			{% block person %}
 
-			<div class="brand-grid grid my-4">
+			<div class="persons-container row my-4">
 
 			{% for e in object_list %}
-				<a class="brand-wrapper centered" href="{{ e.get_absolute_url }}">
+				<a class="person-wrapper col-6 col-xxl-2 col-xl-3 col-md-4" href="{{ e.get_absolute_url }}">
 
-					<div class="logo brand-logo">
+					<div class="person-logo aspect-ratio">
 						{% thumbnail e.logo "150x150" as logo %}
 							<img src="{{ logo.url }}">
 						{% empty %}
@@ -36,7 +35,7 @@
 						{% endthumbnail %}
 					</div>
 
-					<h3 class="brand-title">{{ e }}</h3>
+					<h3 class="person-title">{{ e }}</h3>
 				</a>
 
 			{% endfor %}
@@ -49,5 +48,4 @@
 		{% endif %}
 
 	</div>
-</div>
 {% endblock %}

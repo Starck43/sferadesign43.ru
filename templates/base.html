@@ -31,7 +31,7 @@
 
 	<!-- CSS only -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
-	<link href="{% static 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+	<link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
 	{% block styles %}
 	{% endblock %}
@@ -92,7 +92,7 @@
 
 	{% block extra_container %}{% endblock extra_container %}
 
-	<script src="{% static 'js/base.min.js' %}"></script>
+	<script src="{% md5url 'js/base.min.js' %}"></script>
 
 	{% block script %}{% endblock %}
 
