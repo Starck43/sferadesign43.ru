@@ -10,10 +10,14 @@
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">var is_mobile = false;</script>
 
-<script type="text/javascript" src="{% static 'js/peppermint.min.js' %}"></script>
-<script type="text/javascript" src="{% md5url 'js/slider.min.js' %}"></script>
+{% if is_mobile %}
+<script type="text/javascript" src="{% md5url 'js/portfolio_mobile.min.js' %}"></script>
+{% else %}
+<script type="text/javascript">var is_mobile = false;</script>
+<script type="text/javascript" src="{% md5url 'js/portfolio.min.js' %}"></script>
+{% endif %}
+
 {% endblock script %}
 
 {% endif %}
@@ -24,51 +28,56 @@
 {% endblock site_title %}
 
 {% block header %}
-<h1><span>Номинация </span>{{ nomination }}</h1>
+<h1><div class="sub-title">Номинация</div>{{ nomination }}</h1>
 {% endblock header %}
 
+
 {% block content %}
-	<div class="content">
 
-		<div class="nomination-description">{{ nomination.description|safe }}</div>
+<div class="portfolio-container">
 
-		{% if exhibitors %}
+	<div class="nomination-description">{{ nomination.description|safe }}</div>
 
-			<section class="exhibitors-list">
-				<h2>Список участников</h2>
-				<ol>
-					{% for e in exhibitors %}
-					<li><a href="{{ e.get_absolute_url }}"><h3>{{ e.name }}</h3></a></li>
-					{% endfor %}
-				</ol>
-			</section>
+	{% if exhibitors %}
 
-		{% else %}
+	<section class="exhibitors-list">
+		<h2>список участников</h2>
+		<ol>
+			{% for e in exhibitors %}
+			<li><a href="{{ e.get_absolute_url }}"><h3>{{ e.name }}</h3></a></li>
+			{% endfor %}
+		</ol>
+	</section>
 
-			{% if object and not portfolio %}
-			<section class="winner-detail">
-				<h2 class="winner-title">{{ object.exhibitor|verbose_name  }}:</h2>
-				<a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><h3>{{ object.exhibitor.name }}</h3></a>
-				<div class="winner-description">{{ object.exhibitor.description|safe }}</div>
-			</section>
-			{% endif %}
+	{% else %}
 
-			{% if portfolio %}
-			<section class="portfolio">
-				<h2>{{ portfolio.title }}</h2>
-				<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
-				<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
+	{% if object and not portfolio %}
+	<section class="winner-detail">
+		<h2 class="winner-title">{{ object.exhibitor|verbose_name  }}</h2>
+		<a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><b>{{ object.exhibitor.name }}</b></a>
+		<div class="winner-description">{{ object.exhibitor.description|safe }}</div>
+	</section>
+	{% endif %}
 
-				{% include "exhibition/images_list.html" %}
+	{% if portfolio %}
+	<section class="portfolio">
+		<h2>{{ portfolio.title }}</h2>
+		<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
+		<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
 
-			</section>
-			{% endif %}
+		{% include "exhibition/images_list.html" %}
+	</section>
+	{% endif %}
 
-		{% endif %}
-	</div>
-{% endblock %}
+	{% endif %}
+</div>
+
+{% endblock content %}
+
 
 {% block extra_container %}
-	{% include "exhibition/gallery.html" %}
+
+{% include "exhibition/gallery.html" %}
+
 {% endblock extra_container %}
 

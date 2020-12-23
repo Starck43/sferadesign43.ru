@@ -14,7 +14,9 @@ from django.db.models.functions import Coalesce
 from django import forms
 
 from .models import *
+from rating.models import Rating
 from .forms import ImagesUploadForm, FeedbackForm
+from rating.forms import RatingForm
 from .logic import SendEmail
 
 
@@ -276,7 +278,7 @@ class partners_list(ListView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['partners',]
+		context['html_classes'] = ['participants', 'partners',]
 		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['exhibition'] = self.exhibition
@@ -313,7 +315,7 @@ class jury_list(ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 
-		context['html_classes'] = ['jury',]
+		context['html_classes'] = ['participants', 'jury',]
 		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['exhibition'] = self.exhibition
@@ -452,7 +454,7 @@ class winner_project_detail(DetailView):
 		#self.portfolio = Portfolio.objects.filter(exhibition__slug=exh_year,nominations__in=q)
 		#self.portfolio = Portfolio.objects.select_related('exhibition').filter(exhibition__slug=exh_year).prefetch_related('nominations')
 		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['portfolio']
+		context['html_classes'] = ['project']
 		context['portfolio'] = portfolio
 		context['exhibitors'] = self.exhibitors
 		context['nomination'] = self.nomination
@@ -486,7 +488,7 @@ class project_detail(DetailView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['portfolio']
+		context['html_classes'] = ['project']
 		context['parent_link'] = self.request.META.get('HTTP_REFERER')
 		if context['parent_link'] == None:
 			q = self.object.nominations.filter(category__slug__isnull=False).first()
@@ -494,6 +496,13 @@ class project_detail(DetailView):
 				context['parent_link'] = '/category/%s/' % q.category.slug
 			else:
 				context['parent_link'] = '/category/'
+		score = Rating.calculate(self.object)
+		rate = score.average
+		if self.request.user.is_authenticated:
+			context['user_score'] = Rating.objects.filter(portfolio=self.object, user=self.request.user).values_list('star',flat=True).first()
+		context['average_rate'] = round(rate, 2)
+		context['extra_rate_percent'] = int((rate - int(rate))*100)
+		context['rating_form'] = RatingForm(initial={'star': int(rate)})
 
 		return context
 

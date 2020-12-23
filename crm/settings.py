@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'smart_selects',
     'exhibition',
+    'rating',
     #'django_cleanup.apps.CleanupConfig',
 ]
 
@@ -200,7 +201,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 

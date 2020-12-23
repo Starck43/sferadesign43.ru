@@ -1,3 +1,4 @@
+
 function toggleNavItems(link) {
 	link && link.forEach( (e) => {
 		if (window.innerWidth < 992) {
@@ -13,8 +14,10 @@ function toggleNavItems(link) {
 function navbarOffset() {
 	// Добавим смещение следущему после меню элементу
 	const navbar = document.querySelector('.navbar');
-	var siblingEl = navbar.nextElementSibling;
-	siblingEl.style.marginTop = navbar.clientHeight + 'px';
+	if (!navbar.classList.contains('expanded')) {
+		var siblingEl = navbar.nextElementSibling;
+		siblingEl.style.marginTop = navbar.clientHeight + 'px';
+	}
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -83,26 +86,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	}
 
-	const firstImg = document.querySelector('.portfolio-list img');
-	const preloader = document.querySelector('.portfolio-preloader');
-	if (preloader) {
-		firstImg.onload = function(){
-		//display ok
-			preloader && preloader.remove();
-		}
-	}
-
-
+	// Сворачивание мобильного меню по нажатию вне области его контейнера
 	const burger = document.querySelector('.navbar-toggler');
 	burger.addEventListener('click', function (e) {
 		const container = document.querySelector('.container');
 		var navbarNavDropdown =  document.querySelector('.navbar-collapse');
 
-		if (container && e.currentTarget.ariaExpanded == "true") {
+		if (container && (this.getAttribute('aria-expanded') == "true" || this.ariaExpanded == "true")) {
+			this.parentNode.parentNode.classList.add('expanded');
 			navbarNavDropdown.style.maxHeight = navbarNavDropdown.scrollHeight + 'px';
 			container.addEventListener('click', containerListener, false);
 		}
-		if (container && e.currentTarget.ariaExpanded == "false") {
+		if (container && (this.getAttribute('aria-expanded') == "false" || this.ariaExpanded == "false")) {
+			this.parentNode.parentNode.classList.remove('expanded');
 			navbarNavDropdown.style.maxHeight = 0;
 			container.removeEventListener('click', containerListener, false);
 		}

@@ -415,6 +415,9 @@ class Portfolio(models.Model):
 		else:
 			return '<Без названия>'
 
+	def root_comments(self):
+		return self.comments_portfolio.filter(parent__isnull=True)
+
 	def __str__(self):
 		if self.title:
 			return self.title
@@ -604,8 +607,8 @@ class MetaSEO(models.Model):
 		('exhibitor-detail', 'Профиль участника'),
 		('jury-list', 'Список жюри'),
 		('jury-detail', 'Профиль жюри'),
-		('jury-list', 'Список партнеров'),
-		('jury-detail', 'Профиль партнера'),
+		('partners-list', 'Список партнеров'),
+		('partner-detail', 'Профиль партнера'),
 		('nominations-list', 'Разделы номинаций'),
 		('nomination-detail', 'Список проектов'),
 		('exhibitions-list', 'Список выставок'),

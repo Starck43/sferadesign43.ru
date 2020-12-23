@@ -7,8 +7,8 @@
 <ol class="my-4">
 	{% for e in exhibitions_list.first.partners.all %}
 	<li class="mb-4">
-		<a class="d-flex align-items-center" href="{{ e.get_absolute_url }}">
-			<div class="logo brand-logo mr-2">
+		<a class="d-flex mb-2 align-items-center" href="{{ e.get_absolute_url }}">
+			<div class="partner-logo ratio ratio-1x1 ml-0 mr-2">
 				{% thumbnail e.logo "150x150" as logo %}
 					<img src="{{ logo.url }}">
 				{% empty %}

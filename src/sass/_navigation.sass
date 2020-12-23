@@ -1,5 +1,12 @@
 
 .navbar
+	max-height: 100vh
+	overflow-y: auto
+
+	ul.navbar-nav
+		margin: 0 auto
+		li.nav-item
+			padding: 0 .5em
 
 	li.nav-item
 		.nav-link
@@ -52,15 +59,15 @@
 				&:hover
 					border-color: #fff
 
+@media (max-width: 567.98px) and (orientation: landscape)
 
-.navbar
-	max-height: 100vh
-	overflow-y: auto
+	.navbar-dark:not(.expanded)
+		background-color: transparentize($menu-bg, 1)
+		transition: background-color 300ms 100ms ease-in-out
 
-	ul.navbar-nav
-		margin: 0 auto
-		li.nav-item
-			padding: 0 .5em
+
+.nav-link
+	text-transform: lowercase
 
 .navbar-dark
 	background-color: $menu-bg
@@ -70,11 +77,12 @@
 	.navbar-toggler
 		position: sticky
 		top: 0
-		margin-left: 0.5em
+		margin-left: auto //0.5em
 		padding: 0.25rem
-		text-align: left
+		text-align: right
 		+blur-background(10, $menu-bg, 0.4)
-		border-color: transparent !important
+		border-color: transparent
+		box-shadow: none
 		z-index: 1000
 
 

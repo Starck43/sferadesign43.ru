@@ -36,7 +36,7 @@ h96V256h64L384,176z"/>
 
 	<div class="person-details-block">
 		{% if object.logo %}
-		<div class="logo {{ html_classes|to_string }}-logo">
+		<div class="logo {{parent_link}}-logo">
 			{% thumbnail object.logo "300x300" as logo %}
 				<img src="{{ logo.url }}">
 			{% empty %}

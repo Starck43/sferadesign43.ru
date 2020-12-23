@@ -14,7 +14,7 @@ from crm import models
 from .models import *
 from .forms import ExhibitionsForm, ImagesUploadForm, CustomClearableFileInput
 from .logic import UploadFilename, ImageResize
-
+from rating.admin import ReviewInline
 from django.utils.html import format_html
 
 admin.site.unregister(User)  # нужно что бы снять с регистрации модель User
@@ -249,7 +249,7 @@ class PortfolioAdmin(GalleryMultiuploadMixing, admin.ModelAdmin):
 	date_hierarchy = 'exhibition__date_start'
 	save_as = True
 	view_on_site = True
-	inlines = [ImageInlineAdmin,]
+	inlines = [ImageInlineAdmin, ReviewInline,]
 
 
 	def nominations_list(self, obj):
@@ -406,6 +406,4 @@ admin.site.register(Events, EventsAdmin)
 admin.site.register(Winners, WinnersAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.register(Image, ImageAdmin)
-
-#admin.site.register(Exhibitions, ExhibitionsAdmin)
 

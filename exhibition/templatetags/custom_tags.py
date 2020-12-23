@@ -66,3 +66,5 @@ class UrlCache(object):
 @register.simple_tag
 def md5url(model_object):
 	return UrlCache.get_md5(model_object)
+
+

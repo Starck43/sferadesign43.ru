@@ -20,9 +20,7 @@ var is_mobile = false;
 {% if is_mobile %}
 <script type="text/javascript" src="{% static 'js/pinchzoom.min.js' %}"></script>
 {% endif %}
-
-<script type="text/javascript" src="{% static 'js/peppermint.min.js' %}"></script>
-<script type="text/javascript" src="{% md5url 'js/slider.min.js' %}"></script>
+<script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}"></script>
 
 {% endblock script %}
 
@@ -132,14 +130,15 @@ var is_mobile = false;
 		</div>
 	{% endif %}
 
+
 	{% if object.partners.count %}
 	<div class="partners-block">
 		{% if object.slug == last_exh.slug %}
 		<h2 class="partners-title exh-title">{{ object.partners.first|verbose_name_plural }}</h2>
-		<div class="brand-grid grid">
+		<div class="partners-container row">
 			{% for item in object.partners.all %}
-			<a class="brand-wrapper centered" href="{{ item.get_absolute_url }}">
-				<div class="logo brand-logo">
+			<a class="person-wrapper col-6 col-xxl-2 col-xl-3 col-md-4" href="{{ item.get_absolute_url }}">
+				<div class="partner-logo ratio ratio-1x1">
 					{% if item.logo %}
 						{% thumbnail item.logo "150x150" as logo %}
 						<img class="lazyload"

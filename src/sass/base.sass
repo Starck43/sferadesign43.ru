@@ -24,9 +24,6 @@ h1, h2, h3, h4, .year-text, .site-title
 	font-family: $font-family-header
 	//font-weight: bold
 
-h1, h2
-	//-webkit-text-stroke: 1px $header-color
-
 h1
 	color: $header-color
 	+media-breakpoint-up(lg)
@@ -38,9 +35,9 @@ h1
 		font-style: italic
 		color: $text-color
 
-h3
+h3, h4
 	min-height: 0vw
-	font-size: calc(1.1em + .1vw)
+	font-size: calc(1.1em + .2vw)
 	font-weight: 500
 
 a
@@ -78,11 +75,8 @@ img
 	text-indent: -9999px
 	transition: all 300ms ease-out
 
-.aspect-ratio
-	+responsive-ratio
+.ratio
 	img
-		+push--absolute
-		right: 0
 		object-fit: contain
 
 .logo img
@@ -125,7 +119,7 @@ svg.icon
 	opacity: 1 !important
 
 .collapsing
-	transition: all 500ms ease
+	transition: all 300ms ease-in-out
 
 .modal-open
 	position: static
@@ -287,6 +281,58 @@ svg.icon
 .nav-search input
 	background-color: $menu-bg
 
+
+
+.home
+	header
+		text-align: center
+	h1
+		line-height: 1
+
+	h1, h2
+		//font-size: 1.2em
+		font-weight: bold
+		text-transform: uppercase
+
+	.person-title
+		margin-top: 0.5em
+
+
+.participants, .exhibitions, .nominations, .project
+	h1
+		min-height: 0vw
+		margin-bottom: 3vw
+		font-size: calc(2.5rem + 1vw)
+		text-transform: lowercase
+
+.participant
+	h1
+		margin-bottom: 0.5em
+	h1 ~.excerpt
+		margin-bottom: 3rem
+
+.participant, .exhibition, .nominations
+	h2
+		margin-bottom: 0
+		font-weight: bold
+		//font-size: 1.5em
+	h3
+		margin: 0
+
+
+.project
+	h1
+		margin-bottom: 0
+		text-transform: uppercase
+		.sub-title
+			font-size: 0.6em
+			text-transform: lowercase
+			font-weight: 300
+
+	.portfolio-container
+		a
+			font-weight: 500
+
 .organizers-list,
 .partners-list
 	display: flex
@@ -320,7 +366,6 @@ svg.icon
 			flex: 1
 
 .projects-list
-	//grid-template-columns: repeat(auto-fill, minmax(296px, 1fr) )
 	.grid-cell
 		&:before
 			content: none
@@ -353,47 +398,6 @@ svg.icon
 		&:hover
 			filter: invert(100%)
 
-
-.portfolio
-	h1
-		text-transform: uppercase
-		span
-			font-size: 0.8em
-			text-transform: lowercase
-			font-style: normal
-			font-weight: 300
-
-
-.home
-	header
-		text-align: center
-	h1
-		line-height: 1
-
-	h1, h2
-		//font-size: 1.2em
-		font-weight: bold
-		text-transform: uppercase
-
-	.person-title
-		margin-top: 0.5em
-
-
-.participant
-	h1
-		margin-bottom: 0.5em
-	h1 ~.excerpt
-		margin-bottom: 3rem
-
-
-.participant, .exhibition, .nominations
-	h2
-		margin-bottom: 0
-		font-weight: bold
-		//font-size: 1.5em
-	h3
-		margin: 0
-	//font-size: 1.1em
 
 
 .excerpt

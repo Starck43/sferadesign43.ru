@@ -8,12 +8,14 @@
 {% endblock %}
 
 {% block script %}
-{% if not is_mobile %}
-<script type="text/javascript">var is_mobile = false;</script>
 
-<script type="text/javascript" src="{% static 'js/peppermint.min.js' %}"></script>
-<script type="text/javascript" src="{% md5url 'js/slider.min.js' %}"></script>
+{% if is_mobile %}
+<script type="text/javascript" src="{% md5url 'js/portfolio_mobile.min.js' %}"></script>
+{% else %}
+<script type="text/javascript">var is_mobile = false;</script>
+<script type="text/javascript" src="{% md5url 'js/portfolio.min.js' %}"></script>
 {% endif %}
+
 {% endblock script %}
 
 {% block site_title %}
@@ -22,30 +24,38 @@
 {% endblock site_title %}
 
 {% block header %}
-	<h1>{% if portfolio %}{{ object.title }}{% else %}Портфолио пока не создано!{% endif %}</h1>
+<h1>{% if portfolio %}{{ object.title }}{% else %}Портфолио пока не создано!{% endif %}</h1>
 {% endblock header %}
 
 {% block content %}
-	<div class="content">
 
-		{% if portfolio %}
+{% if portfolio %}
 
-		<section class="portfolio">
-			<div class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></div>
-			<div class="portfolio-exhibition">Участие в выставке: <a href="{% url 'exhibition-detail-url' portfolio.exhibition.slug %}">{{portfolio.exhibition}}</a></div>
+<section class="portfolio-container">
+	<div class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></div>
+	<div class="portfolio-exhibition">Участие в выставке: <a href="{% url 'exhibition-detail-url' portfolio.exhibition.slug %}">{{portfolio.exhibition}}</a></div>
 
-			{% include "exhibition/images_list.html" %}
+	{% include "exhibition/images_list.html" %}
 
-			{% if portfolio.description %}
-			<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
-			{% endif %}
-		</section>
-		{% else %}
-			<a href="{{parent_link}}">Вернуться к разделам портфолио</a>
-		{% endif %}
-	</div>
-{% endblock %}
+	{% if portfolio.description %}
+	<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
+	{% endif %}
+
+	{% include "rating/rating_form.html" %}
+
+	{% include "rating/review.html" %}
+
+</section>
+
+{% else %}
+<a href="{{parent_link}}">Вернуться к разделам портфолио</a>
+{% endif %}
+
+{% endblock content %}
+
 
 {% block extra_container %}
-	{% include "exhibition/gallery.html" %}
+
+{% include "exhibition/gallery.html" %}
+
 {% endblock extra_container %}
