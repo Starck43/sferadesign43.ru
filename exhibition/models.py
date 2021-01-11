@@ -207,13 +207,13 @@ class Categories(models.Model):
 	def __str__(self):
 		return self.title
 
-	def get_absolute_url(self):
-		return reverse('nomination-detail-url', kwargs={'slug': self.slug })
-
 	def logo_thumb(self):
 		return get_image_html(self.logo)
 
 	logo_thumb.short_description = 'Логотип'
+
+	def get_absolute_url(self):
+		return reverse('nomination-detail-url', kwargs={'slug': self.slug })
 
 
 ''' Таблица Номинаций '''
@@ -240,8 +240,10 @@ class Nominations(models.Model):
 		return self.title
 
 	def get_absolute_url(self):
-		pass
-		#return reverse('nomination-detail-url', kwargs={'slug': self.slug })
+		if self.category:
+			return reverse('nomination-detail-url', kwargs={'slug': self.category.slug })
+		else:
+			return reverse('nomination-detail-url', kwargs={'slug': None })
 
 
 
@@ -292,13 +294,13 @@ class Exhibitions(models.Model):
 		return self.date_start.strftime('%Y')
 	exh_year.short_description = 'Выставка'
 
-	def get_absolute_url(self):
-		return reverse('exhibition-detail-url', kwargs={'exh_year': self.slug})
-
 	def banner_thumb(self):
 		return get_image_html(self.banner)
 
 	banner_thumb.short_description = 'Логотип'
+
+	def get_absolute_url(self):
+		return reverse('exhibition-detail-url', kwargs={'exh_year': self.slug})
 
 
 
@@ -331,14 +333,13 @@ class Events(models.Model):
 	time_event.short_description = 'Время мероприятия'
 
 	def get_absolute_url(self):
-		pass
-		#return reverse('event-detail-url', kwargs={'exh_year': self.exhibition.date_start.strftime('%Y'), 'pk': self.id})
+		return reverse('event-detail-url', kwargs={'exh_year': self.exhibition.slug, 'pk': self.id})
 
 
 
 class Portfolio(models.Model):
 	project_id = models.IntegerField(null=True)
-	owner = models.ForeignKey(Exhibitors, on_delete=models.SET_NULL, null=True, verbose_name = 'Участник')
+	owner = models.ForeignKey(Exhibitors, on_delete=models.CASCADE, verbose_name = 'Участник')
 	#exhibition = models.ForeignKey(Exhibitions, on_delete=models.SET_NULL, null=True, verbose_name = 'Выставка')
 	exhibition = ChainedForeignKey(Exhibitions,
 		chained_field="owner",

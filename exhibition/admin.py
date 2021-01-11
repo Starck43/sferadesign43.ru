@@ -22,11 +22,12 @@ admin.site.unregister(User)  # нужно что бы снять с регист
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
 	prepopulated_fields = {"username": ('email',)} # adding name to slug field
-	#add_form = PersonUserForm
+	#form = CustomSignupForm
+	#add_form = CustomSignupForm
 
 	add_fieldsets = (
 		(None, {
-			'fields': ('first_name', 'last_name', 'email','username','password1', 'password2'),
+			'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'email',),
 			}),
 		('Права доступа', {
 			'fields': ('is_active', 'groups','date_joined', 'last_login',),
@@ -140,10 +141,15 @@ class CategoriesAdmin(admin.ModelAdmin):
 
 class NominationsAdmin(admin.ModelAdmin):
 	fields = ('category', 'title', 'slug', 'description', 'sort',)
-	list_display = ('category', 'title', 'description',)
+	list_display = ('category', 'title', 'description_html',)
 	list_display_links = ('title',)
 	list_per_page = 20
 	empty_value_display = '<пусто>'
+
+	def description_html(self, obj):
+		return format_html(obj.description)
+
+	description_html.short_description = 'Описание'
 
 
 class EventsInlineAdmin(admin.StackedInline):

@@ -173,6 +173,7 @@ $parallax-ios         : true !default
 @mixin responsive-ratio($x:1, $y:1, $h:0, $pseudo:false,$pos:relative)
 	$padding: unquote(( $y / $x )*100+'%')
 	@if $pseudo
+		position: $pos
 		&::before
 			@include pseudo($pos)
 			width: 100%
@@ -182,6 +183,8 @@ $parallax-ios         : true !default
 		width: 100%
 		height: $h
 		padding-top: $padding
+	img
+		+push--absolute
 
 //миксин создает треугольники. Задаются цвет, размер и направление
 @mixin css-triangle($color, $direction, $size: 6px, $position: absolute, $round: false)

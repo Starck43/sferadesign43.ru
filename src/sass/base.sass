@@ -5,10 +5,13 @@
 @import vars
 @import mixins
 @import fonts
+@import reset
 @import navigation
 @import layouts
 @import exhibition
 @import person
+@import search
+@import account
 
 html
 	font-size: 16px
@@ -26,6 +29,7 @@ h1, h2, h3, h4, .year-text, .site-title
 
 h1
 	color: $header-color
+	text-transform: lowercase
 	+media-breakpoint-up(lg)
 		font-size: 3em
 
@@ -68,6 +72,8 @@ p
 		margin: 1em
 	a
 		font-weight: 500
+form:not(.nav-search) >*
+	margin-bottom: 2vh
 
 img
 	width: 100%
@@ -78,6 +84,9 @@ img
 .ratio
 	img
 		object-fit: contain
+
+.img-ratio
+	+responsive-ratio(1,1,0,true)
 
 .logo img
 	width: auto
@@ -111,7 +120,7 @@ svg.icon
 	opacity: 1 !important
 
 .hidden
-	display: none
+	display: none !important
 
 .visible
 	visibility: visible !important
@@ -159,6 +168,8 @@ svg.icon
 		&.instagram
 			//background-color: #ff543e
 
+.arrow-icon.arrow-left
+	transform: rotate(180deg)
 
 #main-title
 	overflow: visible
@@ -166,9 +177,9 @@ svg.icon
 		fill: $main-color
 		stroke: $main-color
 		stroke-width: 6px
-		font-size: 121px
+		font-size: 120px
 		text-transform: uppercase
-		font-weight: 500
+		font-weight: 300
 		letter-spacing: 1px
 
 #site-header
@@ -303,7 +314,6 @@ svg.icon
 		min-height: 0vw
 		margin-bottom: 3vw
 		font-size: calc(2.5rem + 1vw)
-		text-transform: lowercase
 
 .participant
 	h1

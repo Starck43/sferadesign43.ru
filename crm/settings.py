@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_tabbed_changeform_admin',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites', #added for django-allauth
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -54,9 +55,19 @@ INSTALLED_APPS = [
     'multiupload',
     'crispy_forms',
     'smart_selects',
+    'watson',
     'exhibition',
     'rating',
-    #'django_cleanup.apps.CleanupConfig',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #'allauth.socialaccount.providers.instagram',
+    #'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.vk',
+    #'allauth.socialaccount.providers.apple',
+    'allauth.socialaccount.providers.google',
+    #'allauth.socialaccount.providers.mailru',
+    #'allauth.socialaccount.providers.yandex',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +79,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # watson search
+    #'django.middleware.transaction.TransactionMiddleware',
+    'watson.middleware.SearchContextMiddleware',
 ]
 
 ROOT_URLCONF = 'crm.urls'
@@ -127,6 +141,64 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+CACHES = {
+    'default': env.cache('MEMCACHE_URL'), # {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',}
+}
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+# Provider specific settings
+SOCIALACCOUNT_PROVIDERS = {
+    'instagram': {
+        'APP': {
+            'client_id': '7721338',
+            'secret': 'M9VeTwzyOqubbHQyqYNS',
+            'key': '055104910551049105510491620524d5eb00551055104915aa636ec539ae80af6f9ade8'
+        }
+    },
+    'google': {
+        'APP': {
+            'client_id': '46937687995-80ef80l5bbvug8m23f5v56h8gkeah227.apps.googleusercontent.com',
+            'secret': 'u8pnwhrv_s-6XAnsajGz_VJE',
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'vk': {
+        'APP': {
+            'client_id': '7721987',
+            'secret': 'qJeCkq4JxaOqIi1I0uTz',
+            'key': '21c3950f21c3950f21c3950fef21b6410c221c321c3950f7e3bd510d0cca8d21f540e1c'
+        }
+    }
+
+}
+
+SITE_ID=1
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_USERNAME_MIN_LENGTH = 4
+ACCOUNT_MAX_EMAIL_ADDRESSES = 2
+#ACCOUNT_SIGNUP_FORM_CLASS = 'exhibition.forms.CustomSignupForm'
+LOGIN_REDIRECT_URL = "/"
+ACCOUNT_FORMS = {
+'signup': 'exhibition.forms.CustomSignupForm',
+}
+
 
 EMAIL_CONFIG = env.email_url('EMAIL_URL')
 EMAIL_RICIPIENTS = env('EMAIL_RICIPIENTS', list, [])
@@ -136,9 +208,6 @@ vars().update(EMAIL_CONFIG)
 
 ADMINS = [('Starck', EMAIL_RICIPIENTS)]
 
-CACHES = {
-    'default': env.cache('MEMCACHE_URL'), # {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',}
-}
 
 FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
@@ -197,11 +266,11 @@ CKEDITOR_CONFIGS = {
 
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_L10N = False
+USE_L10N = True
 
 USE_TZ = True
 
@@ -219,7 +288,7 @@ if not DEBUG:
         os.path.join(BASE_DIR, PUBLIC_ROOT + 'assets/'),
     ]
 else:
-    STATIC_ROOT = ''
+    #STATIC_ROOT = ''
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, PUBLIC_ROOT + 'static/'),
     ]

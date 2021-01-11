@@ -1,34 +1,69 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
 from .models import Exhibitions, Winners, Nominations, Portfolio, Image
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+from django.forms.models import ModelMultipleChoiceField
 from django.forms.widgets import ClearableFileInput
 from uuslug import uuslug
 #from django.contrib.admin.widgets import FilteredSelectMultiple
-#from django_summernote.widgets import SummernoteInplaceWidget
 
-class PersonUserForm(UserCreationForm):
-	class Meta(UserCreationForm.Meta):
-		model = User
-		fields = '__all__'
+#from django.contrib.auth.forms import UserCreationForm
+from allauth.account.forms import SignupForm
 
-	error_messages = {
-	'duplicate_username': ("My message for unique")
-	}
+""" Форма регистрации """
+class CustomSignupForm(SignupForm):
+	first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
+	last_name = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'placeholder': 'Фамилия'}))
+	exhibitor = forms.BooleanField(label="Участник выставки?",required=False)
 
-	def clean_username(self):
-		username = self.cleaned_data["username"]
-		print('Username: %s' % username)
-		if self.instance.username == username:
-			return username
-			try:
-				User._default_manager.get(username=username)
-			except User.DoesNotExist:
-				return username
-			raise forms.ValidationError(
-					self.error_messages['duplicate_username'],
-					code='duplicate_username',
-				)
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields["password2"].widget.attrs['placeholder'] = 'Пароль повторно'
+
+	# class Meta(UserCreationForm.Meta):
+	# 	model = User
+	# 	fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'exhibitor',]
+	# 	widgets = {
+	# 		'first_name' : forms.TextInput(attrs={'placeholder': 'Имя'}),
+	# 		'last_name' : forms.TextInput(attrs={'placeholder': 'Фамилия'}),
+	# 	}
+
+	# error_messages = {
+	# 'duplicate_username': ("Имя пользователя уже существует")
+	# }
+
+	# def clean_username(self):
+	# 	username = self.cleaned_data["username"]
+	# 	if self.instance.username == username:
+	# 		return username
+
+	# 	try:
+	# 		User._default_manager.get(username=username)
+	# 	except User.DoesNotExist:
+	# 		return username
+	# 	raise forms.ValidationError(
+	# 			self.error_messages['duplicate_username'],
+	# 			code='duplicate_username',
+	# 		)
+
+	def save(self, request):
+		# .save() returns a User object.
+		user = super().save(request)
+
+		is_exhibitor = request.POST.get('exhibitor',False)
+		if is_exhibitor == 'on':
+			group_name = "Exhibitors"
+		else:
+			group_name = "Members"
+
+		try:
+			group = Group.objects.get(name=group_name)
+			user.groups.add(group)
+			user.save()
+		except Group.DoesNotExist:
+			pass
+
+		return user
+
 
 class CustomClearableFileInput(ClearableFileInput):
 	template_name = 'admin/exhibition/widgets/file_input.html'
@@ -77,3 +112,23 @@ class FeedbackForm(forms.Form):
 	name = forms.CharField(label='Имя', required=True, widget=forms.TextInput(attrs={'placeholder': 'Имя'}))
 	from_email = forms.EmailField(label='E-mail', required=False, widget=forms.TextInput(attrs={'placeholder': 'E-mail'}))
 	message = forms.CharField(label='Сообщение', required=True, widget=forms.Textarea(attrs={'placeholder': 'Сообщение'}))
+
+
+""" Переопределение отображения списка пользователей """
+class UserMultipleModelChoiceField(ModelMultipleChoiceField):
+	def label_from_instance(self, obj):
+		return "%s %s [%s]" % (obj.first_name, obj.last_name, obj.email)
+
+
+""" Вывод списка пользователей в рассылке сброса паролей"""
+class UsersListForm(forms.Form):
+	users = UserMultipleModelChoiceField(label='Имя пользователя / Email',
+		widget=forms.CheckboxSelectMultiple(attrs={}),
+		queryset=User.objects.filter(groups__name='Exhibitors').order_by('first_name'),
+		to_field_name="email"
+	)
+
+# User fields to output:
+# date_joined, email, emailaddress, exhibitors, first_name, groups, id, is_active, is_staff, is_superuser, last_login, last_name, logentry, organizer, password, rating, reviews, user_permissions, username
+
+

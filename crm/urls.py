@@ -22,10 +22,13 @@ from django.views.generic.base import TemplateView
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
+	path('accounts/', include('allauth.urls')),
 	path('', include('exhibition.urls')),
 	path('', include('rating.urls')),
 	re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
 	re_path(r'^chaining/', include('smart_selects.urls')),
+	#re_path(r'^search/', include('watson.urls',  namespace="watson")),
+
 	path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type='text/plain')),
 ]
 

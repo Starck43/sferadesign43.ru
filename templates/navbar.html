@@ -1,12 +1,26 @@
 
 <nav class="navbar navbar-dark navbar-expand-lg fixed-top">
+
+
 	<div class="container-fluid">
+
+		<div class="navbar-search me-auto">
+			<a class="nav-search-link" href="#"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
+		</div>
+
+		<div id="searchContainer">
+			<form class="nav-search centered" action="{% block search-action %}{% url 'search-results' %}{% endblock %}" method="GET">
+				<input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск" aria-label="Search">
+				<button type="submit">Найти</button>
+			</form>
+		</div>
+
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
+
 		<div class="collapse navbar-collapse" id="navbarNavDropdown">
 			<ul class="navbar-nav align-items-center">
-
 				<li class="nav-item dropdown exh-nav-item">
 					<a class="nav-link hidden" href="/exhibitions">Выставки</a>
 					{% if exhibitions_list %}
@@ -40,21 +54,20 @@
 				<li class="nav-item">
 					<a class="nav-link" href="{% url 'contacts-url' %}">Обратная связь</a>
 				</li>
-
+				<li class="nav-item ms-auto">
+					<a class="nav-link account-link active" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin{% elif not user.is_authenticated %}/accounts/login{% else %}/accounts/logout{% endif %}">
+						{% if user.is_authenticated %}{{ user.username }}
+						{% else %}{% if is_mobile %}Войти{% else %}<svg class="icon"><use xlink:href="#login-icon"></use></svg>{% endif %}
+						{% endif %}
+					</a>
+				</li>
 			</ul>
 
-
-			{% if user.is_authenticated and user.is_staff %}
-			<div class="nav-item">
-				<a class="nav-link active" aria-current="page" href="/admin"><svg class="icon"><use xlink:href="#login-icon"></use></svg></a>
+			<div class="nav-item ms-auto">
+				<a class="nav-search-link" href="#"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
 			</div>
-			{% endif %}
-
-			<form class="nav-search form-inline my-2 my-lg-0" action="{% block search-action %}{% endblock %}" method="GET">
-				<input class="form-control mr-sm-2" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск" aria-label="Search">
-				<button class="btn btn btn-outline-light my-2 my-sm-0" type="submit">Поиск</button>
-			</form>
 
 		</div>
 	</div>
+
 </nav>

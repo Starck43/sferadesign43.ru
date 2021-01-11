@@ -1,0 +1,10 @@
+{% load static %}
+{% load thumbnail %}
+
+{% thumbnail thumb "300" as img %}
+	<img class="lazyload"
+		src="{{ img.url }}"
+		loading="lazy" title="{{ obj.title }}">
+{% empty %}
+	<img src="{% get_media_prefix %}no-image.png">
+{% endthumbnail %}

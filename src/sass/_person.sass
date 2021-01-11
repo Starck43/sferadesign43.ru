@@ -12,15 +12,15 @@
 		font-size: 1.2
 		letter-spacing: 1.5px
 
-.partner-logo, .person-logo
+.person-logo
 	margin: auto
 	max-width: $logo-width
-	background-color: #fff
+	//background-color: #fff
 	//padding: .5em
+	mix-blend-mode: normal
 
 .person-wrapper
 	position: relative
-	transition: all 200ms linear
 	padding: 1em
 
 	.person-title
@@ -30,10 +30,14 @@
 
 	&:hover
 		background-color: darken(#fff, 10%)
-		.logo
+		transition: all 200ms linear
+		.person-logo
 			mix-blend-mode: darken
 
 .jury .person-logo
 	filter: grayscale(1)
 	&:hover, &:focus
 		filter: grayscale(0)
+
+.persons__list
+	flex: 100%

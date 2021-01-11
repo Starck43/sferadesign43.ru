@@ -1,7 +1,7 @@
 User-agent: *
 Disallow: /admin          	# папка на хостинге
 Disallow: */?               # все параметры запроса
-Disallow: *?s=              # поиск
+Disallow: /search/?q=       # поиск
 
 Allow: /media
 Disallow: /media/cache

@@ -21,6 +21,8 @@ function navbarOffset() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+	const burger = document.querySelector('.navbar-toggler');
+
 	navbarOffset();
 
 	const images = document.querySelectorAll("img:not(.lazyload)");
@@ -37,6 +39,11 @@ document.addEventListener("DOMContentLoaded", function() {
 	window.addEventListener('resize', function(){
 		navbarOffset();
 		toggleNavItems(exhibitionsLink);
+		if (window.innerWidth >= 992) {
+			burger.classList.contains('collapsed') && burger.classList.remove('collapsed');
+			burger.nextElementSibling.style.maxHeight = '';
+		}
+
 	});
 
 	loadingElements = document.body.querySelectorAll('.loading');
@@ -87,7 +94,6 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 
 	// Сворачивание мобильного меню по нажатию вне области его контейнера
-	const burger = document.querySelector('.navbar-toggler');
 	burger.addEventListener('click', function (e) {
 		const container = document.querySelector('.container');
 		var navbarNavDropdown =  document.querySelector('.navbar-collapse');
@@ -105,9 +111,27 @@ document.addEventListener("DOMContentLoaded", function() {
 	})
 
 	var containerListener = function(e) {
-		console.log('click container');
 		burger.click();
 	}
+
+	const searchLink = document.querySelectorAll('.nav-search-link');
+	const searchContainer = document.querySelector('#searchContainer');
+	searchLink.forEach( (item) => {
+		item.addEventListener('click', (e) => {
+			searchContainer.classList.toggle('active');
+		}, {passive: true});
+	})
+
+
+	document.onkeydown = function(e) { // закрытие окна поиска по клавише escape
+		e = e || window.event;
+		(e.keyCode == 27) && searchContainer.classList.remove('active');
+	};
+
+	document.onscroll = function(e) { // закрытие окна поиска по скролу
+		searchContainer.classList.contains('active') && searchContainer.classList.remove('active');
+	};
+
 /*	filterItems.on('click', '.filter__title', function(e) {
 		if ( $(this).hasClass(collapsed) || $(this).hasClass(expanded) ) {
 			$(this).toggleClass(collapsed).toggleClass(expanded);

@@ -2,8 +2,11 @@ from os import path
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.template.loader	import render_to_string
+from django.dispatch import receiver
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.cache import cache_page
 from django.views.generic.list import ListView #, MultipleObjectMixin
 from django.views.generic.detail import DetailView
@@ -11,13 +14,21 @@ from django.core.files.storage import FileSystemStorage
 from django.db.models import Q, Prefetch, Max, Count
 from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
-from django import forms
 
+from sorl.thumbnail import get_thumbnail
+from allauth.account.signals import user_signed_up
+from allauth.account.views import PasswordResetView
+from watson import search as watson
+from watson.views import SearchMixin
+
+from django import forms
 from .models import *
+
 from rating.models import Rating
-from .forms import ImagesUploadForm, FeedbackForm
+from .forms import ImagesUploadForm, FeedbackForm, UsersListForm
 from rating.forms import RatingForm
 from .logic import SendEmail
+
 
 
 def success_message(request):
@@ -48,7 +59,12 @@ def contacts(request):
 	elif request.method == 'POST':
 		# если метод POST, проверим форму и отправим письмо
 		form = FeedbackForm(request.POST)
-		if form.is_valid() and SendEmail(form.cleaned_data):
+		template = render_to_string('contacts/confirm_email.html', {
+			'name':form.cleaned_data['name'],
+			'email':form.cleaned_data['from_email'],
+			'message':form.cleaned_data['message'],
+		})
+		if form.is_valid() and SendEmail(template):
 			return redirect('/success/')
 		else:
 			return HttpResponse('Неверный запрос')
@@ -60,86 +76,23 @@ def contacts(request):
 	return render(request, 'contacts.html', context)
 
 
-""" Exhibitons view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
-class exhibitions_list(ListView):
-	model = Exhibitions
-
-	def get_queryset(self):
-		slug = self.kwargs['exh_year']
-
-		if slug == None:
-			q = self.model.objects.all()
-			# q = super().get_queryset()
-		else:
-			q = self.model.objects.filter(date_start__year=slug)
-		return q
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['exhibitions',]
-		context['page_title'] = self.model._meta.verbose_name_plural
-
-		return context
-
-
-""" Events view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
-class events_list(ListView):
-	model = Events
-	template_name = 'exhibition/participants_list.html'
-
-	def get_queryset(self):
-		slug = self.kwargs['exh_year']
-		search_query = self.request.GET.get('q')
-		self.exhibition = None
-
-		if search_query:
-			query_fields_or = (Q(title__icontains=search_query) | Q(description__icontains = search_query))
-			posts = self.model.objects.filter(query_fields_or)
-		else:
-			exhibition = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('events')[0]
-			self.exhibition = exhibition
-			posts = exhibition.events.only('title').order_by('title')
-
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['events',]
-		context['absolute_url'] = self.model.__name__.lower
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
-
-		return context
-
-
 """ Exhibitors view """
 @method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibitors_list(ListView):
 	model = Exhibitors
 	template_name = 'exhibition/participants_list.html'
 
-
 	def get_queryset(self):
 		slug = self.kwargs['exh_year']
-		search_query = self.request.GET.get('q')
 		self.exhibition = None
 
-		if search_query:
-			query_fields_or = (Q(name__icontains=search_query) | Q(description__icontains = search_query))
-			posts = self.model.objects.filter(query_fields_or)
-		else:
-			if slug == None:
-				posts = self.model.objects.all()
-			else:
-				exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('exhibitors')[0]
-				posts = exhibition_by_year.exhibitors.only('name')
-				self.exhibition = exhibition_by_year
-				#exh_query = Exhibitions.objects.filter(date_start__year=slug).values_list('exhibitors__id')
-				#posts = self.model.objects.filterter(pk__in=exh_query)
+		if slug:
+			exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('exhibitors')[0]
+			posts = exhibition_by_year.exhibitors.only('name')
+			self.exhibition = exhibition_by_year
+			return posts
 
-		return posts
+		return super().get_queryset()
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -149,103 +102,6 @@ class exhibitors_list(ListView):
 		context['exhibition'] = self.exhibition
 
 		return context
-
-
-""" Nominations view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
-class nominations_list(ListView):
-	model = Categories
-	template_name = 'exhibition/nominations_list.html'
-
-	def get_queryset(self):
-		search_query = self.request.GET.get('q')
-		if search_query:
-			query_fields_or = (Q(title__icontains=search_query) | Q(description__icontains = search_query))
-			posts = self.model.objects.filter(query_fields_or)
-		else:
-			posts = self.model.objects.all()
-
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['nominations',]
-		context['absolute_url'] = 'category'
-		context['page_title'] = self.model._meta.verbose_name_plural
-
-		return context
-
-
-""" Projects view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
-class projects_list(ListView):
-	model = Portfolio
-	template_name = 'exhibition/projects_list.html'
-
-	def get_queryset(self):
-		slug = self.kwargs['slug']
-		search_query = self.request.GET.get('q')
-		self.category = None
-
-		if search_query:
-			query_fields_or = (Q(title__icontains=search_query) | Q(description__icontains = search_query))
-			posts = self.model.objects.filter(query_fields_or)
-		else:
-			posts = self.model.objects.filter(nominations__category__slug=slug)
-			if posts:
-				self.category = posts.values_list('nominations__category__title', flat=True)[0]
-
-				#print(self.category)
-				#print(posts.query)
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['projects',]
-		context['absolute_url'] = 'projects'
-		context['page_title'] = self.category
-
-		return context
-
-
-
-""" Winners view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
-class winners_list(ListView):
-	model = Winners
-	template_name = 'exhibition/participants_list.html'
-
-	def get_queryset(self):
-		self.exhibition = None
-		slug = self.kwargs['exh_year']
-		search_query = self.request.GET.get('q')
-
-		if search_query:
-			query_fields_or = (Q(exhibitor__name__icontains=search_query) | Q(exhibitor__description__icontains = search_query))
-			posts = self.model.objects.filter(query_fields_or)
-		else:
-			if slug == None:
-				# posts = Exhibitors.objects.prefetch_related('exhibitors_for_exh')
-				# winners = self.model.objects.only('exhibitor__name')
-				# posts = Exhibitors.objects.filter(id__in=winners).order_by('name')
-				posts = self.model.objects.select_related('exhibitors').values('exhibitor__name', 'exhibitor__slug').distinct().order_by('exhibitor__name') #.annotate(exhibitors_count=Count('exhibitor_id'))
-			else:
-				# winners = self.model.objects.prefetch_related(Prefetch('exhibitor', queryset=Exhibitors.objects.only('name'))).select_related('exhibition').only('exhibition__date_start').filter(exhibition__date_start__year=slug)
-				posts = self.model.objects.select_related('exhibition').filter(exhibition__date_start__year=slug).order_by('exhibitor__name')
-				if posts:
-					self.exhibition = posts[0].exhibition
-
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['participants',]
-		context['absolute_url'] = self.model.__name__.lower
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
-
-		return context
-
 
 
 """ Partners view """
@@ -256,23 +112,16 @@ class partners_list(ListView):
 
 	def get_queryset(self):
 		slug = self.kwargs['exh_year']
-		search_query = self.request.GET.get('q')
-		self.exhibition = None
-		queryset = super().get_queryset()
 
-
-		if search_query:
-			query_fields_or = (Q(name__icontains=search_query) | Q(description__icontains=search_query))
-			posts = queryset.filter(query_fields_or)
+		if slug == None:
+			last_year = Exhibitions.objects.values_list('slug', flat=True).first()
+			posts = Partners.objects.prefetch_related('partners_for_exh').filter(~Q(partners_for_exh__slug=last_year)).order_by('name')
+			self.exhibition = None
 		else:
-			if slug == None:
-				last_year = Exhibitions.objects.values_list('slug', flat=True).first()
-				posts = queryset.prefetch_related('partners_for_exh').filter(~Q(partners_for_exh__slug=last_year)).order_by('name')
-			else:
-				#exhibition_by_year = self.objects.prefetch_related('partners_for_exh').filter(partners_for_exh__slug=slug).order_by('name'),
-				exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('partners')[0]
-				posts = exhibition_by_year.partners.only('name')
-				self.exhibition = exhibition_by_year
+			#exhibition_by_year = self.objects.prefetch_related('partners_for_exh').filter(partners_for_exh__slug=slug).order_by('name'),
+			exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('partners')[0]
+			posts = exhibition_by_year.partners.only('name')
+			self.exhibition = exhibition_by_year
 
 		return posts
 
@@ -294,23 +143,16 @@ class jury_list(ListView):
 	template_name = 'exhibition/persons_list.html'
 
 	def get_queryset(self):
-		queryset = super().get_queryset()
 		slug = self.kwargs['exh_year']
-		search_query = self.request.GET.get('q')
 		self.exhibition = None
 
-		if search_query:
-			query_fields_or = (Q(name__icontains=search_query) | Q(description__icontains = search_query))
-			posts = queryset.filter(query_fields_or)
-		else:
-			if slug == None:
-				posts = queryset
-			else:
-				exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('jury')[0]
-				posts = exhibition_by_year.jury.only('name')
-				self.exhibition = exhibition_by_year
+		if slug:
+			exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('jury')[0]
+			posts = exhibition_by_year.jury.only('name')
+			self.exhibition = exhibition_by_year
+			return posts
 
-		return posts
+		return super().get_queryset()
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -319,6 +161,123 @@ class jury_list(ListView):
 		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['exhibition'] = self.exhibition
+		return context
+
+
+""" Exhibitons view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+class exhibitions_list(ListView):
+	model = Exhibitions
+
+	# def get_queryset(self):
+	# 	slug = self.kwargs['exh_year']
+
+	# 	if slug == None:
+	# 		posts = self.model.objects.all()
+	# 	else:
+	# 		posts = self.model.objects.filter(date_start__year=slug)
+	# 	return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['exhibitions',]
+		context['page_title'] = self.model._meta.verbose_name_plural
+
+		return context
+
+
+""" Nominations view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+class nominations_list(ListView):
+	model = Categories
+	template_name = 'exhibition/nominations_list.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['nominations',]
+		context['absolute_url'] = 'category'
+		context['page_title'] = self.model._meta.verbose_name_plural
+
+		return context
+
+
+""" Events view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+class events_list(ListView):
+	model = Events
+	template_name = 'exhibition/participants_list.html'
+
+	def get_queryset(self):
+		slug = self.kwargs['exh_year']
+
+		exhibition = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('events')[0]
+		self.exhibition = exhibition
+		posts = exhibition.events.only('title').order_by('title')
+
+		return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['events',]
+		context['absolute_url'] = self.model.__name__.lower
+		context['page_title'] = self.model._meta.verbose_name_plural
+		context['exhibition'] = self.exhibition
+
+		return context
+
+
+""" Projects view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+class projects_list(ListView):
+	model = Portfolio
+	template_name = 'exhibition/projects_list.html'
+
+	def get_queryset(self):
+		slug = self.kwargs['slug']
+		self.category = None
+
+		posts = self.model.objects.filter(nominations__category__slug=slug, project_id__isnull=False).distinct()
+		if posts:
+			self.category = posts.values_list('nominations__category__title', flat=True)[0]
+
+		return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['projects',]
+		context['absolute_url'] = 'projects'
+		context['page_title'] = self.category
+
+		return context
+
+
+
+""" Winners view """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+class winners_list(ListView):
+	model = Winners
+	template_name = 'exhibition/participants_list.html'
+
+	def get_queryset(self):
+		self.exhibition = None
+		slug = self.kwargs['exh_year']
+
+		if slug == None:
+			posts = self.model.objects.select_related('exhibitors').values('exhibitor__name', 'exhibitor__slug').distinct().order_by('exhibitor__name') #.annotate(exhibitors_count=Count('exhibitor_id'))
+		else:
+			posts = self.model.objects.select_related('exhibition').filter(exhibition__date_start__year=slug).order_by('exhibitor__name')
+			if posts:
+				self.exhibition = posts[0].exhibition
+
+		return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['participants',]
+		context['absolute_url'] = self.model.__name__.lower
+		context['page_title'] = self.model._meta.verbose_name_plural
+		context['exhibition'] = self.exhibition
+
 		return context
 
 
@@ -364,6 +323,19 @@ class partner_detail(DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'partner']
+		context['parent_link'] = self.model.__name__.lower
+		return context
+
+
+""" Event detail """
+@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+class event_detail(DetailView):
+	model = Events
+	template_name = 'exhibition/event_detail.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['event']
 		context['parent_link'] = self.model.__name__.lower
 		return context
 
@@ -502,19 +474,21 @@ class project_detail(DetailView):
 			context['user_score'] = Rating.objects.filter(portfolio=self.object, user=self.request.user).values_list('star',flat=True).first()
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
-		context['rating_form'] = RatingForm(initial={'star': int(rate)})
+		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user)
 
 		return context
 
 
-""" Event detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
-class event_detail(DetailView):
-	model = Events
+""" Watson model's search """
+class search_site(SearchMixin, ListView):
+	template_name = 'search_results.html'
+	paginate_by = 15
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['event']
+		context['html_classes'] = ['search-result']
+		# for result in self.object_list:
+		# 	print(result)
 
 		return context
 
@@ -547,4 +521,41 @@ def portfolio_upload(request):
 			form = ImagesUploadForm(user=request.user)
 
 	return render(request, 'upload.html', { 'form': form, 'exhibitor': exhibitor })
+
+
+@staff_member_required
+def send_reset_password_email(request):
+
+	if request.method == 'GET':
+		form = UsersListForm()
+	else:
+		form = UsersListForm(request.POST)
+		if form.is_valid():
+			users_email = request.POST.getlist('users', None)
+			for email in users_email:
+				request.POST = {
+					'email': email,
+					#'csrfmiddlewaretoken': get_token(request) #HttpRequest()
+				}
+				# allauth email send
+				PasswordResetView.as_view()(request)
+
+			return HttpResponse('<h1>Письма успешно отправлены!</h1>')
+		else:
+			return HttpResponse('<h1>Что-то пошло не так...</h1>')
+
+	return render(request, 'account/send_password_reset_email.html', { 'form': form })
+
+
+""" Подслушаем событие подтвреждения регистрации пользователя и отправим письмо администратору"""
+# dispatch_uid: some.unique.string.id.for.allauth.user_signed_up
+@receiver(user_signed_up, dispatch_uid="2020")
+def user_signed_up_(request, user, **kwargs):
+
+	template = render_to_string('account/admin_email_confirm.html', {
+		'name': '%s %s (%s)' % (request.POST.get('first_name',None), request.POST.get('first_name',None), request.POST.get('username',None) ),
+		'email': request.POST.get('email'),
+	})
+	SendEmail(template)
+
 

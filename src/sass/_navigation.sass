@@ -1,12 +1,29 @@
+@import vars
+@import mixins
 
 .navbar
-	max-height: 100vh
-	overflow-y: auto
+	+media-breakpoint-down(lg)
+		max-height: 100vh
+		overflow-y: auto
+
+	.container-fluid
+		z-index: 1
+
+	.navbar-collapse
+		margin-left: 1.5em
+		background-color: $menu-bg
+		z-index: 1
+
+	.navbar-search
+		display: none
+		+media-breakpoint-down(lg)
+			display: block
 
 	ul.navbar-nav
 		margin: 0 auto
 		li.nav-item
 			padding: 0 .5em
+			margin: 0
 
 	li.nav-item
 		.nav-link
@@ -28,7 +45,7 @@
 					height: 1em
 					//border-color: #000
 
-	+media-breakpoint-down(xl)
+	+media-breakpoint-down(lg)
 		li.nav-item
 			width: 100%
 			.nav-link
@@ -66,8 +83,15 @@
 		transition: background-color 300ms 100ms ease-in-out
 
 
-.nav-link
+a.nav-link
 	text-transform: lowercase
+	white-space: nowrap
+	&.account-link
+		color: #fff
+		font-weight: 300
+		&:hover
+			color: #fff
+
 
 .navbar-dark
 	background-color: $menu-bg
@@ -95,6 +119,41 @@
 			background-color: transparent
 			color: #fff
 
-.nav-search button
-	display: none
+.nav-item .nav-search-link
+	+media-breakpoint-down(lg)
+		display: none
+
+.nav-search-link
+	.search-icon
+		stroke: #fff
+
+#searchContainer
+	+push--absolute
+	display: flex
+	background-color: $menu-bg
+	//opacity: 0
+	transform: translateY(0)
+	transition: all 300ms ease
+	+media-breakpoint-down(lg)
+		position: relative
+		flex: 1
+		margin-left: 0.5em
+		margin-right: 0.5em
+		transform: translateY(-150%)
+		form.nav-search
+			justify-content: start
+		&.active
+			transform: translateY(0%)
+	&.active
+		//opacity: 1
+		transform: translateY(100%)
+
+form.nav-search
+	width: 100%
+	input
+		height: 2em
+	button
+		color: #fff
+		border: none
+		background-color: transparent
 

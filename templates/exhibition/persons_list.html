@@ -13,9 +13,9 @@
 {% block header %}
 	<h1>{{ page_title }}
 		{% if exhibition %}
-			<i>{{ exhibition.slug }}</i>
+			{{ exhibition.slug }}
 		{% else %}
-			<span>(за все годы)</span>
+			за все годы
 		{% endif %}
 	</h1>
 {% endblock%}

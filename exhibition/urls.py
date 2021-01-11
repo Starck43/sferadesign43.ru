@@ -33,14 +33,17 @@ urlpatterns = [
 	path('winners/<exh_year>/', views.winners_list.as_view(), name='winners-by-year-list-url'),
 
 	path('events/<exh_year>/', views.events_list.as_view(), name='events-list-url'),
-	#path('events/<exh_year>/<pk>/', views.event_detail.as_view(), name='event-detail-url'),
+	path('events/<exh_year>/<pk>/', views.event_detail.as_view(), name='event-detail-url'),
 
 
 	#path('exhibition/events/<pk>/', views.event_detail.as_view(), name='event-detail-url'),
 	#path('exhibition/<exh_year>/events/<pk>/', views.event_detail.as_view(), name='event-detail-url'),
-	#
 	path('contacts/', views.contacts, name='contacts-url'),
 	path('upload/', views.portfolio_upload, name='portfolio-upload-url'),
+
+	re_path(r'^search/', views.search_site.as_view(), name='search-results'),
+	path('reset_password/', views.send_reset_password_email),
+
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),
 	# path('about/', views.about_us, name='about-us-url'),
 	re_path(r'^success/$', views.success_message, name='success-message-url'),

@@ -7,7 +7,6 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import HttpResponse
-from django.template.loader	import render_to_string
 from django.core.mail import EmailMessage, BadHeaderError
 
 #from sorl.thumbnail import get_thumbnail, delete
@@ -98,16 +97,9 @@ def IsMobile(request):
 		return False
 
 
-def SendEmail(data):
-	print(settings.EMAIL_HOST_USER)
-	print(settings.EMAIL_RICIPIENTS)
-	template = render_to_string('contacts/confirm_email.html', {
-		'name':data['name'],
-		'email':data['from_email'],
-		'message':data['message'],
-	})
+def SendEmail(template):
 	email = EmailMessage(
-		'Новое сообщение с сайта!',
+		'Новое сообщение с сайта sd43.ru!',
 		template,
 		settings.EMAIL_HOST_USER,
 		settings.EMAIL_RICIPIENTS,

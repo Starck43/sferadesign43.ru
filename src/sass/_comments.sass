@@ -1,0 +1,68 @@
+@import vars
+@import mixins
+
+#comments-container
+	.review-form
+		display: flex
+		flex-direction: column
+		button
+			margin-left: auto
+
+.porfolio-comment
+	margin-bottom: 6vh
+
+.comment-block
+	width: 100%
+	color: $comment-text
+	background-color: $comment-bg
+	border-radius: 5px
+	padding: 10px
+	margin-bottom: 0.5em
+	&-author
+		font-size: 1em
+	&-text
+		margin-top: 0.5em
+		margin-bottom: 0
+
+.subcomment
+	margin-left: 2em
+	margin-top: 4vh
+
+.review-form
+	button
+		margin-top: 0.5em
+		margin-bottom: 2em
+
+.reply-form
+	position: relative
+	display: flex
+	flex-wrap: wrap
+	width: 100%
+	>*
+		margin: 0
+
+	textarea
+		flex: 1
+		appearance: none
+		border: none
+
+	button
+		position: relative
+		padding: 0
+		padding-left: 5px
+		text-align: right
+
+	&::after
+		content: attr(data-value) " "
+		position: absolute
+		visibility: hidden
+		//white-space: pre-wrap
+
+
+textarea
+	resize: none
+	overflow: hidden
+
+
+.reply-link
+	cursor: pointer
