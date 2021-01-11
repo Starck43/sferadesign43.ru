@@ -57,7 +57,7 @@ gulp.task('styles', function() { // таск 'styles' обработает вс�
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 	//.pipe(cleanCSS({level:2})) // Сжимаем CSS файл
 	.pipe(gulp.dest(path.static+'css')) // Выгружаем результат в папку static::/css
-	.pipe(browserSync.stream()); // Обновляем CSS на странице при изменении
+	.pipe(browserSync.reload({ stream: true })) // Обновляем CSS на странице при изменении
 });
 
 // Скрипт запускается только вручную
@@ -84,7 +84,7 @@ gulp.task('scripts', function() {
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 //	.pipe(sourcemaps.write()) // Пропишем карты
 	.pipe(gulp.dest(path.static+'js')) // Выгружаем в папку dest::/js
-//	.pipe(browserSync.reload({ stream: true }))  // Обновляем страницу после изменения своего скрипта
+	.pipe(browserSync.reload({ stream: true }))  // Обновляем страницу после изменения своего скрипта
 });
 
 gulp.task('html', function() {
@@ -146,7 +146,7 @@ gulp.task('browser-sync', function() { // Создаем таск browser-sync
 });
 
 gulp.task('watch', function() { //таск слежения изменений в sass,css,html,php,js.
-	gulp.watch([path.src+'sass/**/*.sass'], gulp.parallel('styles')); // Наблюдение за sass файлами в папке sass
+	gulp.watch([path.src+'sass/**/*.sass', path.src+'css/*.css'], gulp.parallel('styles')); // Наблюдение за sass файлами в папке sass
 	//gulp.watch([path.src+'css/*.css', '!'+path.src+'css/main.css'], gulp.parallel('vendors-styles')); // Наблюдение за вендорными css файлами в папке _src
 	gulp.watch([path.src+'js/**/*.js'], gulp.parallel('scripts')); // Наблюдение за JS файлами
 	//gulp.watch([path.src+'js/_vendors.js', path.src+'js/**/*.js', '!'+path.src+'js/custom*.js', path.src+'plugins/**/*.js'], gulp.parallel('vendors-scripts')); // Наблюдение за сторонней библиотекой JS файлов
@@ -171,6 +171,6 @@ gulp.task('deploy', function() {
 });
 
 //Дефолтный таск для запуска процессов слежения за изменениями кода. Выполняется командой Gulp без параметров
-gulp.task('default', gulp.parallel('styles', 'scripts', 'browser-sync', 'watch'));
+gulp.task('default', gulp.parallel('html', 'styles', 'scripts', 'browser-sync', 'watch'));
 
 
