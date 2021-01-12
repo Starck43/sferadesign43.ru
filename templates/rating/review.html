@@ -21,11 +21,11 @@
 	{% endif %}
 
 	{% for review in portfolio.root_comments %}
-	<article class="porfolio-comment">
+	<article id="{{review.id}}" class="porfolio-comment">
 
 		<div class="comment-block">
 			<h3 class="comment-block-author">{{ review.fullname }}</h3>
-			<div class="comment-block-datetime">{{ review.posted_date|date:"SHORT_DATE_FORMAT" }}</div>
+			<div class="comment-block-datetime">{{ review.posted_date|date:"d b Y" }}</div>
 			<p class="comment-block-text">{{ review.message }}</p>
 		</div>
 
@@ -36,11 +36,11 @@
 	</article>
 
 		{% for subreview in review.group_comments.all %}
-		<article class="porfolio-comment subcomment">
+		<article id="{{subreview.id}}" class="porfolio-comment subcomment">
 
 			<div class="comment-block">
 				<h3 class="comment-block-author">{{ subreview.fullname }}</h3>
-				<div class="comment-block-datetime">{{ subreview.posted_date|date:"SHORT_DATE_FORMAT" }}</div>
+				<div class="comment-block-datetime">{{ subreview.posted_date|date:"d b Y" }}</div>
 				<p class="comment-block-text">{{ subreview.message }}</p>
 			</div>
 

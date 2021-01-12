@@ -10,7 +10,7 @@
 
 	{% if not is_mobile %}
 	{% widthratio img.file.height img.file.width 100 as height_ratio %}
-	<a class="image-link grid-item{% if height_ratio|add:"0" < 75 %} grid-item-landscape{% elif height_ratio|add:"0" > 125 %} grid-item-portrait{% endif %}" href="{% get_media_prefix %}{{ img.file }}" title="{% if img.title %}{{ img.title }}{% else %}Проект {{ img.portfolio.title }}{% endif %}">
+	<a class="image-link grid-item{% if height_ratio|add:"0" < 75 %} grid-item-landscape{% elif height_ratio|add:"0" > 125 %} grid-item-portrait{% endif %}" href="{% get_media_prefix %}{{ img.file }}" title="{% if img.title %}{{ img.title }}{% else %}Проект {{ img.portfolio.title }}{% endif %}" style="max-width: {{ img.file.width }}px; max-height: {{ img.file.height }}px;">
 	{% endif %}
 		<figure class="image-wrapper" style="{% if not is_mobile %}padding-bottom:{{height_ratio}}%{% endif %}">
 			{% thumbnail img.file "320" as xs %}
@@ -21,7 +21,6 @@
 				data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w"
 				data-sizes="auto"
 				data-expand="50"
-				style="max-width: {{ img.file.width }}px"
 				loading="lazy"
 				title="{% if img.title %}{{ img.title }}{% endif %}"
 				alt="{% if img.description %}{{ img.description }}. {% endif %}Автор {{ img.portfolio.owner.name }}">
@@ -37,7 +36,7 @@
 				<h3 class="image-title">{{ img.title }}</h3>
 				{% endif %}
 				{% if img.description %}
-				<div class="image-description">{{ img.description }}</div>
+				<p class="image-description">{{ img.description }}</p>
 				{% endif %}
 			</figcaption>
 			{% endif %}

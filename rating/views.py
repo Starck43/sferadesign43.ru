@@ -15,7 +15,7 @@ from .forms import RatingForm, ReviewForm
 
 
 """Добавление рейтинга фильму"""
-#@login_required()
+@method_decorator(csrf_exempt, name='dispatch')
 class add_rating(View):
 	def get_client_ip(self, request):
 		x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -30,24 +30,30 @@ class add_rating(View):
 		form = RatingForm(user=request.user)
 
 	def post(self, request):
-		form = RatingForm(request.POST, user=request.user)
-		score = int(request.POST.get("star"))
-		portfolio_id = int(request.POST.get("portfolio"))
-		existing_rating = Rating.objects.filter(portfolio_id=portfolio_id, user=request.user).first()
-		if existing_rating:
-			raise ValidationError('Оценка уже выставлена!')
+		score = int(request.GET.get("star"))
+		portfolio_id = int(request.GET.get("portfolio"))
+		rating_exists = Rating.objects.filter(portfolio_id=portfolio_id, user=request.user).first()
+		if not rating_exists:
+		# 	raise ValidationError('Оценка уже выставлена!')
+		# 	return HttpResponse(status=400)
+			Rating.objects.create(
+				ip=self.get_client_ip(request),
+				user=request.user,
+				portfolio_id=portfolio_id,
+				star=score,
+			)
+
+		if request.is_ajax():
+			portfolio = Portfolio.objects.get(id=portfolio_id)
+			score_avg = Rating.calculate(portfolio).average
+			return JsonResponse({'score': score, 'score_avg': score_avg, 'author': portfolio.owner.name}, safe=False)
 		else:
+			form = RatingForm(request.POST, user=request.user)
 			if form.is_valid():
-				Rating.objects.create(
-					ip=self.get_client_ip(request),
-					user=request.user,
-					portfolio_id=portfolio_id,
-					star=score,
-				)
+				form.save();
 				return HttpResponse(status=201)
 			else:
 				return HttpResponse(status=400)
-
 
 
 """Комментарии"""

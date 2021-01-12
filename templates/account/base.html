@@ -1,1 +1,66 @@
 {% extends "base.html" %}
+{% load i18n %}
+{% load custom_tags %}
+{% load account %}
+
+{% block header %}<h1>Личный кабинет</h1>{% endblock %}
+
+{% block content %}
+
+{% user_display user as user_display %}
+<p>
+Вы вошли как <b>{{user.first_name}} {{user.last_name}}</b> ({{user_display}})<br/>
+E-mail: <b>{{user.email}}</b><a class="mx-2" href="{% url 'account_logout' %}">({% trans 'Sign Out' %})</a>
+</p>
+
+{% if profile %}
+<div class="person-detail-block">
+	<div class="meta"></div>
+</div>
+{% endif %}
+
+<section class="user-ratings">
+	<h2>все оценки работ</h2>
+	<ol class="user-ratings-list">
+	{% for rate in rates %}
+		<li class="user-rating">
+			<span class="rating-counter">{{ forloop.counter }}.</span>
+			<a class="rated-owner" href="{{rate.portfolio.owner.get_absolute_url}}">{{rate.portfolio.owner}}</a>
+			<span class="stars-block" title="{{rate.portfolio.owner}}">
+				{% for i in 5|count_range %}
+				<svg class="star{% if i < rate.star %} filled{% endif %}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="20" height="20" viewBox="2 2 22 22">
+					<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+				</svg>
+				{% endfor %}
+			</span>
+		</li>
+	{% empty %}
+		<div>Пусто</div>
+	{% endfor %}
+	</ol>
+</section>
+
+<section class="user-reviews">
+	<h2>оставленные отзывы</h2>
+	<ol class="user-reviews-list">
+		{% for review in reviews %}
+		<li>
+			<div class="comment-block card">
+				<div class="user-comment-header card-header">
+					<a href="{{review.portfolio.get_absolute_url|slice:":-1"}}#{{review.id}}">
+						<h3 class="user-comment-title">{{review.portfolio.title}}</h3></a>
+					<a class="{{review.portfolio.owner.get_absolute_url}}">Автор: {{review.portfolio.owner}}</a>
+				</div>
+				<div class="user-comment-message card-body"><p>"{{review.message}}"</p></div>
+				<div class="comment-block-datetime card-footer">{{ review.posted_date|date:"d b Y" }}</div>
+			</div>
+		</li>
+		{% empty %}
+		<div>Пусто</div>
+		{% endfor %}
+	</ol>
+</section>
+
+<a  class="btn mt-2 btn-outline-primary" href="{{request.META.HTTP_REFERER}}">Вернуться</a>
+<a class="btn mt-2 btn-outline-dark" href="{% url 'account_logout' %}">{% trans 'Sign Out' %}</a>
+{% endblock content %}

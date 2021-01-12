@@ -55,7 +55,7 @@
 					<a class="nav-link" href="{% url 'contacts-url' %}">Обратная связь</a>
 				</li>
 				<li class="nav-item ms-auto">
-					<a class="nav-link account-link active" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin{% elif not user.is_authenticated %}/accounts/login{% else %}/accounts/logout{% endif %}">
+					<a class="nav-link account-link active" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin{% elif not user.is_authenticated %}/accounts/login{% else %}/account/{% endif %}">
 						{% if user.is_authenticated %}{{ user.username }}
 						{% else %}{% if is_mobile %}Войти{% else %}<svg class="icon"><use xlink:href="#login-icon"></use></svg>{% endif %}
 						{% endif %}

@@ -11,6 +11,8 @@ from django.core.mail import EmailMessage, BadHeaderError
 
 #from sorl.thumbnail import get_thumbnail, delete
 
+from django.contrib.auth.models import Group #,User
+
 
 DEFAULT_SIZE = getattr(settings, 'DJANGORESIZED_DEFAULT_SIZE', [1920, 1080])
 DEFAULT_QUALITY = getattr(settings, 'DJANGORESIZED_DEFAULT_QUALITY', 80)
@@ -115,3 +117,22 @@ def SendEmail(template):
 		return HttpResponse('Ошибка в заголовке письма!')
 	return True
 
+
+""" Set User group on SignupForm via account/social account"""
+def SetUserGroup(request, user):
+
+	is_exhibitor = request.POST.get('exhibitor',False)
+	if is_exhibitor == 'on':
+		group_name = "Exhibitors"
+	else:
+		group_name = "Members"
+
+	try:
+		group = Group.objects.get(name=group_name)
+		user.groups.add(group)
+		print(group_name)
+		user.save()
+	except Group.DoesNotExist:
+		pass
+
+	return user

@@ -11,11 +11,18 @@
 
 {% block script %}
 
+{{ block.super }}
 {% if is_mobile %}
 <script type="text/javascript" src="{% md5url 'js/portfolio_mobile.min.js' %}"></script>
 {% else %}
 <script type="text/javascript">var is_mobile = false;</script>
 <script type="text/javascript" src="{% md5url 'js/portfolio.min.js' %}"></script>
+{% endif %}
+
+{% if user.is_authenticated %}
+<script type="text/javascript" src="{% md5url 'js/reviews-rate.min.js' %}"></script>
+{% else %}
+<script type="text/javascript" src="{% md5url 'js/reviews.min.js' %}"></script>
 {% endif %}
 
 {% endblock script %}
@@ -67,6 +74,10 @@
 
 		{% include "exhibition/images_list.html" %}
 	</section>
+
+	{% include "rating/rating_form.html" %}
+	{% include "rating/review.html" %}
+
 	{% endif %}
 
 	{% endif %}
@@ -76,7 +87,7 @@
 
 
 {% block extra_container %}
-
+{{ block.super }}
 {% include "exhibition/gallery.html" %}
 
 {% endblock extra_container %}

@@ -10,16 +10,16 @@
 @import comments
 
 .portfolio-preloader
-	position: fixed
+	position: absolute
 	left: 50%
-	top: 75%
+	top: 50%
 	transform: translate(-50%, -50%)
 	margin: 0
 	padding: 1vw 2vw
 	text-align: center
 	text-transform: uppercase
 	letter-spacing: 2px
-	background-color: #fff
+	background-color: transparentize(white, 0.3)
 	transition: all 500ms linear
 	visibility: visible
 	z-index: 1
@@ -37,6 +37,7 @@
 
 figure
 	position: relative
+	display: flex
 	height: 100%
 	max-width: 100%
 	margin: 0
@@ -53,6 +54,7 @@ figure
 	width: inherit
 	display: flex
 	flex-flow: row wrap
+	justify-content: space-around
 	overflow: hidden
 	>figure
 		flex: 100%
@@ -84,7 +86,17 @@ figure
 			background-color: #ddd
 
 		figcaption
-			margin: 0.5em 0
+			position: absolute
+			width: 100%
+			bottom: 0
+			h3
+				padding: 1vw
+				margin: 0
+				color: #fff
+				font-size: 0.8em
+				text-align: center
+				+blur-background(9, $overlay-color, 0.6)
+				z-index: 1
 			.portfolio-image-title
 				font-size: 1.2rem
 				word-break: break-word
@@ -113,7 +125,8 @@ figure
 
 
 	+media-breakpoint-down(md)
-		margin: 0 -$content-margin + 125px
+		//margin: 0 -$content-margin + 125px
+		margin: 0
 
 
 	+media-breakpoint-down(sm)

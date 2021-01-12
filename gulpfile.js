@@ -171,6 +171,6 @@ gulp.task('deploy', function() {
 });
 
 //Дефолтный таск для запуска процессов слежения за изменениями кода. Выполняется командой Gulp без параметров
-gulp.task('default', gulp.parallel('html', 'styles', 'scripts', 'browser-sync', 'watch'));
+gulp.task('default', gulp.parallel('styles', 'scripts', 'browser-sync', 'watch'));
 
 

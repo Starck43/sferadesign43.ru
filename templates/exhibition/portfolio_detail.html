@@ -9,6 +9,7 @@
 
 {% block script %}
 
+{{ block.super }}
 {% if is_mobile %}
 <script type="text/javascript" src="{% md5url 'js/portfolio_mobile.min.js' %}"></script>
 {% else %}
@@ -46,7 +47,10 @@
 	{% include "exhibition/images_list.html" %}
 
 	{% if portfolio.description %}
-	<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
+	<div class="portfolio-description description">
+		<div><b>Описание проекта:</b></div>
+		{{ portfolio.description|safe }}
+	</div>
 	{% endif %}
 
 	{% include "rating/rating_form.html" %}
@@ -63,7 +67,7 @@
 
 
 {% block extra_container %}
-
+{{ block.super }}
 {% include "exhibition/gallery.html" %}
 
 {% endblock extra_container %}

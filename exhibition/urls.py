@@ -42,6 +42,7 @@ urlpatterns = [
 	path('upload/', views.portfolio_upload, name='portfolio-upload-url'),
 
 	re_path(r'^search/', views.search_site.as_view(), name='search-results'),
+	path('account/', views.account, name='account-url'),
 	path('reset_password/', views.send_reset_password_email),
 
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),

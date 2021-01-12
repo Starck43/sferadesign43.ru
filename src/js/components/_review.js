@@ -45,48 +45,89 @@ replyCommentLink.forEach( (item) => {
 
 // Обновляем данные формы при сохранении
 const reviewForm = document.querySelector('.review-form[name=review]');
-reviewForm && reviewForm.addEventListener('submit', submitEvent);
+if (reviewForm) {
+	reviewForm.addEventListener('submit', submitEvent);
 
+	// Подключаем обработчик события ввода текста в поле сообщения
+	const textarea = reviewForm.querySelector('textarea[name=message]');
+	var minTextareaHeight = textarea.offsetHeight;
+	textarea.addEventListener('input', textareaResize);
+}
 
-// Подключаем обработчик события ввода текста в поле сообщения
-const textarea = reviewForm.querySelector('textarea[name=message]');
-var minTextareaHeight = textarea.offsetHeight;
-textarea.addEventListener('input', textareaResize);
+// Обработчик закрытия окон с сообщениями
+alertHandler = function(html){
+	if (alertContainer) {
+		var alertNode = document.createElement('div');
+		alertNode.className = 'alert alert-secondary rounded fade show';
+		alertNode.setAttribute('role','alert');
+		alertNode.innerHTML = html;
+		alertContainer.append(alertNode);
 
+		var alert = new bootstrap.Alert(alertNode);
+		var closeBtn = alertNode.querySelector('.btn-close');
+		closeBtn && closeBtn.addEventListener('click', function () {
+			alert.close();
+		});
+		alertNode.addEventListener('closed.bs.alert', function () {
+			alertContainer.classList.add('hidden');
+		});
+
+		alertContainer.classList.remove('hidden');
+	}
+}
 
 // Рендер шаблона
 function render(data) {
+	// если с сервера вернулась переменная 'score', то значит это относится к рендеру рейтинга
+	if (data['score']) {
 
-	var newNode = document.createElement('article'),
-		parent = group = data['id'],
-		datetime = new Date().toLocaleDateString();
+		var message = '<button type="button" class="btn-close" aria-label="Close"></button>\
+						<h3>Оценка успешно установлена!</h3><p>\
+						Автор проекта: <b>"'+data['author']+'" </b><br/>\
+						Ваша оценка: <b>'+data['score']+'.0</b><br/>\
+						Общий рейтинг: <b>'+data['score_avg'].toFixed(1)+'</b></p>';
 
-	newNode.className = 'porfolio-comment';
-	if (referenceSubmit.parentNode.classList.contains(newNode.className)) {
-		toggleCommentForm(referenceSubmit, true, true); //скроем форму ввода сообщения и почистим его область текста
-		newNode.classList.add('subcomment');
-		referenceSubmit.parentNode.after(newNode);
-		// если подкомментарий, то родителем будет являться текущий id родительского комментария
-		group = data['group'];
+		alertHandler(message); // функция обработки сообщений
+
+		const summaryScore = document.querySelector('.summary-score');
+		if (summaryScore) {
+			summaryScore.innerHTML = data['score_avg'].toFixed(1);
+			var userScore = document.createElement('div');
+			userScore.innerHTML = 'Ваша оценка: <b>'+data['score']+'.0</b>';
+			summaryScore.after(userScore);
+		}
+
 	} else {
-		toggleCommentForm(referenceSubmit, true, false); //скроем форму ввода сообщения и почистим его область текста
-		referenceSubmit.after(newNode);
+		var newNode = document.createElement('article'),
+			parent = group = data['id'],
+			datetime = new Date().toLocaleDateString();
+
+		newNode.className = 'porfolio-comment';
+		if (referenceSubmit.parentNode.classList.contains(newNode.className)) {
+			toggleCommentForm(referenceSubmit, true, true); //скроем форму ввода сообщения и почистим его область текста
+			newNode.classList.add('subcomment');
+			referenceSubmit.parentNode.after(newNode);
+			// если подкомментарий, то родителем будет являться текущий id родительского комментария
+			group = data['group'];
+		} else {
+			toggleCommentForm(referenceSubmit, true, false); //скроем форму ввода сообщения и почистим его область текста
+			referenceSubmit.after(newNode);
+		}
+
+		var html = '<div class="comment-block">\
+					<h3 class="comment-block-author">'+data['author']+'</h3>\
+					<div class="comment-block-datetime">'+datetime+'</div>\
+					<p class="comment-block-text">'+data['message']+'</p>\
+				</div>\
+				<a class="reply-link" data-id="'+parent+'" data-group="'+group+'" data-author="'+data['author']+'">Ответить</a>';
+		newNode.innerHTML = html;
+
+		var commentsCounter = document.querySelector('.comments-counter span');
+		commentsCounter.innerText = Number(commentsCounter.innerText)+1;
+
+		var replyLink = newNode.querySelector('.reply-link');
+		replyLink && replyLink.addEventListener('click', replyEvent, {passive: true});
 	}
-
-	var html = '<div class="comment-block">\
-				<h3 class="comment-block-author">'+data['author']+'</h3>\
-				<div class="comment-block-datetime">'+datetime+'</div>\
-				<p class="comment-block-text">'+data['message']+'</p>\
-			</div>\
-			<a class="reply-link" data-id="'+parent+'" data-group="'+group+'" data-author="'+data['author']+'">Ответить</a>';
-	newNode.innerHTML = html;
-
-	var commentsCounter = document.querySelector('.comments-counter span');
-	commentsCounter.innerText = Number(commentsCounter.innerText)+1;
-
-	var replyLink = newNode.querySelector('.reply-link');
-	replyLink && replyLink.addEventListener('click', replyEvent, {passive: true});
-
 }
 
 

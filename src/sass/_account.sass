@@ -20,3 +20,45 @@ form
 .signup .form-group
 	label:not(:last-child)
 		display: none
+
+.user-ratings
+	margin-top: 4vw
+	.user-ratings-list
+		//padding: 0 .5em
+	li.user-rating
+		display: flex
+		flex-flow: row wrap
+		align-items: center
+		width: 100%
+		padding: 0 0.5em
+		transition: all 150ms ease
+		&:hover
+			background-color: $highlight-block-bg
+			//border: 1px solid $highlight-border-color
+
+	.rating-counter
+		min-width: 26px
+		+media-breakpoint-down(sm)
+			display: none
+	.rated-owner
+		margin-right: 10px
+		flex: auto
+		font-weight: bold
+	.stars-block
+		.star
+			fill: lightgray
+			&.filled
+				fill: orange
+
+.user-reviews
+	margin-top: 4vw
+	.comment-block
+		margin-bottom: 2vw
+		border-radius: 3px
+	.user-comment-title
+		margin-bottom: 0
+	.comment-block-datetime
+		font-size: 0.8em
+	p
+		margin-top: 1rem
+		font-style: italic

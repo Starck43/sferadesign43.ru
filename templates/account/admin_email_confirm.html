@@ -1,3 +1,5 @@
+{% load custom_tags %}
+
 <html lang="ru">
 <head>
 	<meta charset="UTF-8">
@@ -9,7 +11,7 @@
 <p>На сайте sd43.ru зарегистрировался новый пользователь.</p>
 <div class="message-field">Имя: <b>{{name}}</b></div>
 <div class="message-field">E-mail: <b>{{email}}</b></div>
-<div class="message-field">Дизайнер: <b>{{is_designer}}</b></div>
+<div class="message-field">Группа: <b>{{group|to_string}}</b></div>
 </body>
 </html>
 

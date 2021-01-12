@@ -24,10 +24,10 @@ from watson.views import SearchMixin
 from django import forms
 from .models import *
 
-from rating.models import Rating
+from rating.models import Rating, Reviews
 from .forms import ImagesUploadForm, FeedbackForm, UsersListForm
 from rating.forms import RatingForm
-from .logic import SendEmail
+from .logic import SendEmail, SetUserGroup
 
 
 
@@ -430,8 +430,19 @@ class winner_project_detail(DetailView):
 		context['portfolio'] = portfolio
 		context['exhibitors'] = self.exhibitors
 		context['nomination'] = self.nomination
-
 		context['parent_link'] = '/exhibition/%s/' % exh_year
+
+		if portfolio:
+			score = Rating.calculate(portfolio)
+			rate = score.average
+		else:
+			rate = 0
+
+		if self.request.user.is_authenticated:
+			context['user_score'] = Rating.objects.filter(portfolio=portfolio, user=self.request.user).values_list('star',flat=True).first()
+		context['average_rate'] = round(rate, 2)
+		context['extra_rate_percent'] = int((rate - int(rate))*100)
+		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
 
 		return context
 
@@ -474,7 +485,7 @@ class project_detail(DetailView):
 			context['user_score'] = Rating.objects.filter(portfolio=self.object, user=self.request.user).values_list('star',flat=True).first()
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
-		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user)
+		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
 
 		return context
 
@@ -551,11 +562,24 @@ def send_reset_password_email(request):
 # dispatch_uid: some.unique.string.id.for.allauth.user_signed_up
 @receiver(user_signed_up, dispatch_uid="2020")
 def user_signed_up_(request, user, **kwargs):
-
+	user = SetUserGroup(request, user)
 	template = render_to_string('account/admin_email_confirm.html', {
-		'name': '%s %s (%s)' % (request.POST.get('first_name',None), request.POST.get('first_name',None), request.POST.get('username',None) ),
-		'email': request.POST.get('email'),
+		'name': '%s %s (%s)' % (user.first_name, user.last_name, user.username),
+		'email': user.email,
+		'group': list(user.groups.all().values_list('name', flat=True)),
 	})
 	SendEmail(template)
 
+
+def account(request):
+	# try:
+	# 	profile = Exhibitors.objects.get(user=request.user)
+	# except Exhibitors.DoesNotExist:
+	# 	profile = None
+
+	profile = None
+	rates = Rating.objects.filter(user=request.user)
+	reviews = Reviews.objects.filter(user=request.user)
+
+	return render(request, 'account/base.html', { 'profile': profile, 'rates': rates, 'reviews': reviews })
 

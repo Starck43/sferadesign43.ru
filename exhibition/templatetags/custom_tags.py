@@ -22,6 +22,9 @@ def to_string(obj):
 def distinct(items, attr_name):
 	return set([getattr(i, attr_name) for i in items])
 
+@register.filter
+def count_range(value, start_index=0):
+	return range(start_index, value+start_index)
 
 import hashlib
 import threading

@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'sorl.thumbnail',
-    'multiupload',
     'crispy_forms',
     'smart_selects',
     'watson',
@@ -63,9 +62,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     #'allauth.socialaccount.providers.instagram',
     #'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.odnoklassniki',
     'allauth.socialaccount.providers.vk',
     #'allauth.socialaccount.providers.apple',
-    'allauth.socialaccount.providers.google',
+    #'allauth.socialaccount.providers.google',
     #'allauth.socialaccount.providers.mailru',
     #'allauth.socialaccount.providers.yandex',
 ]
@@ -154,11 +154,10 @@ AUTHENTICATION_BACKENDS = (
 
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
-    'instagram': {
+    'odnoklassniki': {
         'APP': {
-            'client_id': '7721338',
-            'secret': 'M9VeTwzyOqubbHQyqYNS',
-            'key': '055104910551049105510491620524d5eb00551055104915aa636ec539ae80af6f9ade8'
+            'client_id': '512000847912',
+            'secret': '79F74C7253623973B5E39731',
         }
     },
     'google': {
@@ -176,9 +175,9 @@ SOCIALACCOUNT_PROVIDERS = {
     },
     'vk': {
         'APP': {
-            'client_id': '7721987',
-            'secret': 'qJeCkq4JxaOqIi1I0uTz',
-            'key': '21c3950f21c3950f21c3950fef21b6410c221c321c3950f7e3bd510d0cca8d21f540e1c'
+            'client_id': '7725491',
+            'secret': 'vGXlloDQjCR5haDrE8dS',
+            'key': 'd6ffe441d6ffe441d6ffe441b4d68a05f2dd6ffd6ffe4418903685ff7ef89315208bbd0'
         }
     }
 
@@ -193,10 +192,14 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_USERNAME_MIN_LENGTH = 4
 ACCOUNT_MAX_EMAIL_ADDRESSES = 2
-#ACCOUNT_SIGNUP_FORM_CLASS = 'exhibition.forms.CustomSignupForm'
 LOGIN_REDIRECT_URL = "/"
+# ACCOUNT_SIGNUP_FORM_CLASS = 'exhibition.forms.SignupForm'
 ACCOUNT_FORMS = {
-'signup': 'exhibition.forms.CustomSignupForm',
+'signup': 'exhibition.forms.AccountSignupForm',
+}
+
+SOCIALACCOUNT_FORMS = {
+'signup': 'exhibition.forms.CustomSocialSignupForm',
 }
 
 

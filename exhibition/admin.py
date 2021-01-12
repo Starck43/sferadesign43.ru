@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 
 from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
 from sorl.thumbnail.admin import AdminImageMixin
-from multiupload.admin import MultiUploadAdmin
 
 # Exhibitors, Jury, Partners, Events, Nominations, Exhibitions, Portfolio, Image
 from crm import models
@@ -191,23 +190,6 @@ class WinnersAdmin(admin.ModelAdmin):
 		return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class GalleryMultiuploadMixing(object):
-
-	def process_uploaded_file(self, uploaded, portfolio, request):
-		title = request.POST['title'] or path.splitext(uploaded.name)[0]
-
-		if portfolio:
-			image = portfolio.images.create(file=uploaded, title=title)  # images - related name for Image model
-		else:
-			image = Image.objects.create(file=uploaded, portfolio=None, title=title)
-
-		return {
-			'url': image.file.url,
-			'thumbnail_url': image.file.url,
-			'id': image.id,
-			'name': title,
-		}
-
 
 class ImageInlineAdmin(admin.StackedInline):
 	model = Image
@@ -244,7 +226,7 @@ class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
 	author.short_description = 'Автор'
 
 
-class PortfolioAdmin(GalleryMultiuploadMixing, admin.ModelAdmin):
+class PortfolioAdmin(admin.ModelAdmin):
 	form = ImagesUploadForm
 	list_display = ('exhibition', 'owner', 'title', 'nominations_list')
 	search_fields = ('title', 'owner__name', 'exhibition__title', 'nominations__title')
@@ -263,14 +245,14 @@ class PortfolioAdmin(GalleryMultiuploadMixing, admin.ModelAdmin):
 	nominations_list.short_description = 'Номинации'
 	nominations_list.admin_order_field = 'nominations__title'
 
-	# def delete_file(self, pk, request):
-	# 	obj = get_object_or_404(Image, pk=pk)
-	# 	return obj.delete()
-
 	def save_model(self, request, obj, form, change):
 		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
 		obj.save(request.FILES.getlist('files'))
 
+
+	# def delete_file(self, pk, request):
+	# 	obj = get_object_or_404(Image, pk=pk)
+	# 	return obj.delete()
 
 	# def clean_file(self):
 	# 	files = self.cleaned_data['file']

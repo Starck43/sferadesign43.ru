@@ -14,8 +14,9 @@ class RatingForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		self.user = kwargs.pop('user',None)
+		self.score = kwargs.pop('score',None)
 		super().__init__(*args, **kwargs)
-		if not self.user:
+		if not self.user.is_authenticated or self.score:
 			self.fields['star'].widget.attrs['disabled'] = True # radio / checkbox
 
 

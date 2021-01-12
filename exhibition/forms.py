@@ -1,27 +1,33 @@
 from django import forms
 from .models import Exhibitions, Winners, Nominations, Portfolio, Image
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.forms.models import ModelMultipleChoiceField
 from django.forms.widgets import ClearableFileInput
 from uuslug import uuslug
-#from django.contrib.admin.widgets import FilteredSelectMultiple
 
-#from django.contrib.auth.forms import UserCreationForm
+from .logic import SetUserGroup
+
+from django.contrib.auth.forms import UserCreationForm
 from allauth.account.forms import SignupForm
 
+
 """ Форма регистрации """
-class CustomSignupForm(SignupForm):
+class AccountSignupForm(SignupForm):
+	username = forms.CharField(label='Имя пользователя', widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (латиницей)'}))
+	email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'placeholder': 'Email адрес'}))
 	first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
 	last_name = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'placeholder': 'Фамилия'}))
 	exhibitor = forms.BooleanField(label="Участник выставки?",required=False)
 
 	def __init__(self, *args, **kwargs):
+		self.field_order = ['first_name', 'last_name', 'username', 'email', 'exhibitor', 'password1', 'password2',]
 		super().__init__(*args, **kwargs)
 		self.fields["password2"].widget.attrs['placeholder'] = 'Пароль повторно'
 
-	# class Meta(UserCreationForm.Meta):
+	# class Meta:
 	# 	model = User
 	# 	fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'exhibitor',]
+
 	# 	widgets = {
 	# 		'first_name' : forms.TextInput(attrs={'placeholder': 'Имя'}),
 	# 		'last_name' : forms.TextInput(attrs={'placeholder': 'Фамилия'}),
@@ -44,23 +50,28 @@ class CustomSignupForm(SignupForm):
 	# 			self.error_messages['duplicate_username'],
 	# 			code='duplicate_username',
 	# 		)
+	def save(self, request):
+		# .save() returns a User object.
+		user = super().save(request)
+		user = SetUserGroup(request, user)
+
+		return user
+
+
+""" Форма регистрации """
+class CustomSocialSignupForm(SignupForm):
+	username = forms.CharField(label='Имя пользователя', widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (латиницей)'}))
+	email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'placeholder': 'Email адрес'}))
+	exhibitor = forms.BooleanField(label="Участник выставки?",required=False)
+
+	def __init__(self, *args, **kwargs):
+		self.field_order = ['username', 'email', 'exhibitor',]
+		super().__init__(*args, **kwargs)
 
 	def save(self, request):
 		# .save() returns a User object.
 		user = super().save(request)
-
-		is_exhibitor = request.POST.get('exhibitor',False)
-		if is_exhibitor == 'on':
-			group_name = "Exhibitors"
-		else:
-			group_name = "Members"
-
-		try:
-			group = Group.objects.get(name=group_name)
-			user.groups.add(group)
-			user.save()
-		except Group.DoesNotExist:
-			pass
+		user = SetUserGroup(request, user)
 
 		return user
 

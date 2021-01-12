@@ -1,7 +1,7 @@
 
-var csrftoken =document.getElementsByName('csrfmiddlewaretoken')[0].value;
+//var csrftoken =document.getElementsByName('csrfmiddlewaretoken')[0].value;
 
-function ajaxSend(url, params) {
+function ajaxSend(url, params='') {
 	// Отправляем запрос
 	fetch(`${url}?${params}`, {
 		method: 'POST',

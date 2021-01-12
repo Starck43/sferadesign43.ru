@@ -14,7 +14,7 @@
 {% block content %}
 <section id="search-result">
 	{% if search_results %}
-	{% for item in object_list %}
+		{% for item in object_list %}
 		<article class="search-item">
 
 			<div class="search-item-title">
@@ -41,15 +41,18 @@
 
 			<div class="search-item-detail">
 				{% if item.description %}
-					{{item.description|safe}}
+					{{item.description|safe|truncatechars_html:200}}
 				{% else %}
-					{{item.meta.description|safe}}
+					{{item.meta.description|safe|truncatechars_html:200}}
+				{% endif %}
+
+				{% if item.url %}
+				<a href="{{ item.url }}" class="link-dark"> [<u><i>перейти</i></u>]</a>
 				{% endif %}
 			</div>
 
 		</article>
-
-	{% endfor %}
+		{% endfor %}
 
 		{% block pagination %}
 		{% if is_paginated %}
@@ -77,7 +80,7 @@
 			</ul>
 		</nav>
 		{% endif %}
-		{% endblock %}
+		{% endblock pagination %}
 
 	{% else %}
 

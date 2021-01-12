@@ -1,26 +1,22 @@
 /*
 * Обработчик изменения рейтинга
 */
-	const rating = document.querySelector('form[name=rating]');
-	if (rating) {
-		rating.addEventListener("change", function (e) {
-			// Получаем данные из формы
-			score = this.getAttribute('value');
-			if (score) {
-				alert("Вы уже поставили оценку "+score);
+	const ratingForm = document.querySelector('form[name=rating]');
+	if (ratingForm) {
+		// Получаем данные из формы
+		var score = ratingForm.getAttribute('value');
+		if (score) {
+			ratingForm.addEventListener("click", function (e) {
+				var message = '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+								<h3>Внимание!</h3><p>Вы уже проголосовали, Ваша оценка: <b>'+score+'.0</b></p>';
+
+				alertHandler(message); // функция обработки сообщений
 				e.preventDefault();
-			}
-			else if (this.method == 'get') {
-				alert("Функция доступна только для зарегистрированных пользователей!");
-			}
-			else {
-				var data = new FormData(this);
-				fetch(`${this.action}`, {
-					method: 'POST',
-					body: data
-				})
-				.then(response => alert("Рейтинг успешно установлен!"))
-				.catch(error => alert("Внутренняя ошибка!"))
-			}
-		});
+			});
+		} else {
+			ratingForm.addEventListener("change", function (e) {
+				let params = new URLSearchParams(new FormData(this)).toString();
+				ajaxSend(this.action, params);
+			});
+		}
 	}
