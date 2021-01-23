@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+
+{% block header %}<h1>Удаление аккаунта</h1>{% endblock %}
+
+{% block content %}
+
+<form method="post" action="{% url 'account_logout' %}">
+
+	{% csrf_token %}
+    {{form|crispy}}
+
+	<button class="btn btn-outline-dark" type="submit">{% trans 'Confirm' %}</button>
+ 	<a href="{{request.META.HTTP_REFERER}}" class="btn btn-outline-primary">Вернуться</a>
+
+</form>
+
+{% endblock content %}

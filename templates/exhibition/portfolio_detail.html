@@ -53,11 +53,10 @@
 	</div>
 	{% endif %}
 
-	{% include "rating/rating_form.html" %}
-
-	{% include "rating/review.html" %}
-
 </section>
+
+{% include "rating/rating_form.html" %}
+{% include "rating/review.html" %}
 
 {% else %}
 <a href="{{parent_link}}">Вернуться к разделам портфолио</a>

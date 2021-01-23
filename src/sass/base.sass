@@ -6,8 +6,9 @@
 @import mixins
 @import fonts
 @import reset
-@import navigation
 @import layouts
+@import navigation
+@import sidebar
 @import exhibition
 @import person
 @import search
@@ -21,6 +22,7 @@ html
 		font-size: 18px
 
 body
+	height: 100vh
 	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
 
 h1, h2, h3, h4, .year-text, .site-title
@@ -143,11 +145,6 @@ svg.icon
 	-webkit-touch-callout: none
 
 .back-link
-	position: absolute
-	top: 2.5vw
-	right: 2.5vw
-	display: flex
-	align-items: center
 	svg
 		stroke: black
 		stroke-width: 3
@@ -157,6 +154,13 @@ svg.icon
 	+media-breakpoint-down(sm)
 		top: 1rem
 		right: 1rem
+
+#site-header .back-link
+	position: absolute
+	top: 2.5vw
+	right: 2.5vw
+	display: flex
+	align-items: center
 
 .social-link
 	display: inline-block
@@ -264,6 +268,7 @@ svg.icon
 
 
 .container
+	position: relative
 	max-width: none
 	margin-top: 0
 	margin-bottom: 1rem
@@ -328,6 +333,7 @@ svg.icon
 	h2
 		margin-bottom: 0
 		font-weight: bold
+		text-transform: lowercase
 		//font-size: 1.5em
 	h3
 		margin: 0
@@ -382,10 +388,27 @@ svg.icon
 	.grid-cell
 		&:before
 			content: none
-		>div
+		figure
 			+responsive-ratio(1,1,0,false)
+			margin: 0
 			.img-title:hover
 				color: #fff
+
+	.portfolio-rate
+
+		//height: 4em
+		//width: 4em
+		padding: 5px
+		border: 2px solid
+		.rate-counter
+
+		.rate-star
+			position: relative
+			height: 21px
+			width: 21px
+			margin-left: 3px
+			fill: orange
+			stroke: #fff
 
 
 .exhibitions-list
@@ -454,10 +477,15 @@ svg.icon
 	top: 0
 	height: 100vh
 	width: 100vw
+	background-color: transparentize($overlay-color, 0.8)
+	transition: background-color 300ms ease
 	.btn-close
 		margin: 0 auto 1em
-	>div
+	>.alert
 		display: flex
 		flex-direction: column
+		padding: 2vw
+		max-width: 90%
 		box-shadow: 0 0 1rem transparentize(black, 0.7)
-		border: 1px solid $highlight-border-color
+		background-color: #fff
+		border: solid $border-thickness $highlight-border-color

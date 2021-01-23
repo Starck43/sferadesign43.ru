@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect
 from django.views.generic.base import View
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
+from django.utils.cache import get_cache_key
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -42,6 +44,15 @@ class add_rating(View):
 				portfolio_id=portfolio_id,
 				star=score,
 			)
+			#page_url = request.build_absolute_uri('/').strip("/")
+			#cache.delete(page_url)
+
+			cache_key = get_cache_key(request)
+			print(cache_key)
+			if cache_key :
+				if cache.has_key(cache_key):
+					cache.delete(cache_key)
+
 
 		if request.is_ajax():
 			portfolio = Portfolio.objects.get(id=portfolio_id)
@@ -83,8 +94,8 @@ def add_review(request, pk):
 
 	else:
 		form = ReviewForm(request.POST)
+		portfolio = Portfolio.objects.get(id=pk)
 		if form.is_valid():
-			portfolio = Portfolio.objects.get(id=pk)
 			review = form.save(commit=False)
 			review.user = request.user
 			review.portfolio = portfolio

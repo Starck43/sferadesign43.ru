@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load custom_tags %}
+{% load cache %}
 {% load thumbnail %}
 
 
@@ -13,7 +14,7 @@
 {% block header %}
 	<h1>{{ page_title }}
 		{% if exhibition %}
-			{{ exhibition.slug }}
+			{{ exhibition }}
 		{% else %}
 			за все годы
 		{% endif %}
@@ -28,10 +29,10 @@
 		{% if object_list %}
 
 			{% block person %}
+			{% cache 86400 persons absolute_url %}
 
 			<div class="persons-container row my-4">
-
-			{% for e in object_list %}
+				{% for e in object_list %}
 				<a class="person-wrapper col-6 col-xxl-2 col-xl-3 col-md-4" href="{{ e.get_absolute_url }}">
 
 					<div class="person-logo ratio ratio-1x1">
@@ -48,10 +49,10 @@
 					<h3 class="person-title">{{ e }}</h3>
 
 				</a>
-
-			{% endfor %}
+				{% endfor %}
 			</div>
 
+			{% endcache %}
 			{% endblock person %}
 
 		{% else %}

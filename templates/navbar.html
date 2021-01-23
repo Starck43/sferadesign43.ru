@@ -1,3 +1,4 @@
+{% load cache %}
 
 <nav class="navbar navbar-dark navbar-expand-lg fixed-top">
 
@@ -21,8 +22,11 @@
 
 		<div class="collapse navbar-collapse" id="navbarNavDropdown">
 			<ul class="navbar-nav align-items-center">
+
+				{% cache 2592000 navbar %}
+
 				<li class="nav-item dropdown exh-nav-item">
-					<a class="nav-link hidden" href="/exhibitions">Выставки</a>
+					<a class="nav-link hidden" href="/exhibitions/">Выставки</a>
 					{% if exhibitions_list %}
 						<a class="nav-link dropdown-toggle" href="#" id="exhibitionsMenuLink" role="button" data-toggle="dropdown" aria-expanded="false">Выставки</a>
 
@@ -54,17 +58,18 @@
 				<li class="nav-item">
 					<a class="nav-link" href="{% url 'contacts-url' %}">Обратная связь</a>
 				</li>
+
+				{% endcache %}
+
 				<li class="nav-item ms-auto">
-					<a class="nav-link account-link active" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin{% elif not user.is_authenticated %}/accounts/login{% else %}/account/{% endif %}">
-						{% if user.is_authenticated %}{{ user.username }}
-						{% else %}{% if is_mobile %}Войти{% else %}<svg class="icon"><use xlink:href="#login-icon"></use></svg>{% endif %}
-						{% endif %}
+					<a class="nav-link account-link" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin/{% elif user.is_authenticated %}/account/{% else %}/accounts/login/{% endif %}" rel="nofollow">
+						{% if user.is_authenticated %}{{ request.user.username }}{% else %}Войти{% endif %}
 					</a>
 				</li>
 			</ul>
 
 			<div class="nav-item ms-auto">
-				<a class="nav-search-link" href="#"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
+				<a class="nav-search-link" href="#" rel="nofollow"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
 			</div>
 
 		</div>

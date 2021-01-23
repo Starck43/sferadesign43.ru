@@ -2,6 +2,7 @@
 {% load static %}
 {% load custom_tags %}
 {% load thumbnail %}
+{% load cache %}
 
 {% block styles %}
 {% endblock %}
@@ -14,7 +15,7 @@
 
 
 {% block content %}
-
+	{% cache 500 index %}
 	<div class="exh-description">
 		{% for org in organizers %}
 			{% if org.description %}
@@ -50,5 +51,6 @@
 			{% endfor %}
 		</section>
 	{% endif %}
+	{% endcache %}
 
 {% endblock %}

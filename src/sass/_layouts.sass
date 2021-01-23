@@ -21,7 +21,7 @@
 		//box-sizing: content-box
 		text-align: center
 		color: $cell-text-color
-		background-color: $main-color
+		background-color: $highlight-block-bg
 		border: 1px solid $main-color
 		transition: all 200ms linear
 		overflow: hidden
@@ -32,7 +32,7 @@
 		&:hover
 			color: #fff
 			background-color: #fff
-			border: 3px solid $main-color
+			border-width: $border-thickness
 
 		img
 			+push--absolute
@@ -42,8 +42,8 @@
 
 			&~.img-title
 				+blur-background(0, $main-color, 1)
-				span
-					padding-top: 0.5em
+				>*:not(:first-child)
+					margin-bottom: 0.5em
 					font-size: 1rem
 					font-weight: normal
 				&:hover
@@ -58,6 +58,10 @@
 			transition: all 200ms linear
 			&:hover
 				color: $main-color
+
+		.project-title
+			font-size: 1.4rem
+
 
 .centered
 	display: flex

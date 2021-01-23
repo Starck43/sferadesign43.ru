@@ -9,32 +9,33 @@ admin.site.site_header = 'Рейтинг'
 """Рейтинг"""
 @admin.register(Rating)
 class RatingAdmin(admin.ModelAdmin):
-	list_display = ('star', 'portfolio', 'user_name', 'ip')
+	fields = ('fullname',)
+	list_display = ('star', 'portfolio', 'fullname', 'ip',)
 	readonly_fields = ('ip',)
 	list_filter = ('star',)
 
-	def user_name(self, obj):
-		if not obj.user:
-			return None
 
-		if (not obj.user.first_name) and (not obj.user.last_name) :
-			return obj.user.username
-		else:
-			return '%s %s' % (obj.user.first_name, obj.user.last_name)
-	user_name.short_description = 'Пользователь'
-
-
-"""Отзывы на странице фильма"""
-class ReviewInline(admin.TabularInline):
-	model = Reviews
-	extra = 0
-	show_change_link = True
-	readonly_fields = ('fullname', 'portfolio', 'message', 'posted_date')
-
-
-"""Отзывы к фильму"""
+"""Комментарии к работам"""
 @admin.register(Reviews)
 class ReviewAdmin(admin.ModelAdmin):
 	list_display = ('id', 'group', 'portfolio', 'fullname', 'parent', 'message', 'posted_date', )
+
+
+"""Форма вывода рейтинга у портфолио в админке"""
+class RatingInline(admin.TabularInline):
+	model = Rating
+	extra = 0
+	show_change_link = False
+	fields = ('user', 'star',)
+	readonly_fields = ('star', 'user')
+
+
+"""Форма вывода комментариев у портфолио в админке"""
+class ReviewInline(admin.StackedInline):
+	model = Reviews
+	extra = 0
+	show_change_link = False
+	fields = ('fullname', 'portfolio', 'message', 'posted_date')
+	readonly_fields = ('user', 'group', 'parent', 'fullname', 'portfolio', 'message', 'posted_date')
 
 

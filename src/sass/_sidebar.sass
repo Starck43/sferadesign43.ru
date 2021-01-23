@@ -1,0 +1,65 @@
+@import vars
+@import mixins
+
+#sidebar
+	position: fixed
+	width: 300px
+	left: 0
+	top: 0
+	bottom: 0
+	padding: 1em
+	background-color: #fff
+	transform: translateX(-100%)
+	transition: transform 300ms ease
+	overflow-y: auto
+	z-index: 1000
+	+media-breakpoint-up(md)
+		position: absolute
+		top: 2.2em !important
+		bottom: unset
+		width: #{$content-margin - 75px}
+		padding: 0.75em
+		transform: unset
+		.filter-title
+			display: none
+
+	+media-breakpoint-up(lg)
+		top: 3.2em !important
+
+	+media-breakpoint-up(xl)
+		width: #{$content-margin}
+		top: 2.7em !important
+		padding: 25px
+
+	&.active
+		transform: translateX(0)
+	.filter-title
+		margin-top: 0.25em
+		margin-bottom: 1em
+		text-transform: uppercase
+
+	.sidebar-close
+		position: absolute
+		right: 1em
+		top: 1em
+		+media-breakpoint-up(md)
+			display: none
+
+.filter-link
+	position: absolute
+	top: 1em
+	right: 1em
+	text-transform: lowercase
+	+media-breakpoint-up(md)
+		display: none
+
+.filter-title, .filters-block, .filters-block button
+	+media-breakpoint-up(md)
+		font-size: 0.8em
+.filters-group
+	+media-breakpoint-up(md)
+		color: $light-text-color
+
+.filter-attributes-block
+	li
+		margin: 5px 0

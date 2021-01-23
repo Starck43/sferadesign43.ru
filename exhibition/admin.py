@@ -13,7 +13,7 @@ from crm import models
 from .models import *
 from .forms import ExhibitionsForm, ImagesUploadForm, CustomClearableFileInput
 from .logic import UploadFilename, ImageResize
-from rating.admin import ReviewInline
+from rating.admin import RatingInline, ReviewInline
 from django.utils.html import format_html
 
 admin.site.unregister(User)  # нужно что бы снять с регистрации модель User
@@ -164,7 +164,6 @@ class EventsAdmin(admin.ModelAdmin):
 	search_fields = ('title', 'description', 'hoster', 'lector',)
 	list_filter = ('exhibition__date_start', 'date_event',)
 	date_hierarchy = 'exhibition__date_start'
-	#summernote_fields = ('description',) # Fields name of Models for using WYSIWYG editor instead of plain text
 	list_per_page = 20
 
 	save_as = True
@@ -191,7 +190,7 @@ class WinnersAdmin(admin.ModelAdmin):
 
 
 
-class ImageInlineAdmin(admin.StackedInline):
+class ImagesInline(admin.StackedInline):
 	model = Image
 	template = 'admin/exhibition/edit_inline/stacked.html'
 	extra = 0 #new blank record count
@@ -204,6 +203,7 @@ class ImageInlineAdmin(admin.StackedInline):
 	formfield_overrides = {
 		models.ImageField: {'widget': CustomClearableFileInput()},
 	}
+
 
 class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
 	fields = ('portfolio', 'title', 'description', 'file',)
@@ -226,9 +226,18 @@ class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
 	author.short_description = 'Автор'
 
 
+
+@admin.register(PortfolioAttributes)
+class PortfolioAttributesAdmin(admin.ModelAdmin):
+	prepopulated_fields = {"slug": ('name',)} # adding name to slug field
+	search_fields = ('name',)
+	list_per_page = 30
+
+
 class PortfolioAdmin(admin.ModelAdmin):
 	form = ImagesUploadForm
-	list_display = ('exhibition', 'owner', 'title', 'nominations_list')
+	list_display = ('owner', 'title', 'exhibition', 'nominations_list', 'attributes_list')
+	list_display_links = ('owner', 'title')
 	search_fields = ('title', 'owner__name', 'exhibition__title', 'nominations__title')
 	list_filter = ('nominations', 'owner',)
 	list_per_page = 30
@@ -237,13 +246,17 @@ class PortfolioAdmin(admin.ModelAdmin):
 	date_hierarchy = 'exhibition__date_start'
 	save_as = True
 	view_on_site = True
-	inlines = [ImageInlineAdmin, ReviewInline,]
-
+	inlines = [ImagesInline, RatingInline, ReviewInline]
 
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations.values_list('title', flat=True))
 	nominations_list.short_description = 'Номинации'
 	nominations_list.admin_order_field = 'nominations__title'
+
+	def attributes_list(self, obj):
+		return ', '.join(obj.attributes.values_list('name', flat=True))
+	attributes_list.short_description = 'Аттрибуты для фильтра'
+	attributes_list.admin_order_field = 'attributes__group'
 
 	def save_model(self, request, obj, form, change):
 		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))

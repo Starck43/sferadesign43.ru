@@ -9,7 +9,7 @@ from .logic import SetUserGroup
 
 from django.contrib.auth.forms import UserCreationForm
 from allauth.account.forms import SignupForm
-
+from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 
 """ Форма регистрации """
 class AccountSignupForm(SignupForm):
@@ -59,13 +59,16 @@ class AccountSignupForm(SignupForm):
 
 
 """ Форма регистрации """
-class CustomSocialSignupForm(SignupForm):
-	username = forms.CharField(label='Имя пользователя', widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (латиницей)'}))
+class CustomSocialSignupForm(SocialSignupForm):
+	first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
+	last_name = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'placeholder': 'Фамилия'}))
+
+	username = forms.CharField(label='Имя пользователя', widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (уникальный ник)'}))
 	email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'placeholder': 'Email адрес'}))
 	exhibitor = forms.BooleanField(label="Участник выставки?",required=False)
 
 	def __init__(self, *args, **kwargs):
-		self.field_order = ['username', 'email', 'exhibitor',]
+		self.field_order = ['first_name', 'last_name', 'username', 'email', 'exhibitor',]
 		super().__init__(*args, **kwargs)
 
 	def save(self, request):
@@ -74,6 +77,10 @@ class CustomSocialSignupForm(SignupForm):
 		user = SetUserGroup(request, user)
 
 		return user
+
+
+class DeactivateUserForm(forms.Form):
+	deactivate = forms.BooleanField(label='Удалить?', help_text='Пожалуйста, поставьте галочку, если желаете удалить аккаунт', required=True)
 
 
 class CustomClearableFileInput(ClearableFileInput):

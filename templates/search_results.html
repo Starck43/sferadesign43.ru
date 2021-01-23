@@ -3,6 +3,10 @@
 {% load custom_tags %}
 {% load watson %}
 
+{% block meta %}
+{{ block.super }}
+<meta name="robots" content="noindex">
+{% endblock meta %}
 
 {% block header %}<h1>Результаты поиска по &laquo;<i>{{query}}</i>&raquo;</h1>{% endblock header %}
 
@@ -54,33 +58,7 @@
 		</article>
 		{% endfor %}
 
-		{% block pagination %}
-		{% if is_paginated %}
-		<nav class="article-pagination my-4" aria-label="Постраничная навигация">
-			<ul class="pagination centered">
-				{% if page_obj.has_previous %}
-				<li class="page-item">
-					<a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{query}}" tabindex="-1" aria-disabled="true"><svg class="icon arrow-icon arrow-left"><use xlink:href="#arrow-icon"></use></svg></a>
-				</li>
-				{% endif %}
-
-				{% for p in paginator.page_range %}
-					{% if p == page_obj.number %}
-					<li class="page-item active no-select" aria-current="page"><span class="page-link">{{ p }}</span></li>
-					{% elif p > page_obj.number|add:-3 and p < page_obj.number|add:+3 %}
-					<li class="page-item"><a class="page-link" href="?page={{ p }}&q={{query}}">{{ p }}</a></li>
-					{% endif %}
-				{% endfor %}
-
-				{% if page_obj.has_next %}
-				<li class="page-item">
-					<a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{query}}"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg></a>
-				</li>
-				{% endif %}
-			</ul>
-		</nav>
-		{% endif %}
-		{% endblock pagination %}
+		{% include "pagination.html" %}
 
 	{% else %}
 

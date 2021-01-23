@@ -1,13 +1,22 @@
 
 var referenceSubmit = null;
 
+// Событие нажатия на кнопку отправки сообщения на сервер
 var submitEvent = function (e) {
 	e.preventDefault();
-	referenceSubmit = e.target;
-	let url = e.target.action;
-	let params = new URLSearchParams(new FormData(e.target)).toString();
-	//this.after(newNode);
-	ajaxSend(url, params);
+	var textarea = this.querySelector('textarea');
+	var message = '<p>Отправка сообщения ...</p>';
+	if (textarea.value == '') {
+		message = '<h3>Предупреждение!</h3><p>Вы отправляете пустой комментарий.</p>';
+	} else {
+
+		referenceSubmit = e.target;
+		let url = e.target.action;
+		let params = new URLSearchParams(new FormData(e.target)).toString();
+		//this.after(newNode);
+		ajaxSend(url, params, 'post', reviewRender);
+	}
+	alertHandler(message); // функция обработки сообщений
 }
 
 var replyEvent = function (e) {
@@ -54,81 +63,66 @@ if (reviewForm) {
 	textarea.addEventListener('input', textareaResize);
 }
 
-// Обработчик закрытия окон с сообщениями
-alertHandler = function(html){
-	if (alertContainer) {
-		var alertNode = document.createElement('div');
-		alertNode.className = 'alert alert-secondary rounded fade show';
-		alertNode.setAttribute('role','alert');
-		alertNode.innerHTML = html;
-		alertContainer.append(alertNode);
+// Рендер шаблона
+function rateRender(data) {
+	var message = '<h3>Рейтинг успешно установлен!</h3><p>\
+					Автор проекта: <b>"'+data['author']+'" </b><br/>\
+					Ваша оценка: <b>'+data['score']+'.0</b><br/>\
+					Общий рейтинг: <b>'+data['score_avg'].toFixed(1)+'</b></p>';
 
-		var alert = new bootstrap.Alert(alertNode);
-		var closeBtn = alertNode.querySelector('.btn-close');
-		closeBtn && closeBtn.addEventListener('click', function () {
-			alert.close();
-		});
-		alertNode.addEventListener('closed.bs.alert', function () {
-			alertContainer.classList.add('hidden');
-		});
+	alertHandler(message); // функция обработки сообщений
 
-		alertContainer.classList.remove('hidden');
+	ratingForm.setAttribute('value', data['score']);
+
+	const summaryScore = document.querySelector('.summary-score');
+	if (summaryScore) {
+		summaryScore.innerHTML = data['score_avg'].toFixed(1);
+		var userScore = document.createElement('div');
+		userScore.innerHTML = 'Ваша оценка: <b>'+data['score']+'.0</b>';
+		summaryScore.after(userScore);
 	}
+
 }
 
 // Рендер шаблона
-function render(data) {
-	// если с сервера вернулась переменная 'score', то значит это относится к рендеру рейтинга
-	if (data['score']) {
+function reviewRender(data) {
+	var newNode = document.createElement('article'),
+		parent = group = data['id'],
+		datetime = new Date().toLocaleDateString();
 
-		var message = '<button type="button" class="btn-close" aria-label="Close"></button>\
-						<h3>Оценка успешно установлена!</h3><p>\
-						Автор проекта: <b>"'+data['author']+'" </b><br/>\
-						Ваша оценка: <b>'+data['score']+'.0</b><br/>\
-						Общий рейтинг: <b>'+data['score_avg'].toFixed(1)+'</b></p>';
-
-		alertHandler(message); // функция обработки сообщений
-
-		const summaryScore = document.querySelector('.summary-score');
-		if (summaryScore) {
-			summaryScore.innerHTML = data['score_avg'].toFixed(1);
-			var userScore = document.createElement('div');
-			userScore.innerHTML = 'Ваша оценка: <b>'+data['score']+'.0</b>';
-			summaryScore.after(userScore);
-		}
-
+	newNode.className = 'porfolio-comment';
+	if (referenceSubmit.parentNode.classList.contains(newNode.className)) {
+		toggleCommentForm(referenceSubmit, true, true); //скроем форму ввода сообщения и почистим его область текста
+		newNode.classList.add('subcomment');
+		referenceSubmit.parentNode.after(newNode);
+		// если подкомментарий, то родителем будет являться текущий id родительского комментария
+		group = data['group'];
 	} else {
-		var newNode = document.createElement('article'),
-			parent = group = data['id'],
-			datetime = new Date().toLocaleDateString();
-
-		newNode.className = 'porfolio-comment';
-		if (referenceSubmit.parentNode.classList.contains(newNode.className)) {
-			toggleCommentForm(referenceSubmit, true, true); //скроем форму ввода сообщения и почистим его область текста
-			newNode.classList.add('subcomment');
-			referenceSubmit.parentNode.after(newNode);
-			// если подкомментарий, то родителем будет являться текущий id родительского комментария
-			group = data['group'];
-		} else {
-			toggleCommentForm(referenceSubmit, true, false); //скроем форму ввода сообщения и почистим его область текста
-			referenceSubmit.after(newNode);
-		}
-
-		var html = '<div class="comment-block">\
-					<h3 class="comment-block-author">'+data['author']+'</h3>\
-					<div class="comment-block-datetime">'+datetime+'</div>\
-					<p class="comment-block-text">'+data['message']+'</p>\
-				</div>\
-				<a class="reply-link" data-id="'+parent+'" data-group="'+group+'" data-author="'+data['author']+'">Ответить</a>';
-		newNode.innerHTML = html;
-
-		var commentsCounter = document.querySelector('.comments-counter span');
-		commentsCounter.innerText = Number(commentsCounter.innerText)+1;
-
-		var replyLink = newNode.querySelector('.reply-link');
-		replyLink && replyLink.addEventListener('click', replyEvent, {passive: true});
+		toggleCommentForm(referenceSubmit, true, false); //скроем форму ввода сообщения и почистим его область текста
+		referenceSubmit.after(newNode);
 	}
+
+	var html = '<div class="comment-block">\
+				<h3 class="comment-block-author">'+data['author']+'</h3>\
+				<div class="comment-block-datetime">'+datetime+'</div>\
+				<p class="comment-block-text">'+data['message']+'</p>\
+			</div>\
+			<a class="reply-link" data-id="'+parent+'" data-group="'+group+'" data-author="'+data['author']+'">Ответить</a>';
+	newNode.innerHTML = html;
+
+
+	var message =  '<h3>Ваш комментарий успешно отправлен!</h3>\
+					<p>"'+data['message']+'"</p>';
+
+	alertHandler(message); // функция обработки сообщений
+
+	var commentsCounter = document.querySelector('.comments-counter span');
+	commentsCounter.innerText = Number(commentsCounter.innerText)+1;
+
+	var replyLink = newNode.querySelector('.reply-link');
+	replyLink && replyLink.addEventListener('click', replyEvent, {passive: true});
 }
+
 
 
 function toggleCommentForm(el, clearInnerText=false, toggle=false) {

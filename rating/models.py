@@ -23,6 +23,18 @@ class Rating(models.Model):
 		verbose_name_plural = "Рейтинги"
 		unique_together = ('user', 'portfolio',)
 
+	@property
+	def fullname(self):
+		if self.user:
+			if (not self.user.first_name) and (not self.user.last_name) :
+				return self.user.username
+			else:
+				return "%s %s" % (self.user.first_name, self.user.last_name)
+		else:
+			return ''
+
+	fullname.fget.short_description = 'Автор рейтинга'
+
 	def __str__(self):
 		return f"{self.star} - {self.portfolio}"
 

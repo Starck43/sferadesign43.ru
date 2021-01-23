@@ -11,19 +11,19 @@ function toggleNavItems(link) {
 	});
 }
 
-function navbarOffset() {
+function navbarOffset(elem) {
 	// Добавим смещение следущему после меню элементу
-	const navbar = document.querySelector('.navbar');
-	if (!navbar.classList.contains('expanded')) {
-		var siblingEl = navbar.nextElementSibling;
-		siblingEl.style.marginTop = navbar.clientHeight + 'px';
+	if (!elem.classList.contains('expanded')) {
+		var siblingEl = elem.nextElementSibling;
+		siblingEl.style.marginTop = elem.clientHeight + 'px';
 	}
 }
 
 document.addEventListener("DOMContentLoaded", function() {
 	const burger = document.querySelector('.navbar-toggler');
+	const navbar = document.querySelector('nav.navbar');
 
-	navbarOffset();
+	navbarOffset(navbar);
 
 	const images = document.querySelectorAll("img:not(.lazyload)");
 	images.forEach(img => {
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	(window.innerWidth >= 992) && toggleNavItems(exhibitionsLink);
 
 	window.addEventListener('resize', function(){
-		navbarOffset();
+		navbarOffset(navbar);
 		toggleNavItems(exhibitionsLink);
 		if (window.innerWidth >= 992) {
 			burger.classList.contains('collapsed') && burger.classList.remove('collapsed');
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			navbarNavDropdown.style.maxHeight = 0;
 			container.removeEventListener('click', containerListener, false);
 		}
-	})
+	}, {passive: true});
 
 	var containerListener = function(e) {
 		burger.click();
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		item.addEventListener('click', (e) => {
 			searchContainer.classList.toggle('active');
 		}, {passive: true});
-	})
+	});
 
 
 	document.onkeydown = function(e) { // закрытие окна поиска по клавише escape
@@ -132,11 +132,16 @@ document.addEventListener("DOMContentLoaded", function() {
 		searchContainer.classList.contains('active') && searchContainer.classList.remove('active');
 	};
 
-/*	filterItems.on('click', '.filter__title', function(e) {
+	//= components/_ajax.js
+	//= components/_projectsFilter.js
+
+/*
+	filterItems.on('click', '.filter__title', function(e) {
 		if ( $(this).hasClass(collapsed) || $(this).hasClass(expanded) ) {
 			$(this).toggleClass(collapsed).toggleClass(expanded);
 			$(this).parent().siblings('.filter__inner').slideToggle(300);
 		}
-	});*/
+	});
+*/
 
 });

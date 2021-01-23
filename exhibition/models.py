@@ -337,6 +337,33 @@ class Events(models.Model):
 
 
 
+"""Аттрибуты фильтра для портфолио"""
+class PortfolioAttributes(models.Model):
+	Groups=(
+		('type','тип помещения'),
+		('style','стиль помещения'),
+	)
+
+	group = models.CharField('Группа',choices=Groups, max_length=30)
+	name = models.CharField("Название аттрибута", max_length=30)
+	slug = models.SlugField('Ярлык', max_length=30, null=True, unique=True)
+
+	class Meta:
+		verbose_name = "Аттрибут фильтра"
+		verbose_name_plural = "Аттрибуты фильтра"
+		db_table = 'filter_attributes'
+		ordering = ['group','name']
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			self.slug = uuslug(self.name, instance=self)
+		super().save(*args, **kwargs)
+
+	def __str__(self):
+		return f"{self.get_group_display()} / {self.name}"
+
+
+
 class Portfolio(models.Model):
 	project_id = models.IntegerField(null=True)
 	owner = models.ForeignKey(Exhibitors, on_delete=models.CASCADE, verbose_name = 'Участник')
@@ -359,6 +386,7 @@ class Portfolio(models.Model):
 
 	title = models.CharField('Название', max_length=200, blank=True)
 	description = RichTextField('Описание портфолио', blank=True)
+	attributes = models.ManyToManyField(PortfolioAttributes, related_name='attributes_for_portfolio', verbose_name = 'Аттрибуты фильтра', blank=True)
 
 	# Metadata
 	class Meta:
@@ -598,6 +626,7 @@ class Image(models.Model):
 		return self.file.name.rsplit('/', 1)[-1]
 
 	filename.short_description = 'Имя файла'
+
 
 
 class MetaSEO(models.Model):

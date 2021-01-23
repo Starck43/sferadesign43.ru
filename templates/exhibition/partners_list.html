@@ -4,26 +4,26 @@
 {% load thumbnail %}
 
 {% block person %}
+
 <section class="partners-list">
 	{% for e in exhibitions_list.first.partners.all %}
 	<article class="partner-logo centered">
 		<a href="{{ e.get_absolute_url }}">
-				{% thumbnail e.logo "150x150" as logo %}
-				<img src="{{ logo.url }}">
-				{% empty %}
-				<img src="{% get_media_prefix %}no-person.png">
-				{% endthumbnail %}
+			{% thumbnail e.logo "150x150" as logo %}
+			<img src="{{ logo.url }}">
+			{% empty %}
+			<img src="{% get_media_prefix %}no-person.png">
+			{% endthumbnail %}
 		</a>
 	</article>
 	{% endfor %}
 
 	<ol class="persons__list my-4">
-
 		{% for e in object_list %}
 		<li><h3>{{ e }}</li></h3>
 		{% endfor %}
-
 	</ol>
+
 </section>
 
 {% endblock person %}

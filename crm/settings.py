@@ -61,17 +61,19 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     #'allauth.socialaccount.providers.instagram',
-    #'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.odnoklassniki',
     'allauth.socialaccount.providers.vk',
+    'allauth.socialaccount.providers.google',
     #'allauth.socialaccount.providers.apple',
-    #'allauth.socialaccount.providers.google',
     #'allauth.socialaccount.providers.mailru',
     #'allauth.socialaccount.providers.yandex',
 ]
 
 MIDDLEWARE = [
     'django.middleware.cache.CacheMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -79,6 +81,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'django.middleware.cache.FetchFromCacheMiddleware',
     # watson search
     #'django.middleware.transaction.TransactionMiddleware',
     'watson.middleware.SearchContextMiddleware',
@@ -145,6 +149,7 @@ CACHES = {
     'default': env.cache('MEMCACHE_URL'), # {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',}
 }
 
+
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
@@ -158,7 +163,10 @@ SOCIALACCOUNT_PROVIDERS = {
         'APP': {
             'client_id': '512000847912',
             'secret': '79F74C7253623973B5E39731',
-        }
+        },
+        'SCOPE': [
+            'GET_EMAIL',
+        ],
     },
     'google': {
         'APP': {
@@ -173,11 +181,32 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         }
     },
+    'facebook': {
+        'APP': {
+            'client_id': '2910399535951628',
+            'secret': 'c10c8aaf1eb05dba81eeb8c9070e0a88',
+        },
+        #'METHOD': 'js_sdk', # default is oauth2 method
+        #'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
+        'SCOPE': ['email', 'public_profile'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'INIT_PARAMS': {'cookie': True},
+        'FIELDS': [
+            'id',
+            'first_name',
+            'last_name',
+            'name',
+        ],
+        'EXCHANGE_TOKEN': True,
+        'LOCALE_FUNC': lambda request: 'ru_RU',
+        'VERIFIED_EMAIL': False,
+        'VERSION': 'v9.0',
+    },
     'vk': {
         'APP': {
             'client_id': '7725491',
-            'secret': 'vGXlloDQjCR5haDrE8dS',
-            'key': 'd6ffe441d6ffe441d6ffe441b4d68a05f2dd6ffd6ffe4418903685ff7ef89315208bbd0'
+            'secret': 'tdv9taPqYAJk7wM3W62V',
+            'key': '24518b7324518b7324518b73ff24246ac02245124518b7344511499a33dec7893902549'
         }
     }
 
@@ -186,13 +215,15 @@ SOCIALACCOUNT_PROVIDERS = {
 SITE_ID=1
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_USERNAME_MIN_LENGTH = 4
 ACCOUNT_MAX_EMAIL_ADDRESSES = 2
+SOCIALACCOUNT_EMAIL_VERIFICATION = "optional"
+SOCIALACCOUNT_AUTO_SIGNUP = False
 LOGIN_REDIRECT_URL = "/"
+ACCOUNT_LOGOUT_ON_GET = True
 # ACCOUNT_SIGNUP_FORM_CLASS = 'exhibition.forms.SignupForm'
 ACCOUNT_FORMS = {
 'signup': 'exhibition.forms.AccountSignupForm',

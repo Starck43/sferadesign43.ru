@@ -1,42 +1,55 @@
+
+import base64
+import hashlib
+import hmac
+
 from os import path
 from django.conf import settings
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.urls import reverse_lazy
+from django.contrib import messages
 from django.template.loader	import render_to_string
 from django.dispatch import receiver
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.cache import cache_page
+#from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.list import ListView #, MultipleObjectMixin
 from django.views.generic.detail import DetailView
-from django.core.files.storage import FileSystemStorage
-from django.db.models import Q, Prefetch, Max, Count
+from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg
 from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
+from django.core.files.storage import FileSystemStorage
 
 from sorl.thumbnail import get_thumbnail
-from allauth.account.signals import user_signed_up
 from allauth.account.views import PasswordResetView
+from allauth.account.models import EmailAddress
+from allauth.account.signals import user_signed_up
+from allauth.socialaccount.models import SocialAccount
+from allauth.socialaccount.signals import social_account_removed
+
 from watson import search as watson
 from watson.views import SearchMixin
+from django.views.generic import View
 
 from django import forms
 from .models import *
 
 from rating.models import Rating, Reviews
-from .forms import ImagesUploadForm, FeedbackForm, UsersListForm
+from .forms import ImagesUploadForm, FeedbackForm, UsersListForm, DeactivateUserForm
 from rating.forms import RatingForm
 from .logic import SendEmail, SetUserGroup
 
-
+#from itertools import groupby
+from collections import defaultdict
 
 def success_message(request):
 	return HttpResponse('Сообщение отправлено! Спасибо за вашу заявку.')
 
 
 """ Main page """
-@cache_page(60 * 60)
 def index(request):
 	context = {
 		'html_classes': ['home'],
@@ -53,6 +66,12 @@ def index(request):
 	return render(request, 'index.html', context)
 
 
+""" Main page """
+def registration_policy(request):
+	return render(request, 'policy.html')
+
+
+""" Send email on Contacts page """
 def contacts(request):
 	if request.method == 'GET':
 		form = FeedbackForm()
@@ -77,95 +96,87 @@ def contacts(request):
 
 
 """ Exhibitors view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibitors_list(ListView):
 	model = Exhibitors
 	template_name = 'exhibition/participants_list.html'
 
 	def get_queryset(self):
-		slug = self.kwargs['exh_year']
-		self.exhibition = None
+		self.slug = self.kwargs['exh_year']
 
-		if slug:
-			exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('exhibitors')[0]
-			posts = exhibition_by_year.exhibitors.only('name')
-			self.exhibition = exhibition_by_year
-			return posts
-
-		return super().get_queryset()
+		if self.slug:
+			return self.model.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.slug)
+		else:
+			return self.model.objects.prefetch_related('exhibitors_for_exh').all()
+			#return super().get_queryset()
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants',]
-		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
+		context['absolute_url'] = self.model.__name__.lower
+		context['exhibition'] = self.slug
 
 		return context
 
 
 """ Partners view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class partners_list(ListView):
 	model = Partners
 	template_name = 'exhibition/partners_list.html'
 
 	def get_queryset(self):
-		slug = self.kwargs['exh_year']
+		self.slug = self.kwargs['exh_year']
 
-		if slug == None:
-			last_year = Exhibitions.objects.values_list('slug', flat=True).first()
-			posts = Partners.objects.prefetch_related('partners_for_exh').filter(~Q(partners_for_exh__slug=last_year)).order_by('name')
-			self.exhibition = None
+		if self.slug:
+			q = Q(partners_for_exh__slug=self.slug)
 		else:
-			#exhibition_by_year = self.objects.prefetch_related('partners_for_exh').filter(partners_for_exh__slug=slug).order_by('name'),
-			exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('partners')[0]
-			posts = exhibition_by_year.partners.only('name')
-			self.exhibition = exhibition_by_year
+			last_year = Exhibitions.objects.values_list('slug', flat=True).first()
+			# Only not in last year
+			q = ~Q(partners_for_exh__slug=last_year)
+
+		posts = self.model.objects.prefetch_related('partners_for_exh').filter(q)
 
 		return posts
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants', 'partners',]
-		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
+		context['absolute_url'] = self.model.__name__.lower
+		context['exhibition'] = self.slug
 
 		return context
 
 
 
 """ Jury view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class jury_list(ListView):
 	model = Jury
 	template_name = 'exhibition/persons_list.html'
 
 	def get_queryset(self):
-		slug = self.kwargs['exh_year']
-		self.exhibition = None
+		self.slug = self.kwargs['exh_year']
 
-		if slug:
-			exhibition_by_year = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('jury')[0]
-			posts = exhibition_by_year.jury.only('name')
-			self.exhibition = exhibition_by_year
-			return posts
+		if self.slug:
+			posts = self.model.objects.prefetch_related('jury_for_exh').filter(jury_for_exh__slug=self.slug)
+		else:
+			posts = self.model.objects.all()
 
-		return super().get_queryset()
+		return posts
+
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 
 		context['html_classes'] = ['participants', 'jury',]
-		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
+		context['absolute_url'] = self.model.__name__.lower
+		context['exhibition'] = self.slug
+
 		return context
 
 
 """ Exhibitons view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibitions_list(ListView):
 	model = Exhibitions
 
@@ -187,7 +198,6 @@ class exhibitions_list(ListView):
 
 
 """ Nominations view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class nominations_list(ListView):
 	model = Categories
 	template_name = 'exhibition/nominations_list.html'
@@ -202,88 +212,121 @@ class nominations_list(ListView):
 
 
 """ Events view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class events_list(ListView):
 	model = Events
 	template_name = 'exhibition/participants_list.html'
 
 	def get_queryset(self):
-		slug = self.kwargs['exh_year']
+		self.slug = self.kwargs['exh_year']
 
-		exhibition = Exhibitions.objects.filter(date_start__year=slug).prefetch_related('events')[0]
-		self.exhibition = exhibition
-		posts = exhibition.events.only('title').order_by('title')
+		if self.slug:
+			posts = self.model.objects.filter(exhibition__slug=self.slug).order_by('title')
+		else:
+			posts = self.model.objects.all().order_by('-exhibition__slug','title')
 
 		return posts
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['events',]
-		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
+		context['absolute_url'] = self.model.__name__.lower
+		context['exhibition'] = self.slug
 
 		return context
 
 
 """ Projects view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class projects_list(ListView):
 	model = Portfolio
 	template_name = 'exhibition/projects_list.html'
 
 	def get_queryset(self):
-		slug = self.kwargs['slug']
-		self.category = None
+		self.slug = self.kwargs['slug']
+		# Выбранные опции checkbox в GET запросе (?nominations=[])
+		filter_list = self.request.GET.getlist("filter-group", None)
+		filter_query = Q(nominations__category__slug=self.slug)
+		#nominations_list = Nominations.objects.filter(category__slug=self.slug).values_list('id',flat=True)
+		#nominations_query = Q(nominations__in=list(nominations_list))
 
-		posts = self.model.objects.filter(nominations__category__slug=slug, project_id__isnull=False).distinct()
-		if posts:
-			self.category = posts.values_list('nominations__category__title', flat=True)[0]
+		# Если выбраны опции фильтра, то найдем все номинации в текущей категории "self.slug"
+		if filter_list and filter_list[0] != '0':
+			filter_query.add(Q(attributes__in=filter_list), Q.AND)
+
+		subqry = Subquery(Image.objects.filter(portfolio=OuterRef('pk')).values('file')[:1])
+		posts = self.model.objects.filter(
+			filter_query &
+			Q(nominations__category__slug=self.slug) &
+			Q(project_id__isnull=False)
+		).distinct().prefetch_related('rated_portfolio').annotate(cat_title=F('nominations__category__title'), average=Avg('rated_portfolio__star'), cover=subqry).order_by('-exhibition__date_start')
 
 		return posts
 
 	def get_context_data(self, **kwargs):
+		#attributes = self.object_list.distinct().filter(attributes__group__isnull=False).annotate(attribute_id=F('attributes'), group=F('attributes__group'), name=F('attributes__name'))#.values('group', 'name', 'attribute_id').order_by('group', 'name')
+		# Отсортируем и сгруппируем словарь аттрибутов по ключу group
+		# keyfunc = lambda x:x['group']
+		# attributes = [list(data) for _, data in groupby(sorted(data, key=keyfunc), key=keyfunc)]
+		attributes = PortfolioAttributes.objects.prefetch_related('attributes_for_portfolio').filter(id__in=self.object_list.values_list('attributes',flat=True),group__isnull=False).distinct()
+		#print(attributes)
+		attributes_dict = attributes.values('id','name','group')
+		filter_attributes = defaultdict(list)
+		for i,item in enumerate(attributes_dict):
+			attributes_dict[i].update({'group_name':attributes[i].get_group_display()})
+			filter_attributes[item['group']].append(attributes_dict[i])
+
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['projects',]
-		context['absolute_url'] = 'projects'
-		context['page_title'] = self.category
-
+		context['absolute_url'] = self.slug
+		context['filter_attributes'] = list(filter_attributes.values())
+		#context['nominations'] = self.nominations
 		return context
+
+	def get(self, request, *args, **kwargs):
+		if request.GET.getlist("filter-group"):
+			queryset = self.get_queryset().values('id','title','average','owner__name','owner__slug','project_id','cover')
+			for i,q in enumerate(queryset):
+				thumb_320 = get_thumbnail(q['cover'], '320', crop='center', quality=settings.THUMBNAIL_QUALITY)
+				thumb_576 = get_thumbnail(q['cover'], '576', crop='center', quality=settings.THUMBNAIL_QUALITY)
+				queryset[i].update({'thumb_xs':str(thumb_320)})
+				queryset[i].update({'thumb_xs_w':thumb_320.width})
+				queryset[i].update({'thumb_sm':str(thumb_576)})
+				queryset[i].update({'thumb_sm_w':thumb_576.width})
+
+			return JsonResponse({"projects_list": list(queryset), 'media_url': settings.MEDIA_URL, 'projects_url':'/projects/'}, safe=False)
+		else:
+			self.paginate_by = 20
+			return super().get(request, **kwargs)
 
 
 
 """ Winners view """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class winners_list(ListView):
 	model = Winners
 	template_name = 'exhibition/participants_list.html'
 
 	def get_queryset(self):
-		self.exhibition = None
-		slug = self.kwargs['exh_year']
+		self.slug = self.kwargs['exh_year']
 
-		if slug == None:
-			posts = self.model.objects.select_related('exhibitors').values('exhibitor__name', 'exhibitor__slug').distinct().order_by('exhibitor__name') #.annotate(exhibitors_count=Count('exhibitor_id'))
+		if self.slug:
+			posts = self.model.objects.select_related('exhibition').filter(exhibition__date_start__year=self.slug).values('exhibitor__name', 'exhibitor__slug').order_by('exhibitor__name')
 		else:
-			posts = self.model.objects.select_related('exhibition').filter(exhibition__date_start__year=slug).order_by('exhibitor__name')
-			if posts:
-				self.exhibition = posts[0].exhibition
+			posts = self.model.objects.select_related('exhibitors').values('exhibitor__name', 'exhibitor__slug').distinct().order_by('exhibitor__name') #.annotate(exhibitors_count=Count('exhibitor_id'))
 
 		return posts
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants',]
-		context['absolute_url'] = self.model.__name__.lower
 		context['page_title'] = self.model._meta.verbose_name_plural
-		context['exhibition'] = self.exhibition
+		context['absolute_url'] = self.model.__name__.lower
+		context['exhibition'] = self.slug
 
 		return context
 
 
 
-""" Exhibitors & Winners detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
+""" Exhibitors detail """
 class exhibitor_detail(DetailView):
 	model = Exhibitors
 	template_name = 'exhibition/participant_detail.html'
@@ -301,7 +344,6 @@ class exhibitor_detail(DetailView):
 
 
 """ Jury detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class jury_detail(DetailView):
 	model = Jury
 	template_name = 'exhibition/participant_detail.html'
@@ -315,7 +357,6 @@ class jury_detail(DetailView):
 
 
 """ Partners detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class partner_detail(DetailView):
 	model = Partners
 	template_name = 'exhibition/participant_detail.html'
@@ -328,7 +369,6 @@ class partner_detail(DetailView):
 
 
 """ Event detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class event_detail(DetailView):
 	model = Events
 	template_name = 'exhibition/event_detail.html'
@@ -341,7 +381,6 @@ class event_detail(DetailView):
 
 
 """ Exhibitions detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class exhibition_detail(DetailView):
 	model = Exhibitions
 	def get_object(self, queryset=None):
@@ -384,7 +423,6 @@ class exhibition_detail(DetailView):
 
 
 """ Winner project detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class winner_project_detail(DetailView):
 	model = Winners
 	#slug_url_kwarg = 'name'
@@ -440,6 +478,9 @@ class winner_project_detail(DetailView):
 
 		if self.request.user.is_authenticated:
 			context['user_score'] = Rating.objects.filter(portfolio=portfolio, user=self.request.user).values_list('star',flat=True).first()
+		else:
+			context['user_score'] = None
+
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
@@ -448,7 +489,6 @@ class winner_project_detail(DetailView):
 
 
 """ Project detail """
-@method_decorator(cache_page(60 * 60 * 24), name='dispatch')
 class project_detail(DetailView):
 	model = Portfolio
 	#slug_url_kwarg = 'slug'
@@ -483,6 +523,8 @@ class project_detail(DetailView):
 		rate = score.average
 		if self.request.user.is_authenticated:
 			context['user_score'] = Rating.objects.filter(portfolio=self.object, user=self.request.user).values_list('star',flat=True).first()
+		else:
+			context['user_score'] = None
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
@@ -582,4 +624,43 @@ def account(request):
 	reviews = Reviews.objects.filter(user=request.user)
 
 	return render(request, 'account/base.html', { 'profile': profile, 'rates': rates, 'reviews': reviews })
+
+
+@login_required
+#@method_decorator(csrf_exempt, name='dispatch')
+def deactivate_user(request):
+
+	if request.method == 'GET':
+		form = DeactivateUserForm()
+	else:
+		form = DeactivateUserForm(request.POST)
+		if form.is_valid():
+			try:
+				user_allauth = EmailAddress.objects.get(user__username=request.user.username)
+				user_allauth.delete()
+			except EmailAddress.DoesNotExist:
+				pass
+
+			try:
+				social_account = SocialAccount.objects.get(user__username=request.user.username)
+				social_account.delete()
+				social_account_removed.send(
+					sender=SocialAccount,
+					request=self.request,
+					socialaccount=social_account
+				)
+			except SocialAccount.DoesNotExist:
+				pass
+
+			# User Deactivation
+			request.user.is_active = False
+			request.user.save()
+			# Log user out.
+			# logout(request)
+			# Give them a success message
+			# messages.success(request, 'Аккаунт удален!')
+			# return redirect(reverse('index'))
+			return HttpResponseRedirect(reverse_lazy('account_logout'))
+
+	return render(request, 'account/deactivation.html', {'form': form})
 

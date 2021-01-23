@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
-
 {% load static %}
 {% load crispy_forms_tags %}
+
+{% block meta %}
+{{ block.super }}
+<meta name="robots" content="noindex">
+{% endblock meta %}
 
 {% block header %}
 	{% if user.is_authenticated %}
