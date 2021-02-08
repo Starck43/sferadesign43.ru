@@ -7,6 +7,8 @@
 {% block styles %}
 {% endblock %}
 
+{% cache 86400 index_page %}
+
 {% block site_title %}
 <h1 class="hidden">{{main_title}}</h1>
 {{ block.super }}
@@ -15,7 +17,7 @@
 
 
 {% block content %}
-	{% cache 500 index %}
+
 	<div class="exh-description">
 		{% for org in organizers %}
 			{% if org.description %}
@@ -23,34 +25,37 @@
 			{% endif %}
 		{% endfor %}
 	</div>
-	{% if organizers %}
-		<section class="organizers-list">
-			<header><h2>{{ organizers.first|verbose_name_plural }}</h2></header>
-			{% for org in organizers %}
-			<article class="organizer-block">
-				<a href="{{org.site}}">
-					<div class="person-image">
-					{% thumbnail org.logo "150x150" as img %}
-						<img src="{{ img.url }}" alt="{{ org.name }}">
-					{% endthumbnail %}
-					</div>
-				</a>
-			</article>
-			{% endfor %}
-		</section>
-	{% endif %}
-	{% if exhibitions_list %}
-		<section class="partners-list">
-			<header><h2>{{ exhibitions_list.first.partners.first|verbose_name_plural }}</h2></header>
-			{% for partner in exhibitions_list.first.partners.all %}
-			<article class="partner-logo centered">
-			{% thumbnail partner.logo "150x150" as img %}
-				<a href="{{ partner.get_absolute_url }}"><img src="{{ img.url }}" alt="{{ partner.name }}"></a>
-			{% endthumbnail %}
-			</article>
-			{% endfor %}
-		</section>
-	{% endif %}
-	{% endcache %}
 
-{% endblock %}
+	{% if organizers %}
+	<section class="organizers-list">
+		<header><h2>{{ organizers.first|verbose_name_plural }}</h2></header>
+		{% for org in organizers %}
+		<article class="organizer-block">
+			<a href="{{org.site}}">
+				<div class="person-image">
+				{% thumbnail org.logo "150x150" as img %}
+					<img src="{{ img.url }}" alt="{{ org.name }}">
+				{% endthumbnail %}
+				</div>
+			</a>
+		</article>
+		{% endfor %}
+	</section>
+	{% endif %}
+
+	{% if exhibitions_list %}
+	<section class="partners-list">
+		<header><h2>{{ exhibitions_list.first.partners.first|verbose_name_plural }}</h2></header>
+		{% for partner in exhibitions_list.first.partners.all %}
+		<article class="partner-logo centered">
+		{% thumbnail partner.logo "150x150" as img %}
+			<a href="{{ partner.get_absolute_url }}"><img src="{{ img.url }}" alt="{{ partner.name }}"></a>
+		{% endthumbnail %}
+		</article>
+		{% endfor %}
+	</section>
+	{% endif %}
+
+{% endblock content%}
+
+{% endcache %}

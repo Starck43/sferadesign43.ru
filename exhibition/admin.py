@@ -4,6 +4,7 @@ from os import path
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.utils.html import format_html
 
 from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
 from sorl.thumbnail.admin import AdminImageMixin
@@ -12,11 +13,11 @@ from sorl.thumbnail.admin import AdminImageMixin
 from crm import models
 from .models import *
 from .forms import ExhibitionsForm, ImagesUploadForm, CustomClearableFileInput
-from .logic import UploadFilename, ImageResize
+from .logic import UploadFilename, ImageResize, delete_cached_fragment
 from rating.admin import RatingInline, ReviewInline
-from django.utils.html import format_html
 
 admin.site.unregister(User)  # нужно что бы снять с регистрации модель User
+
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -48,7 +49,6 @@ class PersonAdmin(admin.ModelAdmin):
 	search_fields = ('name', 'slug', 'description',)
 	list_display_links = ('logo_thumb', 'name',)
 	list_per_page = 20
-	#summernote_fields = ('description',) # Fields name of Models for using WYSIWYG editor instead of plain text
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -114,6 +114,11 @@ class OrganizerAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
 
 	description_html.short_description = 'Описание для главной страницы'
 
+	def save_model(self, request, obj, form, change):
+		delete_cached_fragment('index_page')
+		super().save_model(request, obj, form, change)
+
+
 
 class PartnersAdmin(PersonAdmin, ProfileAdmin):
 	fieldsets = (
@@ -126,6 +131,13 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin):
 	list_display = ('logo_thumb', 'name', 'phone',)
 	list_display_links = ('logo_thumb', 'name', 'phone',)
 
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+		if change:
+			exhibitions = Exhibitions.objects.filter(partners=obj).only('slug')
+			for exhibition in exhibitions:
+				delete_cached_fragment('exhibition_content', exhibition.slug)
+
 
 @admin.register(Categories)
 class CategoriesAdmin(admin.ModelAdmin):
@@ -136,6 +148,10 @@ class CategoriesAdmin(admin.ModelAdmin):
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations_set.all().values_list('title', flat=True))
 	nominations_list.short_description = 'Номинации'
+
+	def save_model(self, request, obj, form, change):
+		delete_cached_fragment('categories')
+		super().save_model(request, obj, form, change)
 
 
 class NominationsAdmin(admin.ModelAdmin):
@@ -159,19 +175,26 @@ class EventsInlineAdmin(admin.StackedInline):
 	#save_on_top = True # adding save button on top bar
 	verbose_name_plural = ""
 
+
 class EventsAdmin(admin.ModelAdmin):
 	list_display = ('title', 'date_event', 'time_event', 'hoster', 'exhibition',)
 	search_fields = ('title', 'description', 'hoster', 'lector',)
 	list_filter = ('exhibition__date_start', 'date_event',)
 	date_hierarchy = 'exhibition__date_start'
 	list_per_page = 20
-
 	save_as = True
+	ordering = ('-exhibition__slug','date_event','time_start',)
 	#save_on_top = True # adding save button on top bar
+
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+
+		delete_cached_fragment('exhibition_events', obj.exhibition.slug)
+
 
 
 class WinnersAdmin(admin.ModelAdmin):
-	list_display = ('exh_year', 'nomination', 'exhibitor',)
+	list_display = ('exh_year', 'nomination', 'exhibitor','portfolio')
 	list_display_links = list_display
 	#search_fields = ('nomination__title', 'exhibitor__name',)
 	list_filter = ('exhibition__date_start', 'nomination', 'exhibitor')
@@ -184,7 +207,7 @@ class WinnersAdmin(admin.ModelAdmin):
 	def formfield_for_foreignkey(self, db_field, request, **kwargs):
 		if db_field.name == "portfolio":
 			query = Portfolio.objects.prefetch_related('nominations_for_exh').all()
-			print(db_field)
+			#print(db_field)
 
 		return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -195,10 +218,10 @@ class ImagesInline(admin.StackedInline):
 	template = 'admin/exhibition/edit_inline/stacked.html'
 	extra = 0 #new blank record count
 	show_change_link = True
-	fields = ('file_thumb', 'file', 'title', 'filename',)
+	fields = ('file_thumb', 'file', 'title', 'filename', 'sort',)
 	list_display = ('file_thumb', 'title',)
 	readonly_fields = ('file_thumb', 'filename',)
-	list_editable = ['title']
+	list_editable = ['title','sort']
 
 	formfield_overrides = {
 		models.ImageField: {'widget': CustomClearableFileInput()},
@@ -206,9 +229,9 @@ class ImagesInline(admin.StackedInline):
 
 
 class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
-	fields = ('portfolio', 'title', 'description', 'file',)
-	list_display = ('file_thumb', 'author', 'portfolio', 'title',)
-	list_display_link = list_display
+	fields = ('portfolio', 'title', 'description', 'file', 'sort')
+	list_display = ('file_thumb', 'portfolio', 'title', 'author', 'sort',)
+	list_display_links = ('file_thumb', 'portfolio', 'title',)
 	list_filter = ('portfolio__owner', 'portfolio',)
 	readonly_fields = ('file_thumb',)
 
@@ -233,13 +256,19 @@ class PortfolioAttributesAdmin(admin.ModelAdmin):
 	search_fields = ('name',)
 	list_per_page = 30
 
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+		for category in Categories.objects.all():
+			delete_cached_fragment('sidebar', category.slug)
+
+
 
 class PortfolioAdmin(admin.ModelAdmin):
 	form = ImagesUploadForm
 	list_display = ('owner', 'title', 'exhibition', 'nominations_list', 'attributes_list')
 	list_display_links = ('owner', 'title')
 	search_fields = ('title', 'owner__name', 'exhibition__title', 'nominations__title')
-	list_filter = ('nominations', 'owner',)
+	list_filter = ('nominations__category', 'nominations', 'owner',)
 	list_per_page = 30
 
 	save_on_top = True # adding save button on top bar
@@ -253,6 +282,14 @@ class PortfolioAdmin(admin.ModelAdmin):
 	nominations_list.short_description = 'Номинации'
 	nominations_list.admin_order_field = 'nominations__title'
 
+	# def category(self, obj):
+	# 	categories = obj.nominations.filter(category__isnull=False).values_list('category__title', flat=True)
+	# 	if categories:
+	# 		return ', '.join(categories)
+	# 	else:
+	# 		return '<без категории'
+	# category.short_description = 'Категория'
+
 	def attributes_list(self, obj):
 		return ', '.join(obj.attributes.values_list('name', flat=True))
 	attributes_list.short_description = 'Аттрибуты для фильтра'
@@ -261,6 +298,9 @@ class PortfolioAdmin(admin.ModelAdmin):
 	def save_model(self, request, obj, form, change):
 		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
 		obj.save(request.FILES.getlist('files'))
+		if change:
+			delete_cached_fragment('portfolio', obj.id)
+			delete_cached_fragment('portfolio_slider', obj.id)
 
 
 	# def delete_file(self, pk, request):
@@ -377,8 +417,13 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, admin.ModelAdmin):
 			file_path = path.join(settings.MEDIA_ROOT,upload_filename)
 
 			instance = Gallery(exhibition=obj, file=image)
-
 			instance.save()
+
+		delete_cached_fragment('exhibition_header', obj.slug)
+		delete_cached_fragment('exhibition_content', obj.slug)
+		delete_cached_fragment('exhibition_events', obj.slug)
+		delete_cached_fragment('exhibition_gallery', obj.slug)
+		delete_cached_fragment('exhibition_overlay', obj.slug)
 
 		obj.save()
 

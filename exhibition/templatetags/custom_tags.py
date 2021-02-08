@@ -1,3 +1,11 @@
+import re
+import unicodedata
+import hashlib
+import threading
+
+from os import path
+from django.conf import settings
+
 
 from django import template
 register = template.Library()
@@ -17,19 +25,27 @@ def verbose_name_plural(obj):
 def to_string(obj):
 	return " ".join(obj)
 
+
+@register.filter
+def admin_change_url(model, app="exhibition"):
+	return 'admin:%s_%s_change' % (app, model)
+
+
+@register.filter
+def decode_emoji(obj):
+	return re.sub(r':([^a-z]+?):', lambda y: unicodedata.lookup(y.group(1)), obj)
+
+
 #return unique query list
 @register.filter
 def distinct(items, attr_name):
 	return set([getattr(i, attr_name) for i in items])
 
+
 @register.filter
 def count_range(value, start_index=0):
 	return range(start_index, value+start_index)
 
-import hashlib
-import threading
-from os import path
-from django.conf import settings
 
 class UrlCache(object):
 	_md5_sum = {}

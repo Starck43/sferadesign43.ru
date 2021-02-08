@@ -25,16 +25,18 @@ var is_mobile = false;
 
 {% endblock script %}
 
+
 {% block site_title %}
 {{ block.super }}
 <svg class="site-title"><use xlink:href="#main-title"></use></svg>
 {% endblock site_title %}
 
 
+{% cache cache_timeout exhibition_header object.slug %}
+
 {% block header %}
 
 {% if banner_slider %}
-{% cache 86400 banner object.slug %}
 
 <div class="banner-container">
 	<div id="banners-block">
@@ -68,20 +70,30 @@ var is_mobile = false;
 	</a>
 </div>
 
-{% endcache %}
 {% endif %}
 
-<h1>{{ object.title }}</h1>
+<h1>
+{{ object.title }}
+
+{% if user.is_staff %}
+	<a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+{% endif %}
+
+</h1>
 
 {% endblock header %}
+
+{% endcache %}
 
 
 {% block content %}
 
 <div class="content">
 
+	{% cache cache_timeout exhibition_content object.slug %}
+
 	<div class="exhibition-details">
-		<div class="exhibition-description">{{ object.description|safe }}</div>
+		<div class="exhibition-description description">{{ object.description|safe }}</div>
 
 		<div class="meta mt-3">
 			<div>Начало: <span>{{ object.date_start }}</span></div>
@@ -91,9 +103,8 @@ var is_mobile = false;
 	</div>
 
 	{% if nominations_list %}
-	{% cache 86400 exhibition_nominations object.slug %}
 
-	<div class="nominations-block">
+	<div id="nominations" class="nominations-block">
 		<h2 class="nominations-title exh-title">
 			{% if nominations_list.first.exhibitor_name %}Победители в номинациях{% else %}Номинации{% endif %}
 		</h2>
@@ -108,14 +119,12 @@ var is_mobile = false;
 		</ol>
 	</div>
 
-	{% endcache %}
 	{% endif %}
 
 
 	{% if object.exhibitors.count %}
-	{% cache 86400 exhibition_exhibitors object.slug %}
 
-		<div class="exhibitors-block">
+		<div id="exhibitors" class="exhibitors-block">
 			<h2 class="exhibitors-title exh-title collapsed">{{ object.exhibitors.first|verbose_name_plural }}</h2>
 			<ol>
 				{% for item in object.exhibitors.all %}
@@ -124,14 +133,12 @@ var is_mobile = false;
 			</ol>
 		</div>
 
-	{% endcache %}
 	{% endif %}
 
 
 	{% if object.jury.count %}
-	{% cache 86400 exhibition_jury object.slug %}
 
-		<div class="jury-block">
+		<div id="jury" class="jury-block">
 			<h2 class="exhibitors-title exh-title">{{ object.jury.first|verbose_name_plural }}</h2>
 			<ol class="jury-list">
 				{% for item in object.jury.all %}
@@ -143,21 +150,19 @@ var is_mobile = false;
 						{% endif %}
 					</div>
 					{% if item.description %}
-					<div class="jury-description">{{ item.description|safe }}</div>
+					<div class="jury-description description">{{ item.description|safe }}</div>
 					{% endif %}
 				</li>
 				{% endfor %}
 			</ol>
 		</div>
 
-	{% endcache %}
 	{% endif %}
 
 
 	{% if object.partners.count %}
-	{% cache 86400 exhibition_partners object.slug %}
 
-	<div class="partners-block">
+	<div id="partners" class="partners-block">
 		{% if object.slug == last_exh.slug %}
 
 		<h2 class="partners-title exh-title">{{ object.partners.first|verbose_name_plural }}</h2>
@@ -191,15 +196,17 @@ var is_mobile = false;
 		{% endif %}
 	</div>
 
-	{% endcache %}
 	{% endif %}
 
+	{% endcache %}
+
+
+	{% cache cache_timeout exhibition_events object.slug %}
 
 	{% if object.events.count %}
-	{% cache 86400 exhibition_events object.slug %}
 
-	<div class="events-block">
-		<h2 class="events-title exh-title collapsed">{{ events_title }}</h2>
+	<div id="events" class="events-block">
+		<h2 class="events-title exh-title {% if object.slug == exhibitions_list.first.slug %}expanded{% else %}collapsed{% endif %}">{{ events_title }}</h2>
 		<ol>
 			{% for item in object.events.all %}
 			<li>
@@ -211,8 +218,7 @@ var is_mobile = false;
 					</div>
 				</div>
 				<div class="event-details">
-					<p class="event-details-title">{{ item.title }}</p>
-					{% if item.description %}<div class="event-details-description">{{ item.description|safe }}</div>{% endif %}
+					{% if item.description %}<div class="event-details-description description">{{ item.description|safe }}</div>{% endif %}
 					{% if item.location %}<p><span>Площадка: </span>{{ item.location }}</p>{% endif %}
 					{% if item.hoster %}<p><span>Организатор: </span>{{ item.hoster }}</p>{% endif %}
 					{% if item.lector %}<p><span>Ведущий: </span>{{ item.lector }}</p>{% endif %}
@@ -222,12 +228,14 @@ var is_mobile = false;
 		</ol>
 	</div>
 
-	{% endcache %}
 	{% endif %}
 
+	{% endcache %}
+
+
+	{% cache cache_timeout exhibition_gallery object.slug %}
 
 	{% if object.gallery.count %}
-	{% cache 86400 gallery object.slug %}
 
 	<div class="gallery-block">
 		<h2 class="gallery-title exh-title">{{ gallery_title }}</h2>
@@ -235,17 +243,18 @@ var is_mobile = false;
 			{% for e in object.gallery.all %}
 			<a class="gallery-photo image-link" href="{% get_media_prefix %}{{ e.file }}">
 				{% thumbnail e.file "150x150" crop="center" as photo %}
-					<img class="lazyload" src="{{ photo.url }}">
+				<img class="lazyload" src="{{ photo.url }}">
 				{% empty %}
-					<img src="{% get_media_prefix %}no-image.png">
+				<img src="{% get_media_prefix %}no-image.png">
 				{% endthumbnail %}
 			</a>
 			{% endfor %}
 		</div>
 	</div>
 
-	{% endcache %}
 	{% endif %}
+
+	{% endcache %}
 
 </div>
 
@@ -254,10 +263,11 @@ var is_mobile = false;
 
 {% block extra_container %}
 
+{% cache cache_timeout exhibition_overlay object.slug %}
+
 <div id="overlay" class="modal">
 
 	{% if object.gallery.count %}
-	{% cache 3600 gallery_slider object.slug %}
 
 	<div id="slides-block">
 		{% for img in object.gallery.all %}
@@ -303,9 +313,10 @@ var is_mobile = false;
 		<svg id="close-button" class="close-icon icon"><use xlink:href="#close-icon"></use></svg>
 	</a>
 
-	{% endcache %}
 	{% endif %}
 
 </div>
+
+{% endcache %}
 
 {% endblock extra_container %}

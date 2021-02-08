@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load custom_tags %}
+{% load cache %}
 {% load thumbnail %}
 
 {% block styles %}
@@ -19,15 +20,32 @@
 
 {% if user.is_authenticated %}
 <script type="text/javascript" src="{% md5url 'js/reviews-rate.min.js' %}"></script>
-{% else %}
-<script type="text/javascript" src="{% md5url 'js/reviews.min.js' %}"></script>
 {% endif %}
 
 {% endblock script %}
 
 
+{% block svg_icons %}
+
+{{ block.super }}
+<symbol id="award-icon" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 32 32">
+	<path d="M24.651,0l0.034,0.725c0.021,0.416-0.084,0.734-0.317,0.975c-0.314,0.322-0.824,0.484-1.252,0.557   c0.016-0.371,0.031-0.745,0.043-1.132c-0.619,0-3.891,0-7.155,0c-0.003,0-0.005,0-0.008,0c-3.265,0-6.535,0-7.154,0   C8.854,1.512,8.87,1.886,8.886,2.257C8.457,2.184,7.948,2.021,7.633,1.699C7.398,1.459,7.293,1.14,7.314,0.724L7.349,0H3.558   l0.013,0.704c0.21,12.111,5.337,15.043,7.684,15.75l-0.385,0.547L12,17.798l0.386-0.551c0.772,1.438,1.445,2.356,1.732,3.09h-0.524   v1.097h0.64c-0.259,1.694-3.684,3.656-3.684,3.656v1.034H9.71V32h6.285h0.008h6.285v-5.876H21.45V25.09   c0,0-3.426-1.962-3.685-3.656h0.64v-1.097h-0.523c0.287-0.733,0.96-1.649,1.732-3.09l0.385,0.551l1.132-0.797l-0.386-0.547   c2.348-0.707,7.475-3.639,7.685-15.75L28.442,0H24.651z M4.971,1.383h1.011C6.077,1.88,6.302,2.317,6.648,2.67   C7.34,3.375,8.333,3.588,8.965,3.654c0.369,5.33,1.352,8.889,2.373,11.373C9.329,14.291,5.323,11.553,4.971,1.383z M20.661,15.027   c1.021-2.484,2.004-6.043,2.373-11.373c0.633-0.066,1.625-0.279,2.316-0.984c0.348-0.353,0.572-0.79,0.667-1.287h1.011   C26.678,11.553,22.671,14.291,20.661,15.027z"/>
+</symbol>
+
+{% endblock svg_icons %}
+
+
 {% block header %}
-<h1>{% if portfolio %}{{ object.title }}{% else %}Портфолио пока не создано!{% endif %}</h1>
+<h1>
+{% if portfolio %}
+	{{ object.title }}{% if victories %}<svg class="award"><use xlink:href="#award-icon"></use></svg>{% endif %}
+	{% if user.is_staff %}
+		<a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+	{% endif %}
+{% else %}
+	Портфолио пока не создано!
+{% endif %}
+</h1>
 {% endblock header %}
 
 {% block site_title %}
@@ -40,9 +58,20 @@
 
 {% if portfolio %}
 
+{% cache cache_timeout portfolio object.id is_mobile %}
 <section class="portfolio-container">
 	<div class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></div>
 	<div class="portfolio-exhibition">Участие в выставке: <a href="{% url 'exhibition-detail-url' portfolio.exhibition.slug %}">{{portfolio.exhibition}}</a></div>
+
+	{% if victories %}
+	<div>Победа в номинации:
+		{% for victory in victories %}
+		<span class="project-award">
+			<a href="{{victory.nomination.get_absolute_url}}">{{victory.nomination.title}}</a>, {{victory.exhibition.slug}}
+		</span>
+		{% endfor %}
+	</div>
+	{% endif %}
 
 	{% include "exhibition/images_list.html" %}
 
@@ -54,19 +83,30 @@
 	{% endif %}
 
 </section>
+{% endcache %}
 
 {% include "rating/rating_form.html" %}
 {% include "rating/review.html" %}
 
 {% else %}
+
 <a href="{{parent_link}}">Вернуться к разделам портфолио</a>
+
 {% endif %}
 
 {% endblock content %}
 
 
 {% block extra_container %}
+
+{% if not is_mobile %}
+
+{% cache cache_timeout portfolio_slider object.id %}
 {{ block.super }}
 {% include "exhibition/gallery.html" %}
+{% endcache %}
+
+{% endif %}
 
 {% endblock extra_container %}
+

@@ -53,8 +53,8 @@ class Rating(models.Model):
 """Отзывы"""
 class Reviews(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, verbose_name = 'Пользователь')
-	parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Родитель')
-	group = models.ForeignKey('self', related_name='group_comments', on_delete=models.SET_NULL, null=True, verbose_name='Группа')
+	parent = models.ForeignKey('self', related_name='parent_comments', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Родитель')
+	group = models.ForeignKey('self', related_name='group_comments', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Группа')
 	portfolio = models.ForeignKey(Portfolio, related_name='comments_portfolio', on_delete=models.CASCADE, verbose_name='Портфолио')
 	message = models.TextField("Сообщение", max_length=3000)
 	posted_date = models.DateTimeField("Опубликовано", auto_now_add=True, blank=True)
@@ -62,12 +62,17 @@ class Reviews(models.Model):
 	class Meta:
 		verbose_name = "Комментарий"
 		verbose_name_plural = "Комментарии"
-		ordering = ['-posted_date','portfolio','id']
+		ordering = ['-posted_date','group_id','parent_id']
 		unique_together = (('id', 'parent'), ('id', 'group'),)
 
 	def count(self):
 		aggregates = self.comments_portfolio.aggregate(count=models.Count('portfolio'))
 		return aggregates.get('count') or 0
+
+	def reply_count(self):
+		aggregates = self.parent_comments.aggregate(count=models.Count('parent'))
+		return aggregates.get('count') or 0
+
 
 	@property
 	def fullname(self):

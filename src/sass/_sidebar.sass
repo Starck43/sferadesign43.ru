@@ -13,18 +13,15 @@
 	transition: transform 300ms ease
 	overflow-y: auto
 	z-index: 1000
-	+media-breakpoint-up(md)
+	+media-breakpoint-up(lg)
 		position: absolute
-		top: 2.2em !important
+		top: 3.2em !important
 		bottom: unset
 		width: #{$content-margin - 75px}
 		padding: 0.75em
 		transform: unset
 		.filter-title
 			display: none
-
-	+media-breakpoint-up(lg)
-		top: 3.2em !important
 
 	+media-breakpoint-up(xl)
 		width: #{$content-margin}
@@ -42,24 +39,33 @@
 		position: absolute
 		right: 1em
 		top: 1em
-		+media-breakpoint-up(md)
+		+media-breakpoint-up(lg)
 			display: none
+
+	.form-check-input:checked
+		background-color: $main-color
+		border-color: $main-color
 
 .filter-link
 	position: absolute
 	top: 1em
 	right: 1em
 	text-transform: lowercase
-	+media-breakpoint-up(md)
+	+media-breakpoint-up(lg)
 		display: none
 
 .filter-title, .filters-block, .filters-block button
+	font-size: 1.2rem
 	+media-breakpoint-up(md)
+		font-size: 1rem
+	+media-breakpoint-up(lg)
 		font-size: 0.8em
+
 .filters-group
-	+media-breakpoint-up(md)
+	+media-breakpoint-up(lg)
 		color: $light-text-color
 
 .filter-attributes-block
 	li
 		margin: 5px 0
+

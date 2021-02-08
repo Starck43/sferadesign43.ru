@@ -4,7 +4,7 @@
 {% load cache %}
 {% load thumbnail %}
 
-{% cache 2592000 categories %}
+{% cache cache_timeout categories %}
 
 {% block header %}<h1>{{ page_title }}</h1>{% endblock%}
 

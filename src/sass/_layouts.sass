@@ -41,13 +41,12 @@
 			object-fit: cover
 
 			&~.img-title
-				+blur-background(0, $main-color, 1)
 				>*:not(:first-child)
-					margin-bottom: 0.5em
+					margin-bottom: 5%
 					font-size: 1rem
 					font-weight: normal
 				&:hover
-					+blur-background(10, $main-color, 0.7)
+					+blur-background(10, $overlay-color, 0.7)
 
 		.img-title
 			+push--absolute
@@ -105,9 +104,42 @@
 
 .expanded
 	~*:not(ol)
-		padding-top: 0.5em
-		max-height: 100vh
+		padding-top: 1em
 
 	&.exh-title, .exh-title
 		&::after
 			transform: rotate(-270deg)
+
+
+.portfolio-rate
+
+	//height: 4em
+	//width: 4em
+	padding: 5px
+	border: 2px solid
+	.rate-counter
+
+	.rate-star
+		position: relative
+		height: 21px
+		width: 21px
+		margin-left: 3px
+		fill: orange
+		stroke: #fff
+
+.portfolio-award
+	flex-direction: column
+	svg
+		width: 21px
+		height: 21px
+		fill: orange
+		stroke: white
+
+svg.award
+	width: calc(1.3rem + 1vw)
+	height: calc(1.3rem + 1vw)
+	margin-left: 9px
+	margin-bottom: 9px
+	fill: orange
+	stroke: orange
+

@@ -1,15 +1,22 @@
 from django import forms
-from .models import Exhibitions, Winners, Nominations, Portfolio, Image
-from django.contrib.auth.models import User
 from django.forms.models import ModelMultipleChoiceField
 from django.forms.widgets import ClearableFileInput
+from django.utils.html import format_html, escape
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+
 from uuslug import uuslug
 
+from django.db.models import OuterRef, Subquery
+from django.db.models.expressions import F, Value
+
+from .models import Exhibitors, Exhibitions, Winners, Nominations, Portfolio, Image
 from .logic import SetUserGroup
 
-from django.contrib.auth.forms import UserCreationForm
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+from allauth.account.models import EmailAddress
+
 
 """ Форма регистрации """
 class AccountSignupForm(SignupForm):
@@ -86,7 +93,6 @@ class DeactivateUserForm(forms.Form):
 class CustomClearableFileInput(ClearableFileInput):
 	template_name = 'admin/exhibition/widgets/file_input.html'
 
-
 class ExhibitionsForm(forms.ModelForm):
 	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
 
@@ -132,19 +138,40 @@ class FeedbackForm(forms.Form):
 	message = forms.CharField(label='Сообщение', required=True, widget=forms.Textarea(attrs={'placeholder': 'Сообщение'}))
 
 
-""" Переопределение отображения списка пользователей """
+""" Mixin: Переопределение отображения списка пользователей в UsersListForm """
 class UserMultipleModelChoiceField(ModelMultipleChoiceField):
 	def label_from_instance(self, obj):
-		return "%s %s [%s]" % (obj.first_name, obj.last_name, obj.email)
+		if not obj.verified == None:
+			if obj.verified:
+				email_status = '<img src="/static/admin/img/icon-yes.svg">'
+			else:
+				email_status = '<img src="/static/admin/img/icon-no.svg">'
+		else:
+			email_status = ''
+
+		return format_html('<b>{0}</b> [{1}] </span><span>{2}</span><span>{3}</span>', obj.name, obj.user_email, obj.last_exh or '', format_html(email_status))
+		#return format_html('<b>{0}</b> [{1}] </span><span>{2}</span>', obj['name'], obj['user_email'], obj['last_exh'] or '')
 
 
 """ Вывод списка пользователей в рассылке сброса паролей"""
 class UsersListForm(forms.Form):
-	users = UserMultipleModelChoiceField(label='Имя пользователя / Email',
-		widget=forms.CheckboxSelectMultiple(attrs={}),
-		queryset=User.objects.filter(groups__name='Exhibitors').order_by('first_name'),
-		to_field_name="email"
+
+	subquery = Subquery(Exhibitions.objects.filter(exhibitors=OuterRef('pk')).values('slug')[:1])
+	subquery2 = Subquery(EmailAddress.objects.filter(user_id=OuterRef('user_id')).values('verified')[:1])
+	users = UserMultipleModelChoiceField(label=format_html('Имя [Email]<span>Последняя выставка</span><span>Верификация</span>'),
+		widget=forms.CheckboxSelectMultiple(),
+		queryset=Exhibitors.objects.distinct().filter(user__is_active=True).annotate(
+			user_email=F('user__email'),
+			last_exh=subquery,
+			verified=subquery2,
+		).order_by('-last_exh', 'user_email', 'name'),
+		to_field_name="user_email"
 	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		#self.fields['users'].widget.attrs = {'class': 'reset-psw-user-input'}
+
 
 # User fields to output:
 # date_joined, email, emailaddress, exhibitors, first_name, groups, id, is_active, is_staff, is_superuser, last_login, last_name, logentry, organizer, password, rating, reviews, user_permissions, username

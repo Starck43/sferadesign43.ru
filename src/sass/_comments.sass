@@ -2,21 +2,77 @@
 @import mixins
 
 #comments-container
+	margin-bottom: 2vw
 	.review-form
 		display: flex
 		flex-direction: column
 		button
-			margin-left: auto
+			margin: 0 0 2em auto
+
+	.reply-form
+		position: relative
+		display: flex
+		flex-wrap: wrap
+		width: 100%
+		>*
+			margin: 0
+		.btn-link
+			position: relative
+			padding: 0
+			padding-left: 5px
+			text-align: right
+			border: none
+			color: $link-color
+			background-color: transparent
+
+		textarea
+			flex: 1
+			appearance: none
+			border: none
+
+		&::after
+			content: attr(data-value) " "
+			position: absolute
+			visibility: hidden
+			//white-space: pre-wrap
+
+	.cloning-links
+		display: none
 
 .porfolio-comment
-	margin-bottom: 6vh
+	display: flex
+	flex-wrap: wrap
+	margin-bottom: 4vh
+	>a
+		margin-left: 1em
+		&.reply-link
+			margin-left: 0
+			margin-right: auto
+
+			span
+				display: inline-block
+				padding-left: 5px
+				vertical-align: middle
+				text-decoration: underline dotted
+		svg
+			width: .8em
+			height: .8em
+			fill: currentColor
+			margin-bottom: 3px
+
+	&.deleted
+		font-style: italic
+		color: $light-text-color
+
 
 .comment-block
+	flex: auto
+	position: relative
 	width: 100%
 	color: $comment-text
 	background-color: $comment-bg
-	border-radius: 5px
-	padding: 10px
+	border-radius: 2px
+	padding: 1em
 	margin-bottom: 0.5em
 	&-author
 		font-size: 1em
@@ -24,45 +80,38 @@
 		margin-top: 0.5em
 		margin-bottom: 0
 
+
 .subcomment
 	margin-left: 2em
-	margin-top: 4vh
 
-.review-form
-	button
-		margin-top: 0.5em
-		margin-bottom: 2em
+.modal-content
+	box-shadow: 0 0 1rem transparentize($main-color, 0.7)
+	border: solid $border-thickness $highlight-border-color
 
-.reply-form
-	position: relative
-	display: flex
-	flex-wrap: wrap
-	width: 100%
-	>*
-		margin: 0
+.modal-body
+	.sub-title
+		margin-bottom: 0.5em
 
-	textarea
-		flex: 1
-		appearance: none
-		border: none
-
-	button
-		position: relative
-		padding: 0
-		padding-left: 5px
-		text-align: right
-
-	&::after
-		content: attr(data-value) " "
-		position: absolute
-		visibility: hidden
-		//white-space: pre-wrap
-
+.modal-footer
+	.btn
+		min-width: 100px
 
 textarea
 	resize: none
 	overflow: hidden
+	&.success
+		background-color: $highlight-block-bg !important
+
+	&.warning
+		background-color: #f8d7da !important
+
+.message-status
+	margin-left: 1em
+	&.success
+		color: #0f5132
+	&.warning
+		color: #055160
+	&.error
+		color: #842029
 
 
-.reply-link
-	cursor: pointer

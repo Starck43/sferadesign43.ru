@@ -1,0 +1,136 @@
+a
+	outline: 0 !important
+
+.hidden, .hidden-label div > label
+	display: none !important
+
+#container
+	height: 100vh
+
+	.main
+		display: flex
+		height: auto
+
+#nav-sidebar
+	flex: 1 1 auto
+	max-width: 285px
+
+.app-catalog .content
+	flex: 1 1 100%
+
+#changelist-filter
+	width: 200px
+
+td.field-image_img, th.column-image_img span
+	text-align: center
+
+.ui-tabs
+	padding: 0 !important
+
+	.ui-tabs-nav
+		margin: (-2px) !important
+		padding: 0.3em 0.3em 0 !important
+
+.form-row.field-image_img
+	float: left
+
+.submit-row
+	> *
+		margin: 5px !important
+
+	input.default
+		float: left
+
+input[type=submit]
+	float: left
+
+.submit-row p.deletelink-box
+	float: right !important
+
+form .related-widget-wrapper ul
+	width: 100%
+
+.hidden-label .add-related::before
+	content: 'Новый '
+
+
+.column-file_thumb
+	max-width: 50px
+	word-wrap: break-word
+
+.column-title, .column-filename
+	flex: 1 1 30% !important
+
+.inline-header >span,
+.inline-related fieldset >.form-row
+	flex: 1 1 10%
+
+.inline-header
+	display: flex
+	align-items: center
+	background-color: #eee
+	text-transform: uppercase
+	font-size: .8em
+
+	span
+		padding: 10px 5px
+
+	.column-delete
+		flex: 1
+		margin-left: 5px
+		text-align: right
+
+.inline-related
+
+	.delete
+		//flex: 1
+		margin-left: 10px
+		text-align: right
+		width: 30px
+		input
+			margin-right: 20px
+
+	fieldset
+		display: flex
+		flex-wrap: wrap
+		align-items: center
+
+		input
+			margin: 0
+
+		.form-row
+			border-bottom: none
+
+
+		.column-file
+			position: absolute
+			width: 70px
+			height: 100%
+			padding: 0
+			opacity: 0
+
+			input
+				position: absolute
+				height: 100%
+				width: 100%
+				top: 0
+				left: 0
+				cursor: pointer
+
+	.aligned
+		label + div.readonly, p.file-upload
+			margin-left: 0
+
+		label + p
+			padding: 0
+
+	input
+		font-size: 1.2em
+
+.inline-group h2
+	flex: 1
+
+
+@media (max-width: 767px)
+	.inline-related fieldset
+		flex-wrap: wrap

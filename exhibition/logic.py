@@ -1,13 +1,20 @@
+import re
+import unicodedata
+
 from django.conf import settings
 from PIL import Image as Im
 from io import BytesIO
 from os import path, remove
 from sys import getsizeof
+
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import HttpResponse
 from django.core.mail import EmailMessage, BadHeaderError
+
+from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
 
 #from sorl.thumbnail import get_thumbnail, delete
 
@@ -86,7 +93,6 @@ def ImageResize(obj):
 		return None
 
 
-
 """ Return True if the request comes from a mobile device """
 def IsMobile(request):
 	import re
@@ -99,6 +105,7 @@ def IsMobile(request):
 		return False
 
 
+""" Sending email from the Contact form to site administrator """
 def SendEmail(template):
 	email = EmailMessage(
 		'Новое сообщение с сайта sd43.ru!',
@@ -130,9 +137,39 @@ def SetUserGroup(request, user):
 	try:
 		group = Group.objects.get(name=group_name)
 		user.groups.add(group)
-		print(group_name)
+		#print(group_name)
 		user.save()
 	except Group.DoesNotExist:
 		pass
 
 	return user
+
+
+""" Reset cache """
+def delete_cached_fragment(fragment_name, *args):
+	#print(args)
+	key = make_template_fragment_key(fragment_name, args or None)
+	cache.delete(key)
+	return key
+
+""" Encoding/decoding emoji in string data """
+def unicode_emoji(data, direction='encode'):
+	if data:
+		if direction == 'encode':
+			emoji_pattern = re.compile(u"["
+				u"\u2600-\u26FF"  			# Unicode Block 'Miscellaneous Symbols'
+				u"\U0001F600-\U0001F64F"	# emoticons
+				u"\U0001F300-\U0001F5FF"	# symbols & pictographs
+				u"\U0001F680-\U0001F6FF"	# transport & map symbols
+				u"\U0001F1E0-\U0001F1FF"	# flags (iOS)
+			"]", flags= re.UNICODE)
+
+			return re.sub(emoji_pattern, lambda y: ':'+unicodedata.name(y.group(0))+':', data)
+		elif direction == 'decode':
+				return re.sub(r':([^a-z]+?):', lambda y: unicodedata.lookup(y.group(1)), data)
+		else:
+			return data
+	else:
+		return ''
+
+

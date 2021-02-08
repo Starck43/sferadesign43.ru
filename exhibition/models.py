@@ -9,6 +9,9 @@ from django.db import models
 from django.contrib.auth.models import User, UserManager
 from django.contrib.auth import get_user_model
 
+from django.db.models import F
+from django.db.models.functions import Coalesce
+
 from django.db.models.signals import post_init, post_save
 from django.dispatch import receiver
 
@@ -205,7 +208,10 @@ class Categories(models.Model):
 		super().save(*args, **kwargs)
 
 	def __str__(self):
-		return self.title
+		if self.title:
+			return self.title
+		else:
+			return '<без категории>'
 
 	def logo_thumb(self):
 		return get_image_html(self.logo)
@@ -401,14 +407,12 @@ class Portfolio(models.Model):
 		posts = self.images.all()
 		for post in posts:
 			post.delete()
-
 		super().delete(*args, **kwargs)
 
 	def save(self, images=None, *args, **kwargs):
 		if not self.project_id:
 			# найдем последнюю запись с наибольшим id
 			post = Portfolio.objects.filter(owner=self.owner).only('project_id').order_by('project_id').last()
-			print(post)
 			index = 1
 			if post and post.project_id:
 				index += post.project_id
@@ -572,12 +576,15 @@ class Image(models.Model):
 	title = models.CharField('Заголовок', max_length=100, null=True, blank=True)
 	description = models.CharField('Описание', max_length=250, blank=True)
 	file = models.ImageField('Фото', upload_to=UploadFilename, storage=MediaFileStorage())
+	sort = models.SmallIntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
 	class Meta:
 		verbose_name = 'Фото участника'
 		verbose_name_plural = 'Фото участников'
+		ordering = [Coalesce("sort", F('id') + 500)]
 		db_table = 'images'
+
 
 	def __str__(self):
 		if self.title:

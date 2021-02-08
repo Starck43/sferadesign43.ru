@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from exhibition.logic import delete_cached_fragment
 from .models import Rating, Reviews
 
 
@@ -9,16 +10,26 @@ admin.site.site_header = 'Рейтинг'
 """Рейтинг"""
 @admin.register(Rating)
 class RatingAdmin(admin.ModelAdmin):
-	fields = ('fullname',)
+	fields = ('user', 'portfolio', 'star',)
 	list_display = ('star', 'portfolio', 'fullname', 'ip',)
 	readonly_fields = ('ip',)
 	list_filter = ('star',)
+
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+
+		delete_cached_fragment('portfolio', obj.portfolio.id)
 
 
 """Комментарии к работам"""
 @admin.register(Reviews)
 class ReviewAdmin(admin.ModelAdmin):
 	list_display = ('id', 'group', 'portfolio', 'fullname', 'parent', 'message', 'posted_date', )
+
+	# def save_model(self, request, obj, form, change):
+	# 	super().save_model(request, obj, form, change)
+
+	# 	delete_cached_fragment('portfolio_review', obj.portfolio.id)
 
 
 """Форма вывода рейтинга у портфолио в админке"""

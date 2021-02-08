@@ -16,7 +16,10 @@
 <p>
 Вы вошли как <b>{{user.first_name}} {{user.last_name}}</b> ({{user_display}})<br/>
 E-mail: <b>{{user.email}}</b>
+</p>
+<p>
 [<a class="mx-1" href="{% url 'account_logout' %}">{% trans 'Sign Out' %}</a>]
+[<a class="mx-1" href="{% url 'account_email' %}">Сменить e-mail</a>]
 {% if not user.is_staff %}
 [<a class="mx-1" href="{% url 'deactivate-user' %}">Удалить аккаунт</a>]
 {% endif %}
@@ -58,7 +61,7 @@ E-mail: <b>{{user.email}}</b>
 						<h3 class="user-comment-title">{{review.portfolio.title}}</h3></a>
 					<a href="{{review.portfolio.owner.get_absolute_url}}">Автор: {{review.portfolio.owner}}</a>
 				</div>
-				<div class="user-comment-message card-body"><p>"{{review.message}}"</p></div>
+				<div class="user-comment-message card-body"><p>"{{review.message|decode_emoji}}"</p></div>
 				<div class="comment-block-datetime card-footer">{{ review.posted_date|date:"d b Y" }}</div>
 			</div>
 		</li>

@@ -52,16 +52,21 @@
 		right: auto
 
 //Абсолютное позиционирование в размер родителя
-@mixin push--absolute($pos: absolute, $p: 0)
-	position: $pos
-	top: $p
-	left: $p
-	@if $p == 0
+@mixin push--absolute($t: 0, $r: none, $b: none, $l: none)
+	position: absolute
+	top: $t
+	left: $t
+	@if $t == 0 and $l == none and $b == none and $r == none
 		width: 100%
 		height: 100%
+	@else if $t != 0 and $l == none and $b == none and $r == none
+		right: $t
+		bottom: $t
 	@else
-		right: $p
-		bottom: $p
+		top: $t
+		left: $l
+		right: $r
+		bottom: $b
 
 @mixin blur-background($blur:10, $color:white, $transparentize:0.8)
 	background-color: transparentize($color, $transparentize)
@@ -177,12 +182,12 @@ $parallax-ios         : true !default
 		&::before
 			@include pseudo($pos)
 			width: 100%
-			padding-top: $padding
+			padding-bottom: $padding
 	@else
 		position: $pos
 		width: 100%
 		height: $h
-		padding-top: $padding
+		padding-bottom: $padding
 	img
 		+push--absolute
 
@@ -208,7 +213,7 @@ $parallax-ios         : true !default
 		border-bottom: $size solid transparent
 		border-left: $size solid $color
 		margin-right: -$size
-	@else if  $direction == left
+	@else if $direction == left
 		border-top: $size solid transparent
 		border-bottom: $size solid transparent
 		border-right: $size solid $color

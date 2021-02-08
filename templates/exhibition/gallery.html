@@ -1,8 +1,6 @@
 {% load static %}
 {% load thumbnail %}
 
-{% if not is_mobile and portfolio.images %}
-
 	<div id="overlay" class="modal">
 
 		<div id="slides-block" class="fade">
@@ -16,7 +14,7 @@
 					src="{{ img.file.url }}"
 					srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
 					data-sizes="auto"
-					data-expand="-50"
+					data-expand="50"
 					loading="lazy"
 					style="max-width: {{ img.file.width }}px"
 					title="{% if img.title %}{{ img.title }}{% endif %}">
@@ -51,4 +49,3 @@
 		</a>
 	</div>
 
-{% endif %}

@@ -23,16 +23,17 @@ from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
 from django.core.files.storage import FileSystemStorage
 
-from sorl.thumbnail import get_thumbnail
 from allauth.account.views import PasswordResetView
 from allauth.account.models import EmailAddress
 from allauth.account.signals import user_signed_up
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.signals import social_account_removed
 
+from sorl.thumbnail import get_thumbnail
 from watson import search as watson
 from watson.views import SearchMixin
-from django.views.generic import View
+#from django.views.generic import View
+from django.views import View
 
 from django import forms
 from .models import *
@@ -207,6 +208,7 @@ class nominations_list(ListView):
 		context['html_classes'] = ['nominations',]
 		context['absolute_url'] = 'category'
 		context['page_title'] = self.model._meta.verbose_name_plural
+		context['cache_timeout'] = 2592000
 
 		return context
 
@@ -254,11 +256,21 @@ class projects_list(ListView):
 			filter_query.add(Q(attributes__in=filter_list), Q.AND)
 
 		subqry = Subquery(Image.objects.filter(portfolio=OuterRef('pk')).values('file')[:1])
+		subqry2 = Subquery(Winners.objects.filter(
+			portfolio_id=OuterRef('pk'),
+			nomination__category__slug=self.slug
+		).values('exhibition__slug'))
+
 		posts = self.model.objects.filter(
 			filter_query &
-			Q(nominations__category__slug=self.slug) &
+			#Q(nominations__category__slug=self.slug) &
 			Q(project_id__isnull=False)
-		).distinct().prefetch_related('rated_portfolio').annotate(cat_title=F('nominations__category__title'), average=Avg('rated_portfolio__star'), cover=subqry).order_by('-exhibition__date_start')
+		).distinct().prefetch_related('rated_portfolio').annotate(
+			cat_title=F('nominations__category__title'),
+			average=Avg('rated_portfolio__star'),
+			exh_year=subqry2,
+			cover=subqry
+		).order_by('-exhibition__date_start')
 
 		return posts
 
@@ -279,11 +291,13 @@ class projects_list(ListView):
 		context['html_classes'] = ['projects',]
 		context['absolute_url'] = self.slug
 		context['filter_attributes'] = list(filter_attributes.values())
+
 		#context['nominations'] = self.nominations
 		return context
 
 	def get(self, request, *args, **kwargs):
-		if request.GET.getlist("filter-group"):
+		filter_list = request.GET.getlist("filter-group", None)
+		if filter_list and filter_list != '0':
 			queryset = self.get_queryset().values('id','title','average','owner__name','owner__slug','project_id','cover')
 			for i,q in enumerate(queryset):
 				thumb_320 = get_thumbnail(q['cover'], '320', crop='center', quality=settings.THUMBNAIL_QUALITY)
@@ -295,7 +309,8 @@ class projects_list(ListView):
 
 			return JsonResponse({"projects_list": list(queryset), 'media_url': settings.MEDIA_URL, 'projects_url':'/projects/'}, safe=False)
 		else:
-			self.paginate_by = 20
+			#print(self.paginate_by)
+			#self.paginate_by = 2
 			return super().get(request, **kwargs)
 
 
@@ -418,6 +433,8 @@ class exhibition_detail(DetailView):
 		context['banner_slider'] = banner_slider
 		context['events_title'] = Events._meta.verbose_name_plural
 		context['gallery_title'] = Gallery._meta.verbose_name_plural
+		context['model_name'] = self.model.__name__.lower
+		context['cache_timeout'] = 2592000
 
 		return context
 
@@ -497,22 +514,24 @@ class project_detail(DetailView):
 
 	def get_object(self, queryset=None):
 #	def get_queryset(self):
-		owner = self.kwargs['owner']
-		project = self.kwargs['project_id']
-		if (owner != 'None' and project != 'None'):
+		self.owner = self.kwargs['owner']
+		self.project = self.kwargs['project_id']
+		if (self.owner != 'None' and self.project != 'None'):
+			# Найдем портфолио и победу в номинациях если есть
 			try:
-				q = self.model.objects.get(project_id=project, owner__slug=owner)
+				q = self.model.objects.get(project_id=self.project, owner__slug=self.owner)
+				#q = self.model.objects.prefetch_related('portfolio_for_winner').annotate(win_year=Coalesce('portfolio_for_winner__exhibition__slug',None)).get(project_id=self.project, owner__slug=self.owner)
 			except self.model.DoesNotExist:
 				q = None
 		else:
 			q = None
-
 		return q
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['project']
 		context['parent_link'] = self.request.META.get('HTTP_REFERER')
+		context['victories'] = Winners.objects.filter(portfolio=self.object.id, exhibitor__slug=self.owner)
 		if context['parent_link'] == None:
 			q = self.object.nominations.filter(category__slug__isnull=False).first()
 			if q and self.object:
@@ -528,6 +547,8 @@ class project_detail(DetailView):
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
+		context['cache_timeout'] = 86400
+		context['model_name'] = self.model.__name__.lower
 
 		return context
 
@@ -576,23 +597,25 @@ def portfolio_upload(request):
 	return render(request, 'upload.html', { 'form': form, 'exhibitor': exhibitor })
 
 
+""" Sending reset password emails to exhibitors """
 @staff_member_required
 def send_reset_password_email(request):
-
 	if request.method == 'GET':
 		form = UsersListForm()
 	else:
 		form = UsersListForm(request.POST)
 		if form.is_valid():
-			users_email = request.POST.getlist('users', None)
+			users_email = request.POST.getlist('users') or None
 			for email in users_email:
 				request.POST = {
 					'email': email,
+					'protocol': 'https' if request.is_secure() else 'http',
 					#'csrfmiddlewaretoken': get_token(request) #HttpRequest()
 				}
-				# allauth email send
+				# allauth reset password email send
 				PasswordResetView.as_view()(request)
 
+			#return render(request,'account/email/exhibitors/password_reset_key_message.html',self.data)
 			return HttpResponse('<h1>Письма успешно отправлены!</h1>')
 		else:
 			return HttpResponse('<h1>Что-то пошло не так...</h1>')
@@ -600,7 +623,7 @@ def send_reset_password_email(request):
 	return render(request, 'account/send_password_reset_email.html', { 'form': form })
 
 
-""" Подслушаем событие подтвреждения регистрации пользователя и отправим письмо администратору"""
+""" Подслушаем событие регистрации нового пользователя и отправим письмо администратору """
 # dispatch_uid: some.unique.string.id.for.allauth.user_signed_up
 @receiver(user_signed_up, dispatch_uid="2020")
 def user_signed_up_(request, user, **kwargs):

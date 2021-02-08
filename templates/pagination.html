@@ -2,7 +2,8 @@
 {% block pagination %}
 
 {% if is_paginated %}
-<nav class="article-pagination my-4" aria-label="Постраничная навигация">
+
+<nav class="pagination centered my-4" aria-label="Постраничная навигация">
 	<ul class="pagination centered">
 		{% if page_obj.has_previous %}
 		<li class="page-item">

@@ -8,19 +8,8 @@
 		const sidebar = document.querySelector('#sidebar');
 		const closeBtn = sidebar.querySelector('.sidebar-close');
 		const submitBtn = filterForm.querySelector('[type=submit]');
+		var projectsGrid = document.querySelector('.projects-list');
 
-
-		closeBtn.addEventListener('click', closeSidebar, {passive: true});
-		filterLink.addEventListener('click', function (e) {
-			e.preventDefault();
-			sidebar.style.top = navbar.clientHeight + 'px';
-			sidebar.classList.toggle('active');
-			alertContainer.classList.remove('hidden');
-			alertContainer.addEventListener('click', closeSidebar, {passive: true});
-			window.addEventListener('keydown', (e)=>{
-				(e.keyCode == 27) && closeSidebar();
-			});
-		}, {passive: true});
 
 		function closeSidebar() {
 			sidebar.classList.remove('active');
@@ -31,7 +20,6 @@
 
 
 		const projectsRender = function(data){
-			var projectsGrid = document.querySelector('.projects-list');
 			var projects_list = data['projects_list'];
 			var html = '';
 			for (var i in projects_list) {
@@ -51,8 +39,7 @@
 						<figure>\
 							<img class="project-cover lazyload"\
 								data-src="'+fullimage+'"\
-								data-srcset="'+thumb_xs+' ' + thumb_xs_w+'w '+ thumb_sm+' '+thumb_sm_w + 'w"\
-								data-sizes="auto"\
+								data-srcset="'+thumb_xs+' ' + thumb_xs_w+'w, '+ thumb_sm+' '+thumb_sm_w + 'w"\
 								loading="lazy"\
 								title="'+title+'"\
 								alt="'+(title ? title+'. ' : '')+'Автор проекта: '+author+'">\
@@ -93,16 +80,32 @@
 			let method = el.method;
 			let params = new URLSearchParams(new FormData(el)).toString();
 			if (params == '') {
+				projectsGrid.classList.remove('filtered');
 				submitBtn.disabled = true;
-				params = 'filter-group=0';
-				el.setAttribute('value', 0);
-				//el.querySelector('[type=submit]').disabled = true;
+				//params = 'filter-group=0';
+				//el.setAttribute('value', 0);
+				window.location.reload();
 			} else{
+				projectsGrid.classList.add('filtered');
 				submitBtn.disabled = false;
 			}
 			ajaxSend(url, params, method, projectsRender);
 			//closeSidebar();
 		}
+
+
+		closeBtn.addEventListener('click', closeSidebar, {passive: true});
+		filterLink.addEventListener('click', function (e) {
+			e.preventDefault();
+			sidebar.style.top = navbar.clientHeight + 'px';
+			sidebar.classList.toggle('active');
+			alertContainer.classList.remove('hidden');
+			alertContainer.addEventListener('click', closeSidebar, {passive: true});
+			window.addEventListener('keydown', (e)=>{
+				(e.keyCode == 27) && closeSidebar();
+			});
+		}, {passive: true});
+
 
 		if (filterCheckboxes.length > 0) {
 

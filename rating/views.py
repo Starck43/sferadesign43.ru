@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import Rating, Reviews
 from exhibition.models import Portfolio
+from exhibition.logic import delete_cached_fragment, unicode_emoji
 from .forms import RatingForm, ReviewForm
 
 
@@ -44,15 +45,9 @@ class add_rating(View):
 				portfolio_id=portfolio_id,
 				star=score,
 			)
-			#page_url = request.build_absolute_uri('/').strip("/")
-			#cache.delete(page_url)
 
-			cache_key = get_cache_key(request)
-			print(cache_key)
-			if cache_key :
-				if cache.has_key(cache_key):
-					cache.delete(cache_key)
-
+		delete_cached_fragment('portfolio', portfolio_id)
+		delete_cached_fragment('project', portfolio_id)
 
 		if request.is_ajax():
 			portfolio = Portfolio.objects.get(id=portfolio_id)
@@ -81,15 +76,26 @@ def add_review(request, pk):
 				portfolio_id=pk,
 				parent_id=parent,
 				group_id=group,
-				message=message,
+				message=unicode_emoji(message),
 			)
+
+			#delete_cached_fragment('portfolio_review', pk)
+
+			# Подсчитаем количество подкомментариев у родителя
+			if instance.parent_id:
+				reply_count = Reviews.objects.get(id=instance.parent_id).reply_count()
+			else:
+				reply_count = 0
+
 			new_comment = {
 				'id': instance.pk,
+				'parent': instance.parent_id,
 				'group': instance.group_id,
 				'author': instance.fullname,
-				'message': instance.message,
+				'message': message,
+				'reply_count': reply_count,
 			}
-			#print(new_comment)
+
 		return JsonResponse(new_comment, safe=False)
 
 	else:
@@ -106,8 +112,67 @@ def add_review(request, pk):
 
 			# сохраним комментарий, если это или корневой комментарий или подкоментарий где есть и parent и group ids
 			if (parent and group) or (not parent and not group):
+				delete_cached_fragment('portfolio_review', pk)
 				review.save()
 
 		return redirect(portfolio)
 
+
+@csrf_exempt
+@login_required
+def edit_review(request, pk=None):
+	message = request.GET.get("message", None)
+	if message:
+		try:
+			instance = Reviews.objects.get(pk=pk, user=request.user)
+			instance.message=unicode_emoji(message)
+			instance.save()
+			#delete_cached_fragment('portfolio_review', instance.portfolio_id)
+
+			if request.method == 'GET':
+				return HttpResponse('<h1>Комментарий успешно изменен!</h1><br/><p>%s</p>' % instance.message)
+			else:
+				json = {
+					'status': 'success',
+					'message': 'Комментарий изменен!',
+				}
+		except Reviews.DoesNotExist:
+			json = {
+				'status': 'error',
+				'message': 'Комментарий не существует! (ID:'+str(pk)+')',
+			}
+	else:
+		json = {
+			'status': 'warning',
+			'message': 'Пустое сообщение!',
+		}
+
+	return JsonResponse(json, safe=False)
+
+
+@csrf_exempt
+@login_required
+def delete_review(request, pk=None):
+
+	try:
+		instance = Reviews.objects.get(pk=pk, user=request.user)
+		message = instance.message
+		instance.delete()
+		delete_cached_fragment('portfolio_review', instance.portfolio_id)
+
+		if request.method == 'GET':
+			return HttpResponse('<h1>Комментарий успешно удален!</h1><br/><p>%s</p>' % message)
+		else:
+			json = {
+				'status': 'success',
+				'message': 'Комментарий удален',
+			}
+
+	except Reviews.DoesNotExist:
+		json = {
+			'status': 'error',
+			'message': 'Комментарий не существует! (ID:'+str(pk)+')',
+		}
+
+	return JsonResponse(json, safe=False)
 
