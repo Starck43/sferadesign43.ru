@@ -22,6 +22,7 @@ from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg
 from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
 from django.core.files.storage import FileSystemStorage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from allauth.account.views import PasswordResetView
 from allauth.account.models import EmailAddress
@@ -245,6 +246,9 @@ class projects_list(ListView):
 
 	def get_queryset(self):
 		self.slug = self.kwargs['slug']
+		page = int(self.request.GET.get('page', 1))
+		start_page = (page-1)*2
+		end_page = page*2
 		# Выбранные опции checkbox в GET запросе (?nominations=[])
 		filter_list = self.request.GET.getlist("filter-group", None)
 		filter_query = Q(nominations__category__slug=self.slug)
@@ -270,7 +274,22 @@ class projects_list(ListView):
 			average=Avg('rated_portfolio__star'),
 			exh_year=subqry2,
 			cover=subqry
-		).order_by('-exhibition__date_start')
+		).order_by('-exhibition__date_start')[start_page:end_page]
+
+
+		# paginator = Paginator(blog_objects, 10)
+		# page = request.GET.get('page', 1)
+
+		# try:
+		# 	blogs = paginator.page(page)
+		# except PageNotAnInteger:
+		# 	blogs = paginator.page(1)
+		# except EmptyPage:
+		# 	blogs = paginator.page(paginator.num_pages)
+
+		# 	page_list = blogs.paginator.page_range
+		print(page)
+		print(posts)
 
 		return posts
 

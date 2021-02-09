@@ -1,3 +1,4 @@
+	const alertContainer = document.querySelector('#alertContainer');
 
 	function ajaxSend(url, params='', method='post', renderFunc=render, alertModal=null) {
 		// Отправляем запрос
@@ -61,6 +62,8 @@
 				});
 
 				alertNode.querySelector('.btn-close').addEventListener('click', closeAlert);
+				var cancelBtn = alertNode.querySelector('.btn-cancel');
+				cancelBtn && cancelBtn.addEventListener('click', closeAlert);
 
 				window.addEventListener('keydown', (e)=>{
 					(e.keyCode == 27) && alert.close();

@@ -99,13 +99,12 @@
 
 {% block extra_container %}
 
-{% if not is_mobile %}
-
-{% cache cache_timeout portfolio_slider object.id %}
 {{ block.super }}
-{% include "exhibition/gallery.html" %}
-{% endcache %}
 
+{% if not is_mobile %}
+	{% cache cache_timeout portfolio_slider object.id %}
+	{% include "exhibition/gallery.html" %}
+	{% endcache %}
 {% endif %}
 
 {% endblock extra_container %}

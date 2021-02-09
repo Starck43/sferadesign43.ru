@@ -505,7 +505,7 @@ svg.icon
 		padding: 1em
 		min-width: 300px
 		max-width: 90%
-		width: 50%
+		width: 100%
 		color: $text-color
 		background-color: #fff
 		border: solid $border-thickness $highlight-border-color
@@ -513,8 +513,11 @@ svg.icon
 		transform: translateY(-50px)
 		opacity: 0
 		+media-breakpoint-up(sm)
+			width: 75%
 			padding: 2vw
 			font-size: 1.2em
+		+media-breakpoint-up(md)
+			width: 50%
 
 		&.show
 			opacity: 1
