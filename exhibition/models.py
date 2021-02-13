@@ -1,5 +1,5 @@
 import re
-from os import path
+from os import path, rename
 from django.conf import settings
 from django.core.validators import RegexValidator
 #from django.utils.text import slugify
@@ -117,23 +117,48 @@ class Exhibitors(Person, Profile):
 		db_table = 'exhibitors'
 		unique_together = ['user',]
 
+	original_slug = None
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.original_slug = self.slug
+
+	def save(self, *args, **kwargs):
+		#user = get_user_model()
+		if not self.user and self.email:
+			username = self.clean_username(self.email.rpartition('@')[0])
+			if not username:
+				username = self.slug
+			if username:
+				user = User.objects.create_user(username=username, email=self.email, password='1111')
+				user.save()
+				self.user = user
+
+		if self.slug != self.original_slug:
+			portfolio_folder = path.join(settings.MEDIA_ROOT,'uploads/', self.original_slug)
+			if path.exists(portfolio_folder):
+				new_portfolio_folder = path.join(settings.MEDIA_ROOT,'uploads/', self.slug)
+				# переименуем имя папки с проектами текущего участника
+				rename(portfolio_folder, new_portfolio_folder)
+				# почистим кэшированные файлы и изменим путь к файлам в таблице Image для всех портфолио принадлежащих текущему участнику
+				owner_images = Image.objects.filter(portfolio__owner__slug=self.original_slug)
+				for image in owner_images:
+					# Only clears key-value store data in thumbnail-kvstore, but does not delete image file
+					delete(image.file, delete_file=False)
+					renamed_file = str(image.file).replace(self.original_slug, self.slug)
+					image.file = renamed_file
+					image.save()
+
+			self.original_slug = self.slug
+		super().save(*args, **kwargs)
+
+
 	def clean_username(self, username):
 		try:
 			User.objects.get(username=username)
 		except User.DoesNotExist:
 			return username
 		return None
-
-	def save(self, *args, **kwargs):
-		#user = get_user_model()
-		if not self.user and self.email:
-			username = self.clean_username(self.email.rpartition('@')[0])
-			if username:
-				user = User.objects.create_user(username=username, email=self.email, password='1111')
-				user.save()
-				self.user = user
-
-		super().save(*args, **kwargs)
 
 	def get_absolute_url(self):
 		return reverse('exhibitor-detail-url', kwargs={'slug': self.slug })
@@ -407,7 +432,9 @@ class Portfolio(models.Model):
 		posts = self.images.all()
 		for post in posts:
 			post.delete()
+
 		super().delete(*args, **kwargs)
+
 
 	def save(self, images=None, *args, **kwargs):
 		if not self.project_id:
@@ -418,23 +445,25 @@ class Portfolio(models.Model):
 				index += post.project_id
 
 			self.project_id = index
+
 		super().save(*args, **kwargs)
 
 		# сохраним связанные с портфолио изображения
 		for image in images:
+			append_image = True
+
 			upload_filename = path.join('uploads/', self.owner.slug, self.exhibition.slug, self.slug, image.name)
 			file_path = path.join(settings.MEDIA_ROOT,upload_filename)
 
-			append_image = True
-			instance = Image.objects.filter(portfolio=self, file=upload_filename).first()
-			if instance:
-				# Portfolio has this image yet
-				if path.exists(file_path):
+			if path.exists(file_path):
+				try:
+					exist_image = Image.objects.get(portfolio=self, file=upload_filename)
+					# Portfolio has an image yet
+					# Проверим размер загруженного повторно файла и изменим оригинал, если он превысит лимит указанный в settings
+					ImageResize(exist_image.file)
 					append_image = False
-					obj = ImageResize(instance.file)
-			else:
-				# New image in portfolio
-				if path.exists(file_path):
+				except Image.DoesNotExist:
+					# New image in portfolio
 					image = upload_filename
 
 			if append_image:
@@ -530,13 +559,11 @@ class Gallery(models.Model):
 		try:
 			# is the object in the database yet?
 			obj = Gallery.objects.get(id=self.id)
+			if obj.file and self.file and obj.file != self.file:
+				delete(obj.file)
 		except Gallery.DoesNotExist:
 			if path.exists(self.file.path):
 				delete(self.file)
-			return
-
-		if obj.file and self.file and obj.file != self.file:
-			delete(obj.file)
 
 
 	# Удаление файла на диске
@@ -593,18 +620,9 @@ class Image(models.Model):
 			return '<Без имени>'
 
 
-	def delete_storage_file(self):
-		try:
-			# is the object in the database yet?
-			obj = Image.objects.get(id=self.id)
-		except Image.DoesNotExist:
-			# if object is not in DB and it exists on disk then delete this file
-			if path.exists(self.file.path):
-				delete(self.file)
-			return
-
-		if obj.file and self.file and obj.file != self.file:
-			delete(obj.file)
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.original_file = self.file
 
 
 	# Удаление файла на диске, если файл прикреплен только к текущему портфолио
@@ -614,13 +632,20 @@ class Image(models.Model):
 		super().delete(*args, **kwargs)
 
 	def save(self, *args, **kwargs):
-		self.delete_storage_file()
-		# Resizing uploading image.
-		# Alternative package - django-resized
-		resized_image = ImageResize(self.file)
-		if resized_image:
-			self.file = resized_image
+		print(self.file)
+
+		if self.original_file != self.file:
+			print('found file %s. It is deleted' % self.original_file)
+			delete(self.original_file)
+
+			# Resizing uploading image
+			# Alternative package - django-resized
+			resized_image = ImageResize(self.file)
+			if resized_image:
+				self.file = resized_image
+
 		super().save(*args, **kwargs)
+		self.original_file = self.file
 
 
 	def file_thumb(self):

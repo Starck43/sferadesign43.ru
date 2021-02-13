@@ -1,0 +1,28 @@
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Ответ на комментарий на сайте Сфера Дизайна</title>
+	<style>
+		.comment{margin: 1em 0 0.5em;line-height: 1.2;}
+		.comment p{display:block;max-width:90%;margin: 0.5em 0 1.5em; padding:1em;letter-spacing: 1px; background: #ddd; border: 1px solid #fff;}
+	</style>
+</head>
+<body>
+	<h1>Сообщение с сайта sd43.ru</h1>
+	<p>Вы получили это письмо, потому что на ваш комментарий ответил <b>{{reply_name}}</b></p>
+	<h2 class="project-name">Проект: <a href="{{project_link}}">{{project.title}}</a></h2>
+	<div>Автор: <b>{{project.owner.name}}</b></div>
+
+	<div class="comment">
+		<h3>Ваш комментарий:</h3>
+		<p class="author-comment"><i>"{{comment}}"</i></p>
+	</div>
+
+	<div class=" comment">
+		<span><b>{{reply_name}}</b> написал:</span>
+		<p class="reply-comment"><i>"{{reply_comment}}"</i></p>
+	</div>
+
+	<a href="{{reply_link}}">Ссылка на комментарий</a>
+</body>
+</html>

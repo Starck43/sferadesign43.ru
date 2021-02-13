@@ -1,5 +1,10 @@
 
+//persons-list.html
 //participant-detail.html
+
+.persons-container
+	margin: 1.5em -0.5em
+	justify-content: space-evenly
 
 .person-details-block
 	.logo
@@ -14,14 +19,14 @@
 
 .person-logo
 	margin: auto
-	max-width: $logo-width
 	//background-color: #fff
 	//padding: .5em
 	mix-blend-mode: normal
 
 .person-wrapper
 	position: relative
-	padding: 1em
+	max-width: $logo-width
+	padding: 1vw
 
 	.person-title
 		//font-size: 1.2em
@@ -42,3 +47,10 @@
 
 .persons__list
 	flex: 100%
+
++media-breakpoint-down(sm)
+	.persons-container
+		margin: 1em -0.4em
+
+	.person-wrapper
+		padding: 0.4em

@@ -2,17 +2,17 @@ import re
 import unicodedata
 
 from django.conf import settings
+from threading import Thread
 from PIL import Image as Im
 from io import BytesIO
 from os import path, remove
 from sys import getsizeof
 
+from django.http import HttpResponse
+from django.core.mail import EmailMessage, BadHeaderError
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import HttpResponse
-from django.core.mail import EmailMessage, BadHeaderError
-
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 
@@ -37,10 +37,10 @@ class MediaFileStorage(FileSystemStorage):
 
 	def save(self, name, content, max_length=None):
 		if not self.exists(name):
-			print('storage: new file '+name)
+			#print('storage: new file '+name)
 			return super().save(name, content, max_length)
 		else:
-			print('storage: exist file '+name)
+			#print('storage: exist file '+name)
 			# prevent saving file on disk
 			return name
 
@@ -48,9 +48,12 @@ class MediaFileStorage(FileSystemStorage):
 
 def UploadFilename(instance, filename):
 	# file will be uploaded to MEDIA_ROOT/uploads/<author>/<porfolio>/<filename>
-	#basename, ext = os.path.splitext(filename)
-	#return os.path.join('uploads/', instance.portfolio.owner.slug.lower(), instance.portfolio.slug, filename)
-	return 'uploads/{0}/{1}/{2}/{3}'.format(instance.portfolio.owner.slug.lower(), instance.portfolio.exhibition.slug, instance.portfolio.slug, filename)
+	return 'uploads/{0}/{1}/{2}/{3}'.format(
+		instance.portfolio.owner.slug.lower(),
+		instance.portfolio.exhibition.slug,
+		instance.portfolio.slug,
+		filename
+	)
 
 
 def GalleryUploadTo(instance, filename):
@@ -77,7 +80,6 @@ def ImageResize(obj):
 		image.save(output, format='JPEG', quality=DEFAULT_QUALITY, **meta)
 		output.seek(0)
 		file = InMemoryUploadedFile(output, 'ImageField', obj.name, 'image/jpeg', getsizeof(output), None)
-		#obj = File(output.getvalue())
 		if file:
 			if path.exists(obj.path):
 				with open(obj.path, 'wb+') as f:
@@ -105,15 +107,15 @@ def IsMobile(request):
 		return False
 
 
-""" Sending email from the Contact form to site administrator """
-def SendEmail(template):
+""" Sending email """
+def SendEmail(subject, template, email_ricipients=settings.EMAIL_RICIPIENTS):
 	email = EmailMessage(
-		'Новое сообщение с сайта sd43.ru!',
+		subject,
 		template,
 		settings.EMAIL_HOST_USER,
-		settings.EMAIL_RICIPIENTS,
-
+		email_ricipients,
 	)
+
 	email.content_subtype = "html"
 	email.html_message = True
 	email.fail_silently=False
@@ -122,7 +124,24 @@ def SendEmail(template):
 		email.send()
 	except BadHeaderError:
 		return HttpResponse('Ошибка в заголовке письма!')
+
 	return True
+
+""" Acync email sending """
+class EmailThread(Thread):
+	def __init__(self, subject, template, email_ricipients):
+		self.subject = subject
+		self.html_content = template
+		self.recipient_list = email_ricipients
+		Thread.__init__(self)
+
+	def run(self):
+		return SendEmail(self.subject, self.html_content, self.recipient_list)
+
+
+""" Sending email to recipients """
+def SendEmailAsync(subject, template, email_ricipients):
+	EmailThread(subject, template, email_ricipients).start()
 
 
 """ Set User group on SignupForm via account/social account"""

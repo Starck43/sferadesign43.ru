@@ -57,7 +57,7 @@ E-mail: <b>{{user.email}}</b>
 		<li>
 			<div class="comment-block card">
 				<div class="user-comment-header card-header">
-					<a href="{{review.portfolio.get_absolute_url|slice:":-1"}}#{{review.id}}">
+					<a href="{{review.portfolio.get_absolute_url|slice:':-1'}}#{{review.id}}">
 						<h3 class="user-comment-title">{{review.portfolio.title}}</h3></a>
 					<a href="{{review.portfolio.owner.get_absolute_url}}">Автор: {{review.portfolio.owner}}</a>
 				</div>

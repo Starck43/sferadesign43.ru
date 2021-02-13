@@ -254,6 +254,9 @@ FILE_UPLOAD_HANDLERS = [
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
 FILE_UPLOAD_PERMISSIONS = 0o775
 
+# It uses in exhibition.views.projects_list as parameter for queryset
+PORTFOLIO_COUNT_PER_PAGE = 1
+
 # sorl-thumbnail settings
 
 THUMBNAIL_QUALITY = 85

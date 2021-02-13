@@ -86,6 +86,10 @@ class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
 			return "%s %s" % (obj.user.first_name, obj.user.last_name)
 	user_name.short_description = 'Пользователь'
 
+	def save_model(self, request, obj, form, change):
+		delete_cached_fragment('persons','exhibitors')
+		super().save_model(request, obj, form, change)
+
 
 class JuryAdmin(PersonAdmin, admin.ModelAdmin):
 	fieldsets = (
@@ -96,6 +100,11 @@ class JuryAdmin(PersonAdmin, admin.ModelAdmin):
 	)
 	list_display = ('logo_thumb', 'name', 'excerpt',)
 	list_display_links = ('logo_thumb', 'name', )
+
+	def save_model(self, request, obj, form, change):
+		delete_cached_fragment('persons','jury')
+		super().save_model(request, obj, form, change)
+
 
 
 class OrganizerAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
@@ -132,11 +141,13 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin):
 	list_display_links = ('logo_thumb', 'name', 'phone',)
 
 	def save_model(self, request, obj, form, change):
-		super().save_model(request, obj, form, change)
+		delete_cached_fragment('persons','partners')
+
 		if change:
 			exhibitions = Exhibitions.objects.filter(partners=obj).only('slug')
 			for exhibition in exhibitions:
 				delete_cached_fragment('exhibition_content', exhibition.slug)
+		super().save_model(request, obj, form, change)
 
 
 @admin.register(Categories)
@@ -234,6 +245,7 @@ class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
 	list_display_links = ('file_thumb', 'portfolio', 'title',)
 	list_filter = ('portfolio__owner', 'portfolio',)
 	readonly_fields = ('file_thumb',)
+	search_fields = ('title', 'portfolio__title', 'portfolio__owner__slug', 'portfolio__owner__name',)
 
 	list_per_page = 30
 	# def save_model(self, request, obj, form, change):
@@ -298,9 +310,11 @@ class PortfolioAdmin(admin.ModelAdmin):
 	def save_model(self, request, obj, form, change):
 		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
 		obj.save(request.FILES.getlist('files'))
-		if change:
-			delete_cached_fragment('portfolio', obj.id)
-			delete_cached_fragment('portfolio_slider', obj.id)
+
+		delete_cached_fragment('portfolio', obj.id)
+		delete_cached_fragment('portfolio_slider', obj.id)
+		for nomination in obj.nominations.all():
+			delete_cached_fragment('projects', nomination.category.slug)
 
 
 	# def delete_file(self, pk, request):

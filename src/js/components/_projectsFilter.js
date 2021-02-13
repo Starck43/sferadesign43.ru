@@ -1,6 +1,7 @@
 
 	// Событие нажатия на кнопку фильтрации
 	const filterForm = document.querySelector('form[name=projects-filter]');
+	var preloader = document.querySelector('#preloader');
 
 	if (filterForm) {
 		const filterCheckboxes = filterForm.querySelectorAll('input[type=checkbox]');
@@ -19,25 +20,6 @@
 		}
 
 
-		function submitFilter(el) {
-			let url = el.action;
-			let method = el.method;
-			let params = new URLSearchParams(new FormData(el)).toString();
-			if (params == '') {
-				projectsGrid.classList.remove('filtered');
-				submitBtn.disabled = true;
-				//params = 'filter-group=0';
-				//el.setAttribute('value', 0);
-				window.location.reload();
-			} else{
-				projectsGrid.classList.add('filtered');
-				submitBtn.disabled = false;
-			}
-			ajaxSend(url, params, method, projectsRender);
-			//closeSidebar();
-		}
-
-
 		closeBtn.addEventListener('click', closeSidebar, {passive: true});
 		filterLink.addEventListener('click', function (e) {
 			e.preventDefault();
@@ -49,6 +31,33 @@
 				(e.keyCode == 27) && closeSidebar();
 			});
 		}, {passive: true});
+
+
+		function submitFilter(el) {
+			let url = el.action;
+			let method = el.method;
+			let params = new URLSearchParams(new FormData(el)).toString();
+			if (params == '') {
+				projectsGrid.classList.remove('filtered');
+				submitBtn.disabled = true;
+				//params = 'filter-group=0';
+				//el.setAttribute('value', 0);
+				//window.location.reload();
+			} else {
+				projectsGrid.classList.add('filtered');
+				submitBtn.disabled = false;
+			}
+
+			params = 'page=1&' + params;
+			if (preloader) {
+				preloader.classList.remove('hidden');
+				preloader.classList.add('show');
+				nextPage = null;
+				document.addEventListener('scroll', loadNewProjects, {passive: true});
+			}
+			ajaxSend(url, params, method, projectsRender);
+			//closeSidebar();
+		}
 
 
 		if (filterCheckboxes.length > 0) {
@@ -73,8 +82,9 @@
 
 	} // is filter-form
 
+	var currentPage = 1;
 
-	const projectsRender = function(data){
+	function projectsRender(data){
 		var projects_list = data['projects_list'];
 		var html = '';
 		for (var i in projects_list) {
@@ -111,7 +121,39 @@
 				</a>';
 		}
 
-		projectsGrid.innerHTML = html;
+		nextPage = data['next_page'];
+		currentPage = data['current_page'];
+		if ( currentPage > 1) {
+			// Вставим html в конец родителя последним элементом
+			if (preloader){
+				preloader.insertAdjacentHTML('beforebegin',html);
+			} else {
+				projectsGrid.insertAdjacentHTML('beforeend',html);
+			}
+		} else {
+			if (preloader) {
+				var clone = preloader.cloneNode(false);
+				projectsGrid.innerHTML = html;
+				projectsGrid.append(clone);
+				preloader = document.querySelector('#preloader');
+			} else {
+				projectsGrid.innerHTML = html;
+			}
+		}
+
+		if (preloader && nextPage) {
+			window.scrollBy(0, 1);
+			window.scrollBy(0,-1);
+		}
+
+		if (preloader && nextPage == false) {
+			document.removeEventListener('scroll', loadNewProjects);
+			preloader.classList.remove('show');
+			window.setTimeout( () => {
+				preloader.classList.add('hidden');
+			}, 200);
+		}
+
 		(async () => {
 			if ('loading' in HTMLImageElement.prototype) {
 				const images = document.querySelectorAll("img.lazyload");
@@ -130,15 +172,23 @@
 		})();
 	}
 
-
-	loadNewProjects = function(e) {
+	function loadNewProjects(e) {
 		e.preventDefault();
-		let url = this.href,
-			params = 'page=2';
-
-		ajaxSend(url, params, 'get', projectsRender);
+		if (nextPage && isInViewport(preloader, true)) {
+			let url = preloader.href;
+			let params = 'page=' + String(currentPage+1);
+			if (filterForm) {
+				let filters = new URLSearchParams(new FormData(filterForm)).toString();
+				params += '&'+filters;
+			}
+			nextPage = null; // до выполнения запроса на сервере наличие след страницы установим в null для прекращения проверки scroll
+			ajaxSend(url, params, 'get', projectsRender);
+		}
 	}
 
-	const preloader = document.querySelector('#preloader');
-	preloader.addEventListener('click', loadNewProjects);
+	if (preloader) {
+		document.addEventListener('scroll', loadNewProjects, {passive: true});
+		preloader.addEventListener('click', loadNewProjects);
+	}
+
 

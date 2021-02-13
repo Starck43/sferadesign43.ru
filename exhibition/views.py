@@ -48,7 +48,7 @@ from .logic import SendEmail, SetUserGroup
 from collections import defaultdict
 
 def success_message(request):
-	return HttpResponse('Сообщение отправлено! Спасибо за вашу заявку.')
+	return HttpResponse('<h1>Сообщение отправлено!</h1><p>Спасибо за обращение</p>')
 
 
 """ Main page """
@@ -80,15 +80,15 @@ def contacts(request):
 	elif request.method == 'POST':
 		# если метод POST, проверим форму и отправим письмо
 		form = FeedbackForm(request.POST)
-		template = render_to_string('contacts/confirm_email.html', {
-			'name':form.cleaned_data['name'],
-			'email':form.cleaned_data['from_email'],
-			'message':form.cleaned_data['message'],
-		})
-		if form.is_valid() and SendEmail(template):
-			return redirect('/success/')
-		else:
-			return HttpResponse('Неверный запрос')
+		if form.is_valid():
+			template = render_to_string('contacts/confirm_email.html', {
+				'name':form.cleaned_data['name'],
+				'email':form.cleaned_data['from_email'],
+				'message':form.cleaned_data['message'],
+			})
+
+			if SendEmail('Отправлено новое сообщение с сайта sd43.ru!', template):
+				return redirect('/success/')
 
 	context = {
 		'html_classes': ['contacts'],
@@ -243,21 +243,24 @@ class events_list(ListView):
 class projects_list(ListView):
 	model = Portfolio
 	template_name = 'exhibition/projects_list.html'
+	PAGE_SIZE = getattr(settings, 'PORTFOLIO_COUNT_PER_PAGE', 20)
 
 	def get_queryset(self):
 		self.slug = self.kwargs['slug']
-		page = int(self.request.GET.get('page', 1))
-		start_page = (page-1)*2
-		end_page = page*2
-		# Выбранные опции checkbox в GET запросе (?nominations=[])
-		filter_list = self.request.GET.getlist("filter-group", None)
-		filter_query = Q(nominations__category__slug=self.slug)
+
+		# self.page - текущая страница для получения диапазона выборки записей,  (см. функцию get ниже )
+		self.page = int(self.page) if self.page else 1
+
+		start_page = (self.page-1)*self.PAGE_SIZE # начало диапазона
+		end_page = self.page*self.PAGE_SIZE # конец диапазона
+
+		query = Q(nominations__category__slug=self.slug)
 		#nominations_list = Nominations.objects.filter(category__slug=self.slug).values_list('id',flat=True)
 		#nominations_query = Q(nominations__in=list(nominations_list))
 
 		# Если выбраны опции фильтра, то найдем все номинации в текущей категории "self.slug"
-		if filter_list and filter_list[0] != '0':
-			filter_query.add(Q(attributes__in=filter_list), Q.AND)
+		if self.filters_group and self.filters_group[0] != '0':
+			query.add(Q(attributes__in=self.filters_group), Q.AND)
 
 		subqry = Subquery(Image.objects.filter(portfolio=OuterRef('pk')).values('file')[:1])
 		subqry2 = Subquery(Winners.objects.filter(
@@ -266,40 +269,32 @@ class projects_list(ListView):
 		).values('exhibition__slug'))
 
 		posts = self.model.objects.filter(
-			filter_query &
-			#Q(nominations__category__slug=self.slug) &
+			query &
 			Q(project_id__isnull=False)
 		).distinct().prefetch_related('rated_portfolio').annotate(
+			last_exh_year=F('exhibition__slug'),
 			cat_title=F('nominations__category__title'),
 			average=Avg('rated_portfolio__star'),
 			exh_year=subqry2,
 			cover=subqry
-		).order_by('-exhibition__date_start')[start_page:end_page]
+		).order_by('-last_exh_year')[start_page:end_page+1] # +1 сделано для выявления наличия следующей страницы
 
+		self.is_next_page = True if posts.count() > self.PAGE_SIZE else False
 
-		# paginator = Paginator(blog_objects, 10)
-		# page = request.GET.get('page', 1)
-
-		# try:
-		# 	blogs = paginator.page(page)
-		# except PageNotAnInteger:
-		# 	blogs = paginator.page(1)
-		# except EmptyPage:
-		# 	blogs = paginator.page(paginator.num_pages)
-
-		# 	page_list = blogs.paginator.page_range
-		print(page)
-		print(posts)
-
-		return posts
+		return posts[:self.PAGE_SIZE]
 
 	def get_context_data(self, **kwargs):
 		#attributes = self.object_list.distinct().filter(attributes__group__isnull=False).annotate(attribute_id=F('attributes'), group=F('attributes__group'), name=F('attributes__name'))#.values('group', 'name', 'attribute_id').order_by('group', 'name')
 		# Отсортируем и сгруппируем словарь аттрибутов по ключу group
 		# keyfunc = lambda x:x['group']
 		# attributes = [list(data) for _, data in groupby(sorted(data, key=keyfunc), key=keyfunc)]
-		attributes = PortfolioAttributes.objects.prefetch_related('attributes_for_portfolio').filter(id__in=self.object_list.values_list('attributes',flat=True),group__isnull=False).distinct()
-		#print(attributes)
+
+		# найдем аттрибуты для фильтра в портфолио, если они есть в текущей категории
+		attributes = PortfolioAttributes.objects.prefetch_related('attributes_for_portfolio').filter(
+			attributes_for_portfolio__nominations__category__slug=self.slug,
+			group__isnull=False,
+		).distinct()
+
 		attributes_dict = attributes.values('id','name','group')
 		filter_attributes = defaultdict(list)
 		for i,item in enumerate(attributes_dict):
@@ -310,14 +305,16 @@ class projects_list(ListView):
 		context['html_classes'] = ['projects',]
 		context['absolute_url'] = self.slug
 		context['filter_attributes'] = list(filter_attributes.values())
+		context['next_page'] = self.is_next_page
 
 		#context['nominations'] = self.nominations
 		return context
 
 	def get(self, request, *args, **kwargs):
-		filter_list = request.GET.getlist("filter-group", None)
-		if filter_list and filter_list != '0':
-			queryset = self.get_queryset().values('id','title','average','owner__name','owner__slug','project_id','cover')
+		self.page = self.request.GET.get('page', None) # Параметр GET запроса ?page текущей страницы
+		self.filters_group = self.request.GET.getlist("filter-group", None) # Выбранные опции checkbox в GET запросе (?nominations=[])
+		if self.filters_group or self.page:
+			queryset = self.get_queryset().values('id','title','last_exh_year','average','owner__name','owner__slug','project_id','cover')
 			for i,q in enumerate(queryset):
 				thumb_320 = get_thumbnail(q['cover'], '320', crop='center', quality=settings.THUMBNAIL_QUALITY)
 				thumb_576 = get_thumbnail(q['cover'], '576', crop='center', quality=settings.THUMBNAIL_QUALITY)
@@ -326,7 +323,16 @@ class projects_list(ListView):
 				queryset[i].update({'thumb_sm':str(thumb_576)})
 				queryset[i].update({'thumb_sm_w':thumb_576.width})
 
-			return JsonResponse({"projects_list": list(queryset), 'media_url': settings.MEDIA_URL, 'projects_url':'/projects/'}, safe=False)
+		#	print( list(queryset).sort(key=lambda k:('last_exh_year' not in k, k.get("last_exh_year", None)) ))
+
+			json_data = {
+				'current_page': int(self.page or 1),
+				'next_page': self.is_next_page,
+				'projects_list': list(queryset),
+				'projects_url': '/projects/',
+				'media_url': settings.MEDIA_URL,
+			}
+			return JsonResponse(json_data, safe=False)
 		else:
 			#print(self.paginate_by)
 			#self.paginate_by = 2
@@ -367,10 +373,15 @@ class exhibitor_detail(DetailView):
 
 	def get_context_data(self, **kwargs):
 		slug = self.kwargs['slug']
+		portfolio = Portfolio.objects.filter(owner__slug=slug).annotate(
+			exh_year=F('exhibition__slug'),
+			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')),
+			cover=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])
+		).order_by('-exh_year')
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant']
 		context['winners_list'] = Nominations.objects.prefetch_related('nomination_for_winner').filter(nomination_for_winner__exhibitor__slug=slug).annotate(exh_year=F('nomination_for_winner__exhibition__slug')).values('title', 'slug', 'exh_year').order_by('exh_year')
-		context['object_list'] = Portfolio.objects.prefetch_related('images').filter(owner__slug=slug).annotate(exh_year=F('exhibition__slug')).order_by('-exh_year')
+		context['object_list'] = portfolio
 		#context['exh_list'] = ', '.join(Exhibitions.objects.filter(exhibitors=self.object).values_list('title', flat=True))
 		context['parent_link'] = self.model.__name__.lower
 
@@ -652,9 +663,10 @@ def user_signed_up_(request, user, **kwargs):
 		'email': user.email,
 		'group': list(user.groups.all().values_list('name', flat=True)),
 	})
-	SendEmail(template)
+	SendEmail('Регистрация нового пользователя на сайте sd43.ru!',template)
 
-
+""" Личный кабинет зарегистрированных пользователей """
+@login_required
 def account(request):
 	# try:
 	# 	profile = Exhibitors.objects.get(user=request.user)

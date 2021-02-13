@@ -144,7 +144,7 @@ var is_mobile = false;
 				{% for item in object.jury.all %}
 				<li>
 					<div class="collapsed">
-						<h3 class="subtitle exh-title">{{ item.name }}</h3>
+						<h3 class="subtitle exh-title"><a href="{{ item.get_absolute_url }}">{{ item.name }}</a></h3>
 						{% if item.excerpt  %}
 						<p class="excerpt">{{item.excerpt}}</p>
 						{% endif %}

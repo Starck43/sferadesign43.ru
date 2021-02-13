@@ -7,6 +7,7 @@
 @import fonts
 @import reset
 @import layouts
+@import preloader
 @import navigation
 @import sidebar
 @import exhibition
@@ -351,12 +352,15 @@ svg.icon
 	h1 ~.excerpt
 		margin-bottom: 3rem
 
-.participant, .exhibition, .nominations
+
+.exhibition, .nominations
 	h2
 		margin-bottom: 0
+
+.participant, .exhibition, .nominations
+	h2
 		font-weight: bold
 		text-transform: lowercase
-		//font-size: 1.5em
 	h3
 		margin: 0
 
@@ -418,9 +422,11 @@ svg.icon
 		figure
 			+responsive-ratio(1,1,0,false)
 			margin: 0
-			.img-title:hover
-				background-color: transparentize($overlay-color, 0.8)
-				color: #fff
+			.img-title
+				background-color: transparentize($overlay-color, 0.85)
+				&:hover
+					color: #fff
+					padding: calc(0.5em - 2px)
 
 
 .exhibitions-list

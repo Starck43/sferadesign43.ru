@@ -8,12 +8,13 @@ from django.utils.cache import get_cache_key
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.template.loader	import render_to_string
 
 #from allauth.account.decorators import verified_email_required
 
 from .models import Rating, Reviews
 from exhibition.models import Portfolio
-from exhibition.logic import delete_cached_fragment, unicode_emoji
+from exhibition.logic import delete_cached_fragment, SendEmailAsync
 from .forms import RatingForm, ReviewForm
 
 
@@ -76,8 +77,27 @@ def add_review(request, pk):
 				portfolio_id=pk,
 				parent_id=parent,
 				group_id=group,
-				message=unicode_emoji(message),
+				message=message,
 			)
+
+			# Асинхронная отправка письма с ответом на комментарий
+			if parent:
+				portfolio = Portfolio.objects.get(id=pk)
+				reply_review = Reviews.objects.get(id=parent)
+
+				protocol = 'https' if request.is_secure() else 'http'
+				project_link = "{0}://{1}/{2}".format(protocol, request.get_host(), portfolio.get_absolute_url().strip("/"))
+				reply_link = "{0}://{1}/{2}#{3}".format(protocol, request.get_host(), portfolio.get_absolute_url().strip("/"), reply_review.id)
+				subject = 'Ответ на ваш комментарий на сайте Сфера Дизайна'
+				template = render_to_string('rating/reply_notification.html', {
+					'project': portfolio,
+					'project_link': project_link,
+					'reply_link': reply_link,
+					'comment': reply_review.message,
+					'reply_name': '%s %s' % (request.user.first_name, request.user.last_name),
+					'reply_comment': message,
+				})
+				SendEmailAsync(subject, template, [reply_review.user.email])
 
 			#delete_cached_fragment('portfolio_review', pk)
 
@@ -125,7 +145,8 @@ def edit_review(request, pk=None):
 	if message:
 		try:
 			instance = Reviews.objects.get(pk=pk, user=request.user)
-			instance.message=unicode_emoji(message)
+			instance.message=message
+			#instance.message=unicode_emoji(message)
 			instance.save()
 			#delete_cached_fragment('portfolio_review', instance.portfolio_id)
 

@@ -1,3 +1,18 @@
+// Проверка появления элемента в видимой области экрана
+function isInViewport(el, onlyVisible=false, fullInView=false) {
+	if (onlyVisible && (el.style.visibility == 'hidden' || el.style.display == 'none')) return false;
+
+	const {top:t, bottom:b, height:h} = el.getBoundingClientRect();
+	if (fullInView){
+		return (
+			t >= 0 &&
+			b <= (window.innerHeight || document.documentElement.clientHeight)
+		);
+	} else {
+		return (t <= window.innerHeight && t + h >= 0);
+	}
+
+}
 
 function toggleNavItems(link) {
 	link && link.forEach( (e) => {
@@ -11,13 +26,14 @@ function toggleNavItems(link) {
 	});
 }
 
+// Вычисление высоты верхнего блока навигации
 function navbarOffset(elem) {
 	// Добавим смещение следущему после меню элементу
 	if (!elem.classList.contains('expanded')) {
-		var siblingEl = elem.nextElementSibling;
-		siblingEl.style.marginTop = elem.clientHeight + 'px';
+		elem.nextElementSibling.style.marginTop = elem.clientHeight + 'px';
 	}
 }
+
 
 document.addEventListener("DOMContentLoaded", function() {
 	const burger = document.querySelector('.navbar-toggler');
@@ -119,6 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	searchLink.forEach( (item) => {
 		item.addEventListener('click', (e) => {
 			searchContainer.classList.toggle('active');
+			searchContainer.querySelector('[type=search]').blur();
 		}, {passive: true});
 	});
 

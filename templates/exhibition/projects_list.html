@@ -60,12 +60,12 @@
 
 	<div class="content">
 
+		{% cache 3600 projects absolute_url %}
 		{% if object_list %}
 
 		<div class="projects-list grid">
 			{% for e in object_list %}
 
-				{% cache 3600 project e.id %}
 
 				{% if e.cover %}
 				{% with e.title as project_title %}
@@ -108,23 +108,34 @@
 					</figure>
 
 				</a>
-
 				{% endwith %}
 				{% endif %}
 
-				{% endcache %}
-
 			{% endfor %}
 
-			<a id="preloader" href="{% url 'nomination-detail-url' absolute_url %}">More</a>
+			{% if next_page %}
+			<a id="preloader" class="centered fade show" href="{% url 'nomination-detail-url' absolute_url %}">
+				<div class="dot"></div>
+				<div class="dot"></div>
+				<div class="dot"></div>
+				<div class="dot"></div>
+				<div class="dot"></div>
+			</a>
+			{% endif %}
 
 		</div>
 
-		{% include "pagination.html" %}
+		{% if next_page %}
+			<script>var nextPage = true;</script>
+		{% else %}
+			<script>var nextPage = false;</script>
+		{% endif %}
 
 		{% else %}
 			<a class="back-link" href="/category/"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Вернуться к списку категорий</a>
 		{% endif %}
+
+		{% endcache %}
 
 	</div>
 
