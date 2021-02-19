@@ -84,6 +84,9 @@ img
 	width: 100%
 	height: auto
 	text-indent: -9999px
+	text-indent: 100%
+	white-space: nowrap
+	overflow: hidden
 	transition: all 300ms ease-out
 
 .ratio
@@ -411,31 +414,6 @@ svg.icon
 		+media-breakpoint-up(xl)
 			flex: 1
 
-.projects-list
-	&.filtered
-		~nav.pagination
-			display: none
-
-	.grid-cell
-		&:before
-			content: none
-		figure
-			+responsive-ratio(1,1,0,false)
-			margin: 0
-			.img-title
-				background-color: transparentize($overlay-color, 0.85)
-				&:hover
-					color: #fff
-					padding: calc(0.5em - 2px)
-
-
-.exhibitions-list
-	.grid-cell
-		background-color: $main-color
-		&:hover
-			color: $main-color
-		.exh-title
-			position: absolute
 
 .categories-list
 	.grid-cell
@@ -445,13 +423,31 @@ svg.icon
 			&~.img-title
 				color: $main-color
 
-		.img-title
+		.category-title
+			position: absolute
 			padding: 65% 5% 5%
-			&:hover
-				backdrop-filter: unset !important
-				padding-bottom: calc(5% + 2px)
+			text-transform: lowercase
+			color: $main-color
+
 		&:hover
 			filter: invert(100%)
+			border-color: #fff
+			.category-title
+				color: #000
+				backdrop-filter: unset !important
+
+
+.exhibitions-list, .categories-list
+	.grid-cell
+		background-color: $main-color
+		transition: all 200ms linear
+		&:hover
+			background-color: #fff
+			color: $main-color
+			border-width: $border-thickness
+
+		.exh-title
+			position: absolute
 
 
 .excerpt

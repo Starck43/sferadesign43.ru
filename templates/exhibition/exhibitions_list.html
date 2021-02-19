@@ -1,28 +1,30 @@
 {% extends 'base.html' %}
 {% load custom_tags %}
 
-	{% block styles %}
+{% block title %}{{ block.super }} - Список выставок{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+<div class="content col-auto">
+	{% block header %}
+		<h1>{{ page_title }}</h1>
+	{% endblock%}
+
+	{% block content %}
+
+		{% if object_list %}
+			<div class="exhibitions-list grid">
+			{% for obj in object_list %}
+				<a id="exh-{{obj.slug}}" class="grid-cell img-ratio centered" href="{{ obj.get_absolute_url }}"><h2 class="exh-title">{{ obj.slug }}</h2></a>
+			{% endfor %}
+			</div>
+		{% else %}
+			<h4>Список пустой</h4>
+		{% endif %}
+
 	{% endblock %}
-
-	{% block scripts %}
-	{% endblock %}
-
-	<div class="content col-auto">
-		{% block header %}
-			<h1>{{ page_title }}</h1>
-		{% endblock%}
-
-		{% block content %}
-
-			{% if object_list %}
-				<div class="exhibitions-list grid">
-				{% for obj in object_list %}
-					<a id="exh-{{obj.slug}}" class="grid-cell centered" href="{{ obj.get_absolute_url }}"><h2 class="exh-title">{{ obj.slug }}</h2></a>
-				{% endfor %}
-				</div>
-			{% else %}
-				<h4>Список пустой</h4>
-			{% endif %}
-
-		{% endblock %}
-	</div>
+</div>

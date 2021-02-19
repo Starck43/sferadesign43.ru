@@ -8,7 +8,7 @@
 		banner_slider = Peppermint( banner, {
 			//dots: true,
 			//touchSpeed: 300,
-			speed: 150,
+			speed: window.innerWidth/2,
 			slideshow: true,
 			slideshowInterval: 4000,
 			stopSlideshowAfterInteraction: true,

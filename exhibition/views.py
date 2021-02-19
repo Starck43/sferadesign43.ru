@@ -116,7 +116,7 @@ class exhibitors_list(ListView):
 		context['html_classes'] = ['participants',]
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower
-		context['exhibition'] = self.slug
+		context['exh_year'] = self.slug
 
 		return context
 
@@ -145,7 +145,7 @@ class partners_list(ListView):
 		context['html_classes'] = ['participants', 'partners',]
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower
-		context['exhibition'] = self.slug
+		context['exh_year'] = self.slug
 
 		return context
 
@@ -173,7 +173,7 @@ class jury_list(ListView):
 		context['html_classes'] = ['participants', 'jury',]
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower
-		context['exhibition'] = self.slug
+		context['exh_year'] = self.slug
 
 		return context
 
@@ -234,7 +234,7 @@ class events_list(ListView):
 		context['html_classes'] = ['events',]
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower
-		context['exhibition'] = self.slug
+		context['exh_year'] = self.slug
 
 		return context
 
@@ -349,18 +349,18 @@ class winners_list(ListView):
 		self.slug = self.kwargs['exh_year']
 
 		if self.slug:
-			posts = self.model.objects.select_related('exhibition').filter(exhibition__date_start__year=self.slug).values('exhibitor__name', 'exhibitor__slug').order_by('exhibitor__name')
+			posts = self.model.objects.filter(exhibition__slug=self.slug).values('exhibitor__name', 'exhibitor__slug')
 		else:
-			posts = self.model.objects.select_related('exhibitors').values('exhibitor__name', 'exhibitor__slug').distinct().order_by('exhibitor__name') #.annotate(exhibitors_count=Count('exhibitor_id'))
+			posts = self.model.objects.values('exhibitor__name', 'exhibitor__slug').distinct() #.annotate(exhibitors_count=Count('exhibitor_id'))
 
 		return posts
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['participants',]
+		context['html_classes'] = ['participants','winners']
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower
-		context['exhibition'] = self.slug
+		context['exh_year'] = self.slug
 
 		return context
 
@@ -516,6 +516,7 @@ class winner_project_detail(DetailView):
 		context['exhibitors'] = self.exhibitors
 		context['nomination'] = self.nomination
 		context['parent_link'] = '/exhibition/%s/' % exh_year
+		context['exh_year'] = exh_year
 
 		if portfolio:
 			score = Rating.calculate(portfolio)
@@ -639,7 +640,6 @@ def send_reset_password_email(request):
 			for email in users_email:
 				request.POST = {
 					'email': email,
-					'protocol': 'https' if request.is_secure() else 'http',
 					#'csrfmiddlewaretoken': get_token(request) #HttpRequest()
 				}
 				# allauth reset password email send

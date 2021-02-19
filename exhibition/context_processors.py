@@ -6,8 +6,8 @@ from .logic import IsMobile
 """ Global context processor variables """
 def common_context(request):
 	meta = {
-		'description' : "Сайт дизайн-выставки Сфера-дизайна",
-		'keywords' : "дизайн выставка, сфера дизайна"
+		'description' : "Выставка реализованных дизайн-проектов Сфера Дизайна",
+		'keywords' : "дизайнерская выставка, реализованные проекты интерьеров, лучшие интерьеры, дизайн интерьеров,сфера дизайна, современные отделочные материалы"
 	}
 	context = {
 		'is_mobile' :IsMobile(request),

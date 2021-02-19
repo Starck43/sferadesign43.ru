@@ -149,9 +149,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		searchContainer.classList.contains('active') && searchContainer.classList.remove('active');
 	};
 
-	//= components/_ajax.js
-	//= components/_projectsFilter.js
-
 /*
 	filterItems.on('click', '.filter__title', function(e) {
 		if ( $(this).hasClass(collapsed) || $(this).hasClass(expanded) ) {

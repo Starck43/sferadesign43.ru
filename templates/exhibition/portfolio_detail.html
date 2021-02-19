@@ -4,6 +4,8 @@
 {% load cache %}
 {% load thumbnail %}
 
+{% block title %}{{ block.super }} - Портфолио {% if object.title %}{{ object.title }}{% endif %}{% endblock %}
+
 {% block styles %}
 <link href="{% md5url 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 {% endblock %}
@@ -11,10 +13,26 @@
 {% block script %}
 
 {{ block.super }}
-{% if is_mobile %}
-<script type="text/javascript" src="{% md5url 'js/portfolio_mobile.min.js' %}"></script>
-{% else %}
-<script type="text/javascript">var is_mobile = false;</script>
+
+<script type="text/javascript">
+	{% if not is_mobile %}
+	var is_mobile = false;
+	{% endif %}
+
+	const portfolioImages = document.querySelectorAll('.portfolio-list img');
+	var preloader = document.querySelector('.portfolio-preloader');
+
+	portfolioImages.forEach(img => {
+		img.onload = function(){
+			if (preloader) {
+				preloader.remove();
+				preloader = null;
+			}
+		}
+	});
+</script>
+
+{% if not is_mobile %}
 <script type="text/javascript" src="{% md5url 'js/portfolio.min.js' %}"></script>
 {% endif %}
 

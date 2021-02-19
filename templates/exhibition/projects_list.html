@@ -4,6 +4,16 @@
 {% load cache %}
 {% load thumbnail %}
 
+
+{% block title %}{{ block.super }} - Категория "{{ object_list.0.cat_title }}"{% endblock %}
+
+{% block script %}
+
+{{ block.super }}
+<script type="text/javascript" src="{% md5url 'js/project_pagination.min.js' %}"></script>
+
+{% endblock script %}
+
 {% block svg_icons %}
 {{ block.super }}
 <symbol id="award-icon" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 32 32">
@@ -100,7 +110,7 @@
 
 							{% if e.exh_year %}
 							<div class="portfolio-award centered">
-								<svg><use xlink:href="#award-icon"></use></svg>
+								<svg class="award"><use xlink:href="#award-icon"></use></svg>
 								<span>{{e.exh_year}}</span>
 							</div>
 							{% endif %}

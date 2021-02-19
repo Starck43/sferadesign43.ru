@@ -14,25 +14,7 @@
 	left: 50%
 	top: 50%
 	transform: translate(-50%, -50%)
-	margin: 0
-	padding: 1vw 2vw
-	text-align: center
-	text-transform: uppercase
-	letter-spacing: 2px
-	background-color: transparentize(white, 0.3)
-	transition: all 500ms linear
-	visibility: visible
 	z-index: 1
-	span
-		opacity: 0.3
-		animation: pulsate 2.5s infinite ease-in-out
-		@keyframes pulsate
-			0%
-				opacity: 0.3
-			50%
-				opacity: 1
-			100%
-				opacity: 0.3
 
 
 figure
@@ -276,6 +258,13 @@ figure
 			stroke-width: 2
 			background-color: transparentize($overlay-color, 0.3)
 			opacity: 1
+
+
+@media (max-width: 575.98px) and (orientation: landscape)
+	#banners-block
+		display: flex
+		align-items: center
+		max-height: calc(100vh - 100px)
 
 
 .banner-container

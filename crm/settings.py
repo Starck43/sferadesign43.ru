@@ -218,22 +218,23 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+#ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
 ACCOUNT_USERNAME_MIN_LENGTH = 4
 ACCOUNT_MAX_EMAIL_ADDRESSES = 2
+SOCIALACCOUNT_QUERY_EMAIL=True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "optional"
 SOCIALACCOUNT_AUTO_SIGNUP = False
 LOGIN_REDIRECT_URL = "/account/"
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_ADAPTER = "exhibition.adapter.CustomPasswordResetAdapter"
-# ACCOUNT_SIGNUP_FORM_CLASS = 'exhibition.forms.SignupForm'
 ACCOUNT_FORMS = {
-'signup': 'exhibition.forms.AccountSignupForm',
+    'signup': 'exhibition.forms.AccountSignupForm',
+}
+SOCIALACCOUNT_FORMS = {
+    'signup': 'exhibition.forms.CustomSocialSignupForm',
 }
 
-SOCIALACCOUNT_FORMS = {
-'signup': 'exhibition.forms.CustomSocialSignupForm',
-}
 
 
 EMAIL_CONFIG = env.email_url('EMAIL_URL')

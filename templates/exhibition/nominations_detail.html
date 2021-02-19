@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load custom_tags %}
+{% load thumbnail %}
 
+
+{% block title %}{{ block.super }} {{exh_year}} - номинация "{{nomination}}"{% endblock %}
 
 {% if not is_mobile %}
 
@@ -47,38 +50,45 @@
 
 	{% if exhibitors %}
 
-	<section class="exhibitors-list">
-		<h2>список участников</h2>
-		<ol>
-			{% for e in exhibitors %}
-			<li><a href="{{ e.get_absolute_url }}"><h3>{{ e.name }}</h3></a></li>
-			{% endfor %}
-		</ol>
-	</section>
+		<section class="exhibitors-list">
+			<h2>список участников</h2>
+			<ol>
+				{% for e in exhibitors %}
+				<li><a href="{{ e.get_absolute_url }}"><h3>{{ e.name }}</h3></a></li>
+				{% endfor %}
+			</ol>
+		</section>
 
 	{% else %}
 
-	{% if object and not portfolio %}
-	<section class="winner-detail">
-		<h2 class="winner-title">{{ object.exhibitor|verbose_name  }}</h2>
-		<a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><b>{{ object.exhibitor.name }}</b></a>
-		<div class="winner-description">{{ object.exhibitor.description|safe }}</div>
-	</section>
-	{% endif %}
+		{% if object and not portfolio %}
+		<section class="winner-detail">
+			<h2>победитель <a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><b>{{ object.exhibitor.name }}</b></a></h2>
+			{% if object.exhibitor.logo %}
+			<div class="logo participant-logo">
+				{% thumbnail object.exhibitor.logo "300x300" as logo %}
+					<img src="{{ logo.url }}">
+				{% empty %}
+					<img src="{% get_media_prefix %}no-image.png">
+				{% endthumbnail %}
+			</div>
+			{% endif %}
+		</section>
+		{% endif %}
 
-	{% if portfolio %}
-	<section class="portfolio">
-		<h2>{{ portfolio.title }}</h2>
-		<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
-		<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
+		{% if portfolio %}
+		<section class="portfolio">
+			<h2>{{ portfolio.title }}</h2>
+			<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
+			<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
 
-		{% include "exhibition/images_list.html" %}
-	</section>
+			{% include "exhibition/images_list.html" %}
+		</section>
 
-	{% include "rating/rating_form.html" %}
-	{% include "rating/review.html" %}
+		{% include "rating/rating_form.html" %}
+		{% include "rating/review.html" %}
 
-	{% endif %}
+		{% endif %}
 
 	{% endif %}
 </div>

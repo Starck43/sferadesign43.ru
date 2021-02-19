@@ -520,14 +520,14 @@ class Winners(models.Model):
 
 	# Metadata
 	class Meta:
-		ordering = ['-exhibition__date_start'] # '-' for DESC ordering
+		ordering = ['exhibitor__name']
 		verbose_name = 'Победитель'
 		verbose_name_plural = 'Победители'
 		db_table = 'winners'
 		unique_together = ['exhibition', 'exhibitor', 'nomination']
 
 	def __str__(self):
-		return '%s - Номинация: "%s"' % (self.exhibitor.name, self.nomination.title)
+		return '%s / Номинация: "%s"' % (self.exhibitor.name, self.nomination.title)
 
 	def exh_year(self):
 		# return only Exhibition's year from date_start

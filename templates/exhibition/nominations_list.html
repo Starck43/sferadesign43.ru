@@ -4,6 +4,8 @@
 {% load cache %}
 {% load thumbnail %}
 
+{% block title %}{{ block.super }} - Номинации{% endblock %}
+
 {% cache cache_timeout categories %}
 
 {% block header %}<h1>{{ page_title }}</h1>{% endblock%}
@@ -18,7 +20,7 @@
 
 			<div class="categories-list grid">
 				{% for e in object_list %}
-				<a class="grid-cell centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
+				<a class="grid-cell img-ratio centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
 					{% if e.logo %}
 					{% thumbnail e.logo "320" crop="center" as xs %}
 					{% thumbnail e.logo "576" crop="center" as sm %}
@@ -32,7 +34,7 @@
 					{% endthumbnail %}
 					{% endthumbnail %}
 					{% endif %}
-					<h3 class="category-title img-title centered">{{ e }}</h3>
+					<h3 class="category-title centered">{{ e }}</h3>
 				</a>
 				{% endfor %}
 			</div>

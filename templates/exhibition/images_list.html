@@ -4,7 +4,13 @@
 {% if portfolio.images %}
 
 <div class="portfolio-list my-3{% if is_mobile %} grid{% endif %}">
-	<div class="portfolio-preloader"><span>Загрузка...</span></div>
+	<div id="preloader" class="portfolio-preloader show centered">
+		<div class="dot"></div>
+		<div class="dot"></div>
+		<div class="dot"></div>
+		<div class="dot"></div>
+		<div class="dot"></div>
+	</div>
 
 	{% for img in portfolio.images.all %}
 

@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
-{% block header %}
-	<h1>Обратная связь</h1>
-{% endblock header %}
+{% block title %}{{ block.super }} - Контакты{% endblock %}
+
+{% block header %}<h1>Обратная связь</h1>{% endblock header %}
 
 {% block content %}
 	{% include "contacts/feedback.html" %}

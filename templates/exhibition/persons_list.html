@@ -4,21 +4,16 @@
 {% load cache %}
 {% load thumbnail %}
 
+{% block title %}{{ block.super }} - {{page_title}} {% if exh_year %}{{ exh_year }}{% else %}за все годы{% endif %}{% endblock %}
 
 {% block site_title %}
 {{ block.super }}
 <svg class="site-title"><use xlink:href="#main-title"></use></svg>
 {% endblock site_title %}
 
-
 {% block header %}
-	<h1>{{ page_title }}
-		{% if exhibition %}
-			{{ exhibition }}
-		{% else %}
-			за все годы
-		{% endif %}
-	</h1>
+<h1>{{ page_title }} {% if exh_year %}{{ exh_year }}{% else %}за все годы{% endif %}
+</h1>
 {% endblock%}
 
 {% block content %}

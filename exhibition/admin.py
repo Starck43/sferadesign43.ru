@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
+from django.template.loader	import render_to_string
 
 from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
 from sorl.thumbnail.admin import AdminImageMixin
@@ -13,7 +14,7 @@ from sorl.thumbnail.admin import AdminImageMixin
 from crm import models
 from .models import *
 from .forms import ExhibitionsForm, ImagesUploadForm, CustomClearableFileInput
-from .logic import UploadFilename, ImageResize, delete_cached_fragment
+from .logic import UploadFilename, ImageResize, delete_cached_fragment, SendEmailAsync
 from rating.admin import RatingInline, ReviewInline
 
 admin.site.unregister(User)  # нужно что бы снять с регистрации модель User
@@ -210,6 +211,7 @@ class WinnersAdmin(admin.ModelAdmin):
 	#search_fields = ('nomination__title', 'exhibitor__name',)
 	list_filter = ('exhibition__date_start', 'nomination', 'exhibitor')
 	date_hierarchy = 'exhibition__date_start'
+	ordering = ('-exhibition__date_start',)
 
 	list_per_page = 30
 	save_as = True
@@ -221,6 +223,12 @@ class WinnersAdmin(admin.ModelAdmin):
 			#print(db_field)
 
 		return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+
+		delete_cached_fragment('persons', 'winners')
+
 
 
 
@@ -289,6 +297,9 @@ class PortfolioAdmin(admin.ModelAdmin):
 	view_on_site = True
 	inlines = [ImagesInline, RatingInline, ReviewInline]
 
+	class Media:
+		js = ['/static/js/files-upload.min.js']
+
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations.values_list('title', flat=True))
 	nominations_list.short_description = 'Номинации'
@@ -309,12 +320,34 @@ class PortfolioAdmin(admin.ModelAdmin):
 
 	def save_model(self, request, obj, form, change):
 		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
-		obj.save(request.FILES.getlist('files'))
+		image_list = request.FILES.getlist('files')
+		obj.save(image_list) # сохраним портфолио и связанные фотографии
 
-		delete_cached_fragment('portfolio', obj.id)
+		if (not change) and obj.images : # new portfolio with images
+			protocol = 'https' if request.is_secure() else 'http'
+			host_url = "{0}://{1}".format(protocol, request.get_host())
+
+			# get list of image thumbs 100x100
+			images = []
+			size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
+			for im in obj.images.all():
+				thumb = get_thumbnail(im.file, size, crop='center', quality=75)
+				images.append(thumb)
+
+			subject = 'Добавление портфолио на сайте Сфера Дизайна'
+			template = render_to_string('exhibition/new_project_notification.html', {
+				'project': obj,
+				'host_url': host_url,
+				'uploaded_images': images,
+			})
+			SendEmailAsync(subject, template, [obj.owner.user.email])
+
+		delete_cached_fragment('portfolio', obj.id, True)
+		delete_cached_fragment('portfolio', obj.id, False)
 		delete_cached_fragment('portfolio_slider', obj.id)
 		for nomination in obj.nominations.all():
-			delete_cached_fragment('projects', nomination.category.slug)
+			if nomination.category:
+				delete_cached_fragment('projects', nomination.category.slug)
 
 
 	# def delete_file(self, pk, request):

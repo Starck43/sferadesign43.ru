@@ -4,6 +4,8 @@
 {% load cache %}
 {% load thumbnail %}
 
+{% block title %}{{ block.super }} - {{object.name}}{% endblock %}
+
 {% cache 2592000 participant parent_link object.id %}
 
 {% block header %}
@@ -46,8 +48,8 @@
 		<div class="person-description my-3">{{ object.description|safe }}</div>
 
 		{% if parent_link != 'jury' %}
-		<div class="meta">
-			<h2>Контакты участника:</h2>
+		<section class="meta my-5">
+			<h2>Контактная информация</h2>
 			{% for name, label, value, link in object %}
 				{% if value and label %}
 				<div class="person-details-item">
@@ -61,12 +63,12 @@
 				</div>
 				{% endif %}
 			{% endfor %}
-		</div>
+		</section>
 		{% endif %}
 
 		{% if winners_list %}
 		<section class="participant-awards my-5">
-			<h2>Победы в номинациях:</h2>
+			<h2>Победы в номинациях</h2>
 			<ol class="winners-list my-2">
 				{% for item in winners_list %}
 				<li>
@@ -81,7 +83,7 @@
 
 		{% if object_list %}
 		<section class="participant-projects my-5">
-			<h2>Работы участника:</h2>
+			<h2>Работы участника</h2>
 			<div class="projects-list grid my-2">
 				{% for e in object_list %}
 

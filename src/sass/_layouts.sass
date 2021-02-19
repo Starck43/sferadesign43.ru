@@ -14,53 +14,56 @@
 		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr) )
 		gap: 2vw
 
-
 	.grid-cell
 		position: relative
-		+responsive-ratio(1,1,0,true)
-		//box-sizing: content-box
 		text-align: center
 		color: $cell-text-color
-		background-color: $highlight-block-bg
 		border: 1px solid $main-color
-		transition: all 200ms linear
 		overflow: hidden
-		>*
-			width: 100%
-			justify-self: center
-			box-sizing: border-box
-		&:hover
-			color: #fff
-			background-color: #fff
-			border-width: $border-thickness
+		figure
+			margin: 0
+			padding-bottom: 100%
+			background-color: $highlight-block-bg
+			&:hover
+				img
+					transform: scale(1.03)
+
 
 		img
 			+push--absolute
 			width: 100%
 			height: 100%
 			object-fit: cover
+
 			&~.img-title
 				>*:not(:first-child)
 					margin-bottom: 5%
 					font-size: 1rem
 					font-weight: normal
-				&:hover
-					+blur-background(10, $overlay-color, 0.7)
+
+		>*
+			width: 100%
+			justify-self: center
+			box-sizing: border-box
 
 		.img-title
 			+push--absolute
 			margin: 0
 			padding: 0.5em
-			font-weight: bold
 			flex-direction: column
-			transition: all 200ms linear
+			font-weight: bold
+			text-shadow: 0 0 1px $text-color
+			background-color: transparentize($overlay-color, 0.85)
+			border: 0 $main-color solid
+			transition: all 150ms linear
 			&:hover
-				color: $main-color
+				border-width: $border-thickness
+				padding: calc(0.5em - #{$border-thickness})
+				+blur-background(10, $overlay-color, 0.7)
 
 		.project-title
 			margin-bottom: .25rem
 			font-size: 1.3rem
-			text-shadow: 0 0 1px $text-color
 
 
 .centered
@@ -131,8 +134,8 @@
 .portfolio-award
 	flex-direction: column
 	svg.award
-		width: 22px
-		height: 22px
+		width: 24px
+		height: 24px
 		margin: .5em 0 0
 		fill: orange
 		stroke: white
