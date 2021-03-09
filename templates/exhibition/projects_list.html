@@ -5,14 +5,14 @@
 {% load thumbnail %}
 
 
-{% block title %}{{ block.super }} - Категория "{{ object_list.0.cat_title }}"{% endblock %}
+{% block title %}{{ block.super }} {{separator}} {{ category_title }}{% endblock %}
+
 
 {% block script %}
-
 {{ block.super }}
 <script type="text/javascript" src="{% md5url 'js/project_pagination.min.js' %}"></script>
-
 {% endblock script %}
+
 
 {% block svg_icons %}
 {{ block.super }}
@@ -21,86 +21,87 @@
 </symbol>
 {% endblock svg_icons %}
 
+
+{% block site_title %}<a href="#" class="filter-link">фильтры</a>{% endblock site_title %}
+
+
 {% block header %}
-<h1>{% if object_list.0.cat_title %}{{ object_list.0.cat_title }}{% else %}Категория пустая!{% endif %}</h1>
+<h1>{% if category_title %}{{ category_title }}{% else %}Категория пустая!{% endif %}</h1>
 {% endblock%}
 
-{% block site_title %}
-{{ block.super }}
-<a href="#" class="filter-link">фильтры</a>
-{% endblock site_title %}
+
+{% block sidebar %}
+
+{% cache cache_timeout sidebar absolute_url %}
+
+{% if filter_attributes %}
+<div id="sidebar" class="left-side">
+	<h3 class="filter-title">фильтры</h3>
+	<button type="button" class="sidebar-close btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+
+	<form class="filters-block {{absolute_url}}-filters" action="{% url 'nomination-detail-url' absolute_url %}" method="get" name="projects-filter">
+
+		{% for atttribute in filter_attributes %}
+		<div class="filter-attributes-block">
+		<h4>{{atttribute.0.group_name}}</h4>
+		<ol class="{{atttribute.0.group}}-filters-group filters-group">
+			{% for item in atttribute %}
+			<li class="form-check form-switch">
+				<input class="form-check-input" id="{{item.group}}-{{item.id}}_id" type="checkbox" name="filter-group" value="{{ item.id }}">
+				<label class="filter-checkbox form-check-label" for="{{item.group}}-{{item.id}}_id">{{ item.name }}</label>
+			</li>
+			{% endfor %}
+		</ol>
+		</div>
+		{% endfor %}
+
+		<button class="form-control" type="submit" disabled="disabled">сбросить фильтры</button>
+
+	</form>
+</div>
+{% endif %}
+
+{% endcache %}
+
+{% endblock sidebar %}
+
 
 {% block content %}
 
-	{% block sidebar %}
+<div class="content">
 
-	{% cache 86400 sidebar absolute_url %}
+	{% cache cache_timeout projects_list absolute_url %}
 
-	{% if filter_attributes %}
-	<div id="sidebar" class="left-side">
-		<h3 class="filter-title">фильтры</h3>
-		<button type="button" class="sidebar-close btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-
-		<form class="filters-block {{absolute_url}}-filters" action="{% url 'nomination-detail-url' absolute_url %}" method="get" name="projects-filter">
-
-			{% for atttribute in filter_attributes %}
-			<div class="filter-attributes-block">
-			<h4>{{atttribute.0.group_name}}</h4>
-			<ol class="{{atttribute.0.group}}-filters-group filters-group">
-				{% for item in atttribute %}
-				<li class="form-check form-switch">
-					<input class="form-check-input" id="{{item.group}}-{{item.id}}_id" type="checkbox" name="filter-group" value="{{ item.id }}">
-					<label class="filter-checkbox form-check-label" for="{{item.group}}-{{item.id}}_id">{{ item.name }}</label>
-				</li>
-				{% endfor %}
-			</ol>
-			</div>
-			{% endfor %}
-
-			<button class="form-control" type="submit" disabled="disabled">сбросить фильтры</button>
-
-		</form>
-	</div>
-	{% endif %}
-
-	{% endcache %}
-
-	{% endblock sidebar %}
-
-
-	<div class="content">
-
-		{% cache 3600 projects absolute_url %}
-		{% if object_list %}
+	{% if object_list %}
 
 		<div class="projects-list grid">
 			{% for e in object_list %}
-
-
-				{% if e.cover %}
 				{% with e.title as project_title %}
 				<a id="project-{{e.id}}" class="grid-cell" href="{{ e.get_absolute_url }}" title="{{ project_title }}">
 					<figure>
-						{% thumbnail e.cover "320" crop="center" as xs %}
-						{% thumbnail e.cover "576" crop="center" as sm %}
-						<img class="project-cover lazyload"
-							data-src="{% get_media_prefix %}{{e.cover}}"
-							data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
-							data-sizes="auto"
-							loading="lazy"
-							title="{{ project_title }}"
-							alt="{% if project_title %}{{ project_title }}. {% endif %}Автор проекта: {{ e.owner }}">
-						{% endthumbnail %}
-						{% endthumbnail %}
+						{% with e.cover as project_cover %}
+						{% if project_cover %}
+							{% thumbnail project_cover "320" crop="center" as xs %}
+							{% thumbnail project_cover "576" crop="center" as sm %}
+							<img class="project-cover lazyload"
+								data-src="{% get_media_prefix %}{{project_cover}}"
+								data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
+								data-sizes="auto"
+								loading="lazy"
+								title="{{ project_title }}"
+								alt="{% if project_title %}{{ project_title }}. {% endif %}Автор проекта: {{ e.owner }}">
+							{% endthumbnail %}
+							{% endthumbnail %}
+						{% endif %}
+						{% endwith %}
 
 						<figcaption class="img-title centered">
-							<h2 class="project-title">
-								{{project_title }}
-							</h2>
+							<h2 class="project-title">{{project_title }}</h2>
 
 							{% if e.owner %}
 							<div class="subtitle">{{ e.owner }}</div>
 							{% endif %}
+
 							{% if e.average > 0 %}
 							<div class="portfolio-rate centered">
 								<span class="rate-counter">{{e.average|stringformat:".1f"}}</span>
@@ -108,18 +109,16 @@
 							</div>
 							{% endif %}
 
-							{% if e.exh_year %}
+							{% if e.win_year %}
 							<div class="portfolio-award centered">
 								<svg class="award"><use xlink:href="#award-icon"></use></svg>
-								<span>{{e.exh_year}}</span>
+								<span>{{e.win_year}}</span>
 							</div>
 							{% endif %}
 						</figcaption>
 					</figure>
-
 				</a>
 				{% endwith %}
-				{% endif %}
 
 			{% endfor %}
 
@@ -141,12 +140,15 @@
 			<script>var nextPage = false;</script>
 		{% endif %}
 
-		{% else %}
-			<a class="back-link" href="/category/"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Вернуться к списку категорий</a>
-		{% endif %}
+	{% else %}
 
-		{% endcache %}
+		<a class="back-link" href="/category/"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Вернуться к списку категорий</a>
 
-	</div>
+	{% endif %}
+
+	{% endcache %}
+
+</div>
 
 {% endblock content %}
+

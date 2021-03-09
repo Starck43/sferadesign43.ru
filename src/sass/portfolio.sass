@@ -68,15 +68,17 @@ figure
 			background-color: #ddd
 
 		figcaption
-			position: relative
+			position: absolute
+			bottom: 0
 			width: 100%
 			//bottom: 0
 			h3
-				padding: 2vw
+				padding: 1.5vw
 				margin: 0
 				color: #fff
 				font-size: 0.8em
 				text-align: center
+				text-shadow: 0 0 1px #000
 				+blur-background(9, $overlay-color, 0.6)
 				z-index: 1
 			.portfolio-image-title
@@ -164,7 +166,6 @@ figure
 	//+push--absolute(fixed)
 	//overflow: hidden
 	visibility: hidden
-	//z-index: -1
 	display: block
 	img
 		object-fit: contain
@@ -181,7 +182,7 @@ figure
 		.slide-title,
 		.slide-description
 			margin-bottom: 0
-			font-size: calc(0.8em + .3vw)
+			font-size: calc(0.6em + .3vw)
 		.slide-description
 			margin: 0.5em 0 0
 

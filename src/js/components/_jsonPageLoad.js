@@ -15,6 +15,7 @@
 				thumb_sm_w = projects_list[i]['thumb_sm_w'],
 				author = projects_list[i]['owner__name'],
 				score = (projects_list[i]['average']) ? projects_list[i]['average'].toFixed(1) : null,
+				win_year = projects_list[i]['win_year'],
 				url = data['projects_url']+projects_list[i]['owner__slug']+'/project-'+projects_list[i]['project_id']+'/';
 
 			html +='<a id="project-'+id+'" class="grid-cell" href="'+url+'" title="'+title+'">\
@@ -32,6 +33,11 @@
 							'<div class="portfolio-rate centered">\
 								<span class="rate-counter">'+score+'</span>\
 								<svg class="rate-star"><use xlink:href="#star-icon"></use></svg>\
+							</div>' : '')+
+							(win_year ?
+							'<div class="portfolio-award centered">\
+								<svg class="award"><use xlink:href="#award-icon"></use></svg>\
+								<span>'+win_year+'</span>\
 							</div>' : '')+
 						'</figcaption>\
 					</figure>\

@@ -33,6 +33,12 @@
 		}
 
 		submitRating = function(e) {
+			if (ratingForm.method == 'get') {
+				var message = '<h3>Внимание!</h3><p>Голосовать могут только зарегистрированные пользователи.</p>';
+				alertHandler(message); // функция обработки сообщений
+				return;
+			}
+
 			var score = ratingForm.getAttribute('value'); // Если у формы уже стоит значение value, то рейтинг установлен
 			if (score) {
 				e.preventDefault();

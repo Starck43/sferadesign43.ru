@@ -4,48 +4,41 @@
 {% load cache %}
 {% load thumbnail %}
 
-{% block title %}{{ block.super }} - Номинации{% endblock %}
 
-{% cache cache_timeout categories %}
+{% block title %}{{ block.super }} {{separator}} {{ page_title }}{% endblock %}
 
-{% block header %}<h1>{{ page_title }}</h1>{% endblock%}
+{% block header %}
+<h1>{{ page_title }}</h1>
+{% endblock header %}
+
 
 {% block content %}
-<div class="row">
-	{% block sidebar %}{% endblock sidebar %}
 
-	<div class="content">
+{% cache cache_timeout categories_list %}
 
-		{% if object_list %}
-
-			<div class="categories-list grid">
-				{% for e in object_list %}
-				<a class="grid-cell img-ratio centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
-					{% if e.logo %}
-					{% thumbnail e.logo "320" crop="center" as xs %}
-					{% thumbnail e.logo "576" crop="center" as sm %}
-					<img class="category-cover lazyload"
-						data-src="{{ e.logo.url }}"
-						data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
-						data-sizes="auto"
-						loading="lazy"
-						title="Раздел {{ e.title }}"
-						alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}">
-					{% endthumbnail %}
-					{% endthumbnail %}
-					{% endif %}
-					<h3 class="category-title centered">{{ e }}</h3>
-				</a>
-				{% endfor %}
-			</div>
-
-		{% else %}
-			<h4>Список пустой</h4>
+<div class="categories-list grid">
+	{% for e in object_list %}
+	<a class="grid-cell img-ratio centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
+		{% if e.logo %}
+		{% thumbnail e.logo "320" crop="center" as xs %}
+		{% thumbnail e.logo "576" crop="center" as sm %}
+		<img class="category-cover lazyload"
+			data-src="{{ e.logo.url }}"
+			data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
+			data-sizes="auto"
+			loading="lazy"
+			title="Раздел {{ e.title }}"
+			alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}">
+		{% endthumbnail %}
+		{% endthumbnail %}
 		{% endif %}
-
-	</div>
-
+		<h3 class="category-title centered">{{ e }}</h3>
+	</a>
+	{% empty %}
+		<h2>Список пустой</h2>
+	{% endfor %}
 </div>
-{% endblock content%}
 
 {% endcache %}
+
+{% endblock content%}

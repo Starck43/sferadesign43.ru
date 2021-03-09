@@ -63,3 +63,9 @@ Insert the following code in the `head` section of `base.html`:
 
 *Optional* - Check your favicon with the [favicon checker](https://realfavicongenerator.net/favicon_checker)
 
+
+## Developer Tools
+
+Webmaster Yandex <code>https://webmaster.yandex.ru</code>
+Analytics Google <code>https://analytics.google.com</code>
+

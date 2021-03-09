@@ -1,9 +1,11 @@
 from django.apps import AppConfig
 from watson import search as watson
 
+
 class ExhibitionConfig(AppConfig):
 	name = 'exhibition'
 	verbose_name = 'Сфера дизайна'
+
 	def ready(self):
 		Exhibtitors = self.get_model("Exhibitors")
 		watson.register(Exhibtitors, store=("description",))
@@ -45,3 +47,4 @@ class PortfolioAdapter(watson.SearchAdapter):
 
 	def get_description(self, obj):
 		return '<p><b>Автор проекта:</b> %s</p>%s' % (obj.owner.name, obj.description)
+

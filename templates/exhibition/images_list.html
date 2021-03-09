@@ -1,7 +1,7 @@
 {% load static %}
 {% load thumbnail %}
 
-{% if portfolio.images %}
+{% if portfolio.images.count > 0 %}
 
 <div class="portfolio-list my-3{% if is_mobile %} grid{% endif %}">
 	<div id="preloader" class="portfolio-preloader show centered">

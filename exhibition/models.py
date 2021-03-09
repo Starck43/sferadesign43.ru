@@ -17,6 +17,7 @@ from django.dispatch import receiver
 
 from crm import models
 from .logic import ImageResize, UploadFilename, GalleryUploadTo, MediaFileStorage
+from .sitemap import update_google_sitemap
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -150,7 +151,9 @@ class Exhibitors(Person, Profile):
 					image.save()
 
 			self.original_slug = self.slug
+
 		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
 
 
 	def clean_username(self, username):
@@ -176,6 +179,7 @@ class Organizer(Person, Profile):
 		db_table = 'organizers'
 
 
+
 class Jury(Person):
 	excerpt = models.CharField('Краткое описание', max_length=255, null=True, blank=True)
 
@@ -185,18 +189,16 @@ class Jury(Person):
 		verbose_name_plural = 'Жюри'
 		ordering = ['sort','name']
 		db_table = 'jury'
-	# def __init__(self,id,name,slug,description,logo,sort,excerpt):
-	# 	super().__init__(self)
-	# 	self.excerpt = excerpt
-	# 	self.description = description
-	# 	print(self)
-		# self.fields.keyOrder = [
-		# 'excerpt',
-		# 'description',
-		# ]
+
+
+	def save(self, *args, **kwargs):
+		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
+
 
 	def get_absolute_url(self):
 		return reverse('jury-detail-url', kwargs={'slug': self.slug })
+
 
 
 class Partners(Person, Profile):
@@ -206,6 +208,10 @@ class Partners(Person, Profile):
 		verbose_name = 'Партнер выставки'
 		verbose_name_plural = 'Партнеры выставки'
 		db_table = 'partners'
+
+	def save(self, *args, **kwargs):
+		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
 
 	def get_absolute_url(self):
 		return reverse('partner-detail-url', kwargs={'slug': self.slug })
@@ -231,6 +237,8 @@ class Categories(models.Model):
 		if not self.slug:
 			self.slug = uuslug(self.title.lower(), instance=self)
 		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
+
 
 	def __str__(self):
 		if self.title:
@@ -266,6 +274,8 @@ class Nominations(models.Model):
 		if not self.slug:
 			self.slug = uuslug(self.title.lower(), instance=self)
 		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
+
 
 	def __str__(self):
 		return self.title
@@ -313,6 +323,8 @@ class Exhibitions(models.Model):
 		if not self.slug:
 			self.slug = uuslug(self.date_start.strftime('%Y'), instance=self)
 		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
+
 
 	def clean_slug(self):
 		print(self.slug)
@@ -327,7 +339,6 @@ class Exhibitions(models.Model):
 
 	def banner_thumb(self):
 		return get_image_html(self.banner)
-
 	banner_thumb.short_description = 'Логотип'
 
 	def get_absolute_url(self):
@@ -355,6 +366,9 @@ class Events(models.Model):
 		db_table = 'events'
 		unique_together = ['exhibition', 'time_start', 'time_end']
 
+	def save(self, *args, **kwargs):
+		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
 
 	def __str__(self):
 		return self.title
@@ -390,6 +404,7 @@ class PortfolioAttributes(models.Model):
 			self.slug = uuslug(self.name, instance=self)
 		super().save(*args, **kwargs)
 
+
 	def __str__(self):
 		return f"{self.get_group_display()} / {self.name}"
 
@@ -421,7 +436,7 @@ class Portfolio(models.Model):
 
 	# Metadata
 	class Meta:
-		ordering = ['-exhibition__date_start'] # '-' for DESC ordering
+		ordering = ['-exhibition__slug','title'] # '-' for DESC ordering
 		verbose_name = 'Портфолио'
 		verbose_name_plural = 'Портфолио работ'
 		db_table = 'portfolio'
@@ -434,7 +449,7 @@ class Portfolio(models.Model):
 			post.delete()
 
 		super().delete(*args, **kwargs)
-
+		update_google_sitemap()
 
 	def save(self, images=None, *args, **kwargs):
 		if not self.project_id:
@@ -443,7 +458,6 @@ class Portfolio(models.Model):
 			index = 1
 			if post and post.project_id:
 				index += post.project_id
-
 			self.project_id = index
 
 		super().save(*args, **kwargs)
@@ -470,12 +484,12 @@ class Portfolio(models.Model):
 				instance = Image(portfolio=self, file=image)
 				instance.save()
 
+		update_google_sitemap() # обновим карту сайта Google
+
+
 	@property
 	def slug(self):
-		if self.project_id:
-			return ('project-%s') % self.project_id
-		else:
-			return '<Без названия>'
+		return ('project-%s') % self.project_id
 
 	def root_comments(self):
 		return self.comments_portfolio.filter(parent__isnull=True)
@@ -484,7 +498,7 @@ class Portfolio(models.Model):
 		if self.title:
 			return self.title
 		else:
-			return self.slug
+			return ('project-%s') % self.project_id
 
 	def get_absolute_url(self):
 		return reverse('project-detail-url', kwargs={'owner': self.owner.slug, 'project_id': self.project_id })
@@ -525,6 +539,11 @@ class Winners(models.Model):
 		verbose_name_plural = 'Победители'
 		db_table = 'winners'
 		unique_together = ['exhibition', 'exhibitor', 'nomination']
+
+	def save(self, *args, **kwargs):
+		super().save(*args, **kwargs)
+		update_google_sitemap() # обновим карту сайта Google
+
 
 	def __str__(self):
 		return '%s / Номинация: "%s"' % (self.exhibitor.name, self.nomination.title)
@@ -632,10 +651,7 @@ class Image(models.Model):
 		super().delete(*args, **kwargs)
 
 	def save(self, *args, **kwargs):
-		print(self.file)
-
-		if self.original_file != self.file:
-			print('found file %s. It is deleted' % self.original_file)
+		if self.original_file and self.original_file != self.file:
 			delete(self.original_file)
 
 			# Resizing uploading image

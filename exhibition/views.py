@@ -11,6 +11,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.template.loader	import render_to_string
 from django.dispatch import receiver
+from django.utils.timezone import now
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -182,15 +183,6 @@ class jury_list(ListView):
 class exhibitions_list(ListView):
 	model = Exhibitions
 
-	# def get_queryset(self):
-	# 	slug = self.kwargs['exh_year']
-
-	# 	if slug == None:
-	# 		posts = self.model.objects.all()
-	# 	else:
-	# 		posts = self.model.objects.filter(date_start__year=slug)
-	# 	return posts
-
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['exhibitions',]
@@ -243,7 +235,7 @@ class events_list(ListView):
 class projects_list(ListView):
 	model = Portfolio
 	template_name = 'exhibition/projects_list.html'
-	PAGE_SIZE = getattr(settings, 'PORTFOLIO_COUNT_PER_PAGE', 20)
+	PAGE_SIZE = getattr(settings, 'PORTFOLIO_COUNT_PER_PAGE', 20) # Количество выводимых записей на странице
 
 	def get_queryset(self):
 		self.slug = self.kwargs['slug']
@@ -262,11 +254,11 @@ class projects_list(ListView):
 		if self.filters_group and self.filters_group[0] != '0':
 			query.add(Q(attributes__in=self.filters_group), Q.AND)
 
-		subqry = Subquery(Image.objects.filter(portfolio=OuterRef('pk')).values('file')[:1])
+		subqry = Subquery(Image.objects.filter(portfolio=OuterRef('pk')).values('file')[:1]) # Подзапрос для получения первого фото в портфолио
 		subqry2 = Subquery(Winners.objects.filter(
 			portfolio_id=OuterRef('pk'),
 			nomination__category__slug=self.slug
-		).values('exhibition__slug'))
+		).values('exhibition__slug')[:1]) # Подзапрос для получения статуса победителя
 
 		posts = self.model.objects.filter(
 			query &
@@ -275,13 +267,13 @@ class projects_list(ListView):
 			last_exh_year=F('exhibition__slug'),
 			cat_title=F('nominations__category__title'),
 			average=Avg('rated_portfolio__star'),
-			exh_year=subqry2,
+			win_year=subqry2,
 			cover=subqry
-		).order_by('-last_exh_year')[start_page:end_page+1] # +1 сделано для выявления наличия следующей страницы
+		).order_by('-last_exh_year','-win_year', '-average')[start_page:end_page+1] # +1 сделано для выявления наличия следующей страницы
 
 		self.is_next_page = True if posts.count() > self.PAGE_SIZE else False
-
 		return posts[:self.PAGE_SIZE]
+
 
 	def get_context_data(self, **kwargs):
 		#attributes = self.object_list.distinct().filter(attributes__group__isnull=False).annotate(attribute_id=F('attributes'), group=F('attributes__group'), name=F('attributes__name'))#.values('group', 'name', 'attribute_id').order_by('group', 'name')
@@ -295,17 +287,20 @@ class projects_list(ListView):
 			group__isnull=False,
 		).distinct()
 
+		# Формирование групп аттрибутов фильтра
 		attributes_dict = attributes.values('id','name','group')
 		filter_attributes = defaultdict(list)
 		for i,item in enumerate(attributes_dict):
-			attributes_dict[i].update({'group_name':attributes[i].get_group_display()})
+			attributes_dict[i].update({'group_name' : attributes[i].get_group_display()}) # {queryset_row}.get_group_display() - get choice field name
 			filter_attributes[item['group']].append(attributes_dict[i])
 
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['projects',]
 		context['absolute_url'] = self.slug
-		context['filter_attributes'] = list(filter_attributes.values())
+		context['category_title'] = self.object_list.first().cat_title if self.object_list else None
 		context['next_page'] = self.is_next_page
+		context['filter_attributes'] = list(filter_attributes.values())
+		context['cache_timeout'] = 86400 # one day
 
 		#context['nominations'] = self.nominations
 		return context
@@ -314,14 +309,15 @@ class projects_list(ListView):
 		self.page = self.request.GET.get('page', None) # Параметр GET запроса ?page текущей страницы
 		self.filters_group = self.request.GET.getlist("filter-group", None) # Выбранные опции checkbox в GET запросе (?nominations=[])
 		if self.filters_group or self.page:
-			queryset = self.get_queryset().values('id','title','last_exh_year','average','owner__name','owner__slug','project_id','cover')
+			queryset = self.get_queryset().values('id','title','win_year','average','owner__name','owner__slug','project_id','cover')
 			for i,q in enumerate(queryset):
-				thumb_320 = get_thumbnail(q['cover'], '320', crop='center', quality=settings.THUMBNAIL_QUALITY)
-				thumb_576 = get_thumbnail(q['cover'], '576', crop='center', quality=settings.THUMBNAIL_QUALITY)
-				queryset[i].update({'thumb_xs':str(thumb_320)})
-				queryset[i].update({'thumb_xs_w':thumb_320.width})
-				queryset[i].update({'thumb_sm':str(thumb_576)})
-				queryset[i].update({'thumb_sm_w':thumb_576.width})
+				if q['cover']:
+					thumb_320 = get_thumbnail(q['cover'], '320', crop='center', quality=settings.THUMBNAIL_QUALITY)
+					thumb_576 = get_thumbnail(q['cover'], '576', crop='center', quality=settings.THUMBNAIL_QUALITY)
+					queryset[i].update({'thumb_xs':str(thumb_320)})
+					queryset[i].update({'thumb_xs_w':thumb_320.width})
+					queryset[i].update({'thumb_sm':str(thumb_576)})
+					queryset[i].update({'thumb_sm_w':thumb_576.width})
 
 		#	print( list(queryset).sort(key=lambda k:('last_exh_year' not in k, k.get("last_exh_year", None)) ))
 
@@ -334,8 +330,7 @@ class projects_list(ListView):
 			}
 			return JsonResponse(json_data, safe=False)
 		else:
-			#print(self.paginate_by)
-			#self.paginate_by = 2
+			# выполняется при загрузке первой страницы
 			return super().get(request, **kwargs)
 
 
@@ -375,7 +370,7 @@ class exhibitor_detail(DetailView):
 		slug = self.kwargs['slug']
 		portfolio = Portfolio.objects.filter(owner__slug=slug).annotate(
 			exh_year=F('exhibition__slug'),
-			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')),
+			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')[:1]),
 			cover=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])
 		).order_by('-exh_year')
 		context = super().get_context_data(**kwargs)
@@ -384,7 +379,7 @@ class exhibitor_detail(DetailView):
 		context['object_list'] = portfolio
 		#context['exh_list'] = ', '.join(Exhibitions.objects.filter(exhibitors=self.object).values_list('title', flat=True))
 		context['parent_link'] = self.model.__name__.lower
-
+		context['cache_timeout'] = 86400
 		return context
 
 
@@ -397,7 +392,7 @@ class jury_detail(DetailView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'jury']
 		context['parent_link'] = self.model.__name__.lower
-
+		context['cache_timeout'] = 86400
 		return context
 
 
@@ -410,6 +405,7 @@ class partner_detail(DetailView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'partner']
 		context['parent_link'] = self.model.__name__.lower
+		context['cache_timeout'] = 86400
 		return context
 
 
@@ -431,92 +427,95 @@ class exhibition_detail(DetailView):
 	def get_object(self, queryset=None):
 		slug = self.kwargs['exh_year']
 		try:
-			q = self.model.objects.prefetch_related('exhibitors','partners','jury','events','gallery').get(date_start__year=slug)
+			q = self.model.objects.prefetch_related('events','gallery').get(slug=slug)
 		except self.model.DoesNotExist:
 			q = None
 		return q
 
 	def get_context_data(self, **kwargs):
-		slug = self.kwargs['exh_year'] # current exhibition year
 		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['exhibition']
 
-		nominations_with_winners = self.object.nominations.filter(nomination_for_winner__exhibition_id=self.object.id).annotate(exhibitor_name=F('nomination_for_winner__exhibitor__name'), exhibitor_slug=F('nomination_for_winner__exhibitor__slug')).values('id', 'exhibitor_name','exhibitor_slug','title', 'slug') #.filter(nomination_for_winner__exhibition_id=self.object.id).values('nomination_for_winner__exhibition_id', 'nomination_for_winner__exhibitor__name', 'title')#.filter(nomination_for_winner__exhibition_id=self.object.id)
-		if nominations_with_winners:
-			context['nominations_list'] = nominations_with_winners
-		else:
-			context['nominations_list'] = self.object.nominations.all
-
-		context['last_exh'] = Exhibitions.objects.values('slug')[:1].first()
+		win_nominations = self.object.nominations.filter(nomination_for_winner__exhibition_id=self.object.id).annotate(
+			exhibitor_name=F('nomination_for_winner__exhibitor__name'),
+			exhibitor_slug=F('nomination_for_winner__exhibitor__slug'),
+			#cover=Coalesce(Subquery(Image.objects.filter(portfolio_id=OuterRef('portfolio_for_winner')).values('file')[:1]), None)
+		).values('id', 'exhibitor_name', 'exhibitor_slug', 'title', 'slug')
+		# Добавляем слайды в баннер (основной + первые фото победных проектов)
 		banner_slider = []
-		if self.object.banner and self.object.banner.width!=0 :
+		if self.object.banner and self.object.banner.width > 0 :
 			banner_slider.append(self.object.banner)
 			context['banner_height'] = f"{self.object.banner.height / self.object.banner.width * 100}%"
 
-		for winner in nominations_with_winners:
-			query_and = (Q(exhibition=self.object) & Q(nominations=winner['id']) & Q(owner__slug=winner['exhibitor_slug']))
-			first_image = Portfolio.objects.prefetch_related('images').filter(query_and, images__file__isnull=False).values('images__file').first()
-			if first_image:
-				banner_slider.append(first_image['images__file'])
-				#print(first_image)
+		for nom in win_nominations:
+			cover = Image.objects.filter(
+				portfolio__exhibition=self.object.id,
+				portfolio__nominations=nom['id'],
+				portfolio__owner__slug=nom['exhibitor_slug'],
+			).values('file')[:1].first()
+			if cover:
+				banner_slider.append(cover['file'])
 
+
+		context['html_classes'] = ['exhibition']
 		context['banner_slider'] = banner_slider
+		context['nominations_list'] = win_nominations if win_nominations else self.object.nominations.all
 		context['events_title'] = Events._meta.verbose_name_plural
 		context['gallery_title'] = Gallery._meta.verbose_name_plural
+		context['last_exh'] = self.model.objects.only('slug')[:1].first().slug
+		context['exh_year'] = self.kwargs['exh_year']
+		context['today'] = now().date()
 		context['model_name'] = self.model.__name__.lower
 		context['cache_timeout'] = 2592000
-
 		return context
 
 
 """ Winner project detail """
 class winner_project_detail(DetailView):
 	model = Winners
+	template_name = 'exhibition/nominations_detail.html'
 	#slug_url_kwarg = 'name'
 	#context_object_name = 'portfolio'
-	template_name = 'exhibition/nominations_detail.html'
 
 	def get_object(self, queryset=None):
-#	def get_queryset(self):
-		nom = self.kwargs['slug']
-		exh_year = self.kwargs['exh_year']
+		self.nom_slug = self.kwargs['slug']
+		self.exh_year = self.kwargs['exh_year']
 
-		try:
-			q = self.model.objects.get(exhibition__slug=exh_year,nomination__slug=nom)
+		q = self.model.objects.filter(exhibition__slug=self.exh_year,nomination__slug=self.nom_slug)[0]
+		if q:
 			self.exhibitors = None
 			self.nomination = q.nomination
-		except self.model.DoesNotExist:
-			q = None
-			self.exhibitors = Exhibitors.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=exh_year).only('name', 'slug')
-			self.nomination = Nominations.objects.only('title', 'description').get(slug=nom)
+			return q
+		else:
+			self.exhibitors = Exhibitors.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.exh_year).only('name', 'slug')
+			self.nomination = Nominations.objects.only('title', 'description').get(slug=self.nom_slug)
+			return None
 
-		return q
 
 	def get_context_data(self, **kwargs):
-		exh_year = self.kwargs['exh_year']
-
-		if self.object:
-			try:
-				if self.object.portfolio:
-					portfolio = Portfolio.objects.prefetch_related('images').get(pk=self.object.portfolio.id)
-				else:
-					portfolio = Portfolio.objects.prefetch_related('images').get(exhibition=self.object.exhibition,nominations=self.object.nomination, owner=self.object.exhibitor)
-				#portfolio = Portfolio.objects.prefetch_related('images').get(exhibition__slug=exh_year,nominations=nom, owner=winner.exhibitor.id, pk=winner.portfolio_id)
-			except (Portfolio.DoesNotExist, Portfolio.MultipleObjectsReturned):
-				portfolio = None
-
-		else:
-			portfolio = None
-
 		#self.portfolio = Portfolio.objects.filter(exhibition__slug=exh_year,nominations__in=q)
 		#self.portfolio = Portfolio.objects.select_related('exhibition').filter(exhibition__slug=exh_year).prefetch_related('nominations')
 		context = super().get_context_data(**kwargs)
+		portfolio = None
+		try:
+			#portfolio = Portfolio.objects.prefetch_related('images').get(exhibition__slug=self.exh_year,nominations=self.nom_slug, owner=winner.exhibitor.id, pk=winner.portfolio_id)
+			if self.object and self.object.portfolio:
+				portfolio = Portfolio.objects.get(pk=self.object.portfolio.id)
+			else:
+				portfolio = Portfolio.objects.get(
+					exhibition=self.object.exhibition,
+					nominations=self.object.nomination,
+					owner=self.object.exhibitor
+				)
+		except (Portfolio.DoesNotExist, Portfolio.MultipleObjectsReturned):
+			portfolio = None
+
 		context['html_classes'] = ['project']
 		context['portfolio'] = portfolio
 		context['exhibitors'] = self.exhibitors
 		context['nomination'] = self.nomination
-		context['parent_link'] = '/exhibition/%s/' % exh_year
-		context['exh_year'] = exh_year
+		context['parent_link'] = '/exhibition/%s/' % self.exh_year
+		context['exh_year'] = self.exh_year
+		context['nomination_slug'] = self.nom_slug
 
 		if portfolio:
 			score = Rating.calculate(portfolio)
@@ -532,6 +531,7 @@ class winner_project_detail(DetailView):
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
+		context['cache_timeout'] = 86400
 
 		return context
 
@@ -539,47 +539,54 @@ class winner_project_detail(DetailView):
 """ Project detail """
 class project_detail(DetailView):
 	model = Portfolio
-	#slug_url_kwarg = 'slug'
 	context_object_name = 'portfolio'
+	#slug_url_kwarg = 'slug'
 	#template_name = 'exhibition/portfolio_detail.html'
 
 	def get_object(self, queryset=None):
 #	def get_queryset(self):
 		self.owner = self.kwargs['owner']
 		self.project = self.kwargs['project_id']
-		if (self.owner != 'None' and self.project != 'None'):
-			# Найдем портфолио и победу в номинациях если есть
+
+		# Найдем портфолио и победу в номинациях если есть
+		q = None
+		if self.owner and self.project:
 			try:
 				q = self.model.objects.get(project_id=self.project, owner__slug=self.owner)
 				#q = self.model.objects.prefetch_related('portfolio_for_winner').annotate(win_year=Coalesce('portfolio_for_winner__exhibition__slug',None)).get(project_id=self.project, owner__slug=self.owner)
 			except self.model.DoesNotExist:
-				q = None
-		else:
-			q = None
+				pass
+
 		return q
+
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['project']
-		context['parent_link'] = self.request.META.get('HTTP_REFERER')
 		context['victories'] = Winners.objects.filter(portfolio=self.object.id, exhibitor__slug=self.owner)
+		context['owner'] = self.owner
+		context['project_id'] = self.project
+
+		context['parent_link'] = self.request.META.get('HTTP_REFERER')
 		if context['parent_link'] == None:
 			q = self.object.nominations.filter(category__slug__isnull=False).first()
 			if q and self.object:
 				context['parent_link'] = '/category/%s/' % q.category.slug
 			else:
 				context['parent_link'] = '/category/'
+
 		score = Rating.calculate(self.object)
 		rate = score.average
 		if self.request.user.is_authenticated:
 			context['user_score'] = Rating.objects.filter(portfolio=self.object, user=self.request.user).values_list('star',flat=True).first()
 		else:
 			context['user_score'] = None
+
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
-		context['cache_timeout'] = 86400
 		context['model_name'] = self.model.__name__.lower
+		context['cache_timeout'] = 86400
 
 		return context
 

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'django.forms',
     'ckeditor',
     'ckeditor_uploader',
@@ -256,7 +257,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
 FILE_UPLOAD_PERMISSIONS = 0o775
 
 # It uses in exhibition.views.projects_list as parameter for queryset
-PORTFOLIO_COUNT_PER_PAGE = 1
+PORTFOLIO_COUNT_PER_PAGE = 3
 
 # sorl-thumbnail settings
 

@@ -4,7 +4,7 @@
 {% load cache %}
 {% load thumbnail %}
 
-{% block title %}{{ block.super }} {{exhibition}} - Партнеры выставки{% endblock %}
+{% block title %}{{ block.super }} {{separator}} {{object.title}}{% endblock %}
 
 {% block styles %}
 <link href="{% md5url 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
@@ -29,14 +29,14 @@ var is_mobile = false;
 
 
 {% block site_title %}
-{{ block.super }}
 <svg class="site-title"><use xlink:href="#main-title"></use></svg>
 {% endblock site_title %}
 
 
-{% cache cache_timeout exhibition_header object.slug %}
 
 {% block header %}
+
+{% cache cache_timeout exhibition_banner exh_year %}
 
 {% if banner_slider %}
 
@@ -47,16 +47,14 @@ var is_mobile = false;
 			<div class="image-ratio" style="{% if banner_height %}padding-bottom: {{banner_height}}{% endif %}">
 			{% thumbnail img "320" as xs %}
 			{% thumbnail img "576" as sm %}
-			{% thumbnail img "992" as md %}
-			{% thumbnail img "1200" as xl %}
+			{% thumbnail img "768" as md %}
 			<img class="slide-img lazyload"
-				src="{{ img }}"
-				srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
+				src="{% get_media_prefix %}{{ img }}"
+				srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {% get_media_prefix %}{{ img }} {{ img.width }}w"
 				data-sizes="auto"
 				data-expand="-50"
 				loading="lazy">
 			{% empty %}
-			{% endthumbnail %}
 			{% endthumbnail %}
 			{% endthumbnail %}
 			{% endthumbnail %}
@@ -73,26 +71,23 @@ var is_mobile = false;
 </div>
 
 {% endif %}
+{% endcache %}
 
-<h1>
-{{ object.title }}
-
+<h1>{{ object.title }}
 {% if user.is_staff %}
 	<a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
 {% endif %}
-
 </h1>
 
 {% endblock header %}
 
-{% endcache %}
 
 
 {% block content %}
 
 <div class="content">
 
-	{% cache cache_timeout exhibition_content object.slug %}
+	{% cache cache_timeout exhibition_content exh_year %}
 
 	<div class="exhibition-details">
 		<div class="exhibition-description description">{{ object.description|safe }}</div>
@@ -108,11 +103,11 @@ var is_mobile = false;
 
 	<div id="nominations" class="nominations-block">
 		<h2 class="nominations-title exh-title">
-			{% if nominations_list.first.exhibitor_name %}Победители в номинациях{% else %}Номинации{% endif %}
+			{% if nominations_list.count > 1 %}Победители в номинациях{% else %}Номинации{% endif %}
 		</h2>
 		<ol>
 			{% for item in nominations_list %}
-			<li><a class="nomination-link" href="{% url 'winner-project-detail-url' object.slug item.slug %}">
+			<li><a class="nomination-link" href="{% url 'winner-project-detail-url' exh_year item.slug %}">
 				<h3 class="exh-title subtitle">{{ item.title }}</h3>
 				{% if item.exhibitor_name %}</a><a class="exhibitor-link" href="{% url 'exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}
 				{% endif %}
@@ -141,7 +136,7 @@ var is_mobile = false;
 	{% if object.jury.count %}
 
 		<div id="jury" class="jury-block">
-			<h2 class="exhibitors-title exh-title">{{ object.jury.first|verbose_name_plural }}</h2>
+			<h2 class="exhibitors-title exh-title {% if object.date_end < today %}collapsed{% else %}expanded{% endif %}">{{ object.jury.first|verbose_name_plural }}</h2>
 			<ol class="jury-list">
 				{% for item in object.jury.all %}
 				<li>
@@ -165,7 +160,7 @@ var is_mobile = false;
 	{% if object.partners.count %}
 
 	<div id="partners" class="partners-block">
-		{% if object.slug == last_exh.slug %}
+		{% if exh_year == last_exh %}
 
 		<h2 class="partners-title exh-title">{{ object.partners.first|verbose_name_plural }}</h2>
 		<div class="partners-container row">
@@ -173,7 +168,7 @@ var is_mobile = false;
 			<a class="person-wrapper col-6 col-xxl-2 col-xl-3 col-md-4" href="{{ item.get_absolute_url }}">
 				<div class="partner-logo ratio ratio-1x1">
 					{% if item.logo %}
-					{% thumbnail item.logo "150x150" as logo %}
+					{% thumbnail item.logo "300x300" as logo %}
 					<img class="lazyload"
 						data-src="{{ item.logo }}"
 						data-srcset="{{ logo.url }} {{ logo.x }}w"
@@ -203,12 +198,12 @@ var is_mobile = false;
 	{% endcache %}
 
 
-	{% cache cache_timeout exhibition_events object.slug %}
+	{% cache 86400 exhibition_events exh_year %}
 
 	{% if object.events.count %}
 
 	<div id="events" class="events-block">
-		<h2 class="events-title exh-title {% if object.slug == exhibitions_list.first.slug %}expanded{% else %}collapsed{% endif %}">{{ events_title }}</h2>
+		<h2 class="events-title exh-title {% if object.date_end < today %}collapsed{% else %}expanded{% endif %}">{{ events_title }}</h2>
 		<ol>
 			{% for item in object.events.all %}
 			<li>
@@ -235,7 +230,7 @@ var is_mobile = false;
 	{% endcache %}
 
 
-	{% cache cache_timeout exhibition_gallery object.slug %}
+	{% cache cache_timeout exhibition_gallery exh_year %}
 
 	{% if object.gallery.count %}
 
@@ -265,7 +260,7 @@ var is_mobile = false;
 
 {% block extra_container %}
 
-{% cache cache_timeout exhibition_overlay object.slug %}
+{% cache cache_timeout exhibition_overlay exh_year %}
 
 <div id="overlay" class="modal">
 

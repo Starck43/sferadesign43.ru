@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", function() {
 
+	//= components/_preloader.js
 	//= components/_slider.js
 
 });

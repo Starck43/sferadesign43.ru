@@ -2,6 +2,7 @@ from os import path
 #from django.conf import settings
 #from django.shortcuts import get_object_or_404
 from django.contrib import admin
+
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
@@ -18,6 +19,39 @@ from .logic import UploadFilename, ImageResize, delete_cached_fragment, SendEmai
 from rating.admin import RatingInline, ReviewInline
 
 admin.site.unregister(User)  # нужно что бы снять с регистрации модель User
+
+
+# Creating a model's sort function for admin
+def get_app_list(self, request):
+	ordered_models = [
+		('exhibition', [
+			'Portfolio',
+			'Image',
+			'Gallery',
+			'Categories',
+			'Nominations',
+			'Exhibitors',
+			'Organizer',
+			'Partners',
+			'Jury',
+			'Exhibitions',
+			'Events',
+			'Winners',
+			'PortfolioAttributes',
+			'MetaSEO'
+		])
+	]
+	app_dict = self._build_app_dict(request)
+
+	for app_name, object_list in ordered_models:
+		app = app_dict.get(app_name, None)
+		if app:
+			app['models'].sort(key=lambda x: object_list.index(x['object_name']))
+		#yield app
+
+	return sorted(app_dict.values(), key=lambda x: x['name'].lower())
+
+admin.AdminSite.get_app_list = get_app_list
 
 
 @admin.register(User)
@@ -162,7 +196,7 @@ class CategoriesAdmin(admin.ModelAdmin):
 	nominations_list.short_description = 'Номинации'
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('categories')
+		delete_cached_fragment('categories_list')
 		super().save_model(request, obj, form, change)
 
 
@@ -255,7 +289,7 @@ class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
 	readonly_fields = ('file_thumb',)
 	search_fields = ('title', 'portfolio__title', 'portfolio__owner__slug', 'portfolio__owner__name',)
 
-	list_per_page = 30
+	list_per_page = 50
 	# def save_model(self, request, obj, form, change):
 	# 	obj.save()
 	# 	for image in request.FILES.getlist('images'):
@@ -285,20 +319,24 @@ class PortfolioAttributesAdmin(admin.ModelAdmin):
 
 class PortfolioAdmin(admin.ModelAdmin):
 	form = ImagesUploadForm
-	list_display = ('owner', 'title', 'exhibition', 'nominations_list', 'attributes_list')
-	list_display_links = ('owner', 'title')
+
+	list_display = ('owner', 'slug', '__str__', 'exhibition', 'nominations_list', 'attributes_list')
+	list_display_links = ('owner', 'slug', '__str__')
 	search_fields = ('title', 'owner__name', 'exhibition__title', 'nominations__title')
 	list_filter = ('nominations__category', 'nominations', 'owner',)
-	list_per_page = 30
-
-	save_on_top = True # adding save button on top bar
 	date_hierarchy = 'exhibition__date_start'
+
+	list_per_page = 30
+	save_on_top = True # adding save button on top bar
 	save_as = True
 	view_on_site = True
 	inlines = [ImagesInline, RatingInline, ReviewInline]
 
 	class Media:
-		js = ['/static/js/files-upload.min.js']
+		css = {
+             'all': ['/static/bootstrap/css/bootstrap.min.css']
+             }
+		js = ['/static/js/jquery.min.js','/static/bootstrap/js/bootstrap.min.js','/static/js/files-upload.min.js']
 
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations.values_list('title', flat=True))
@@ -320,34 +358,45 @@ class PortfolioAdmin(admin.ModelAdmin):
 
 	def save_model(self, request, obj, form, change):
 		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
-		image_list = request.FILES.getlist('files')
+		image_list = request.FILES.getlist('files', None)
 		obj.save(image_list) # сохраним портфолио и связанные фотографии
 
-		if (not change) and obj.images : # new portfolio with images
+		if image_list and obj.owner.user and obj.owner.user.email: # new portfolio with images
 			protocol = 'https' if request.is_secure() else 'http'
 			host_url = "{0}://{1}".format(protocol, request.get_host())
 
 			# get list of image thumbs 100x100
-			images = []
+			uploaded_images = []
 			size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
-			for im in obj.images.all():
-				thumb = get_thumbnail(im.file, size, crop='center', quality=75)
-				images.append(thumb)
+			for im in image_list:
+				image = path.join('uploads/', obj.owner.slug, obj.exhibition.slug, obj.slug, im.name)
+				thumb = get_thumbnail(image, size, crop='center', quality=75)
+				uploaded_images.append(thumb)
 
-			subject = 'Добавление портфолио на сайте Сфера Дизайна'
+			subject = 'Добавление фотографий на сайте Сфера Дизайна'
 			template = render_to_string('exhibition/new_project_notification.html', {
 				'project': obj,
 				'host_url': host_url,
-				'uploaded_images': images,
+				'uploaded_images': uploaded_images,
 			})
 			SendEmailAsync(subject, template, [obj.owner.user.email])
 
-		delete_cached_fragment('portfolio', obj.id, True)
-		delete_cached_fragment('portfolio', obj.id, False)
-		delete_cached_fragment('portfolio_slider', obj.id)
+		delete_cached_fragment('portfolio_list', obj.owner.slug, obj.project_id, True)
+		delete_cached_fragment('portfolio_list', obj.owner.slug, obj.project_id, False)
+		delete_cached_fragment('portfolio_slider', obj.owner.slug, obj.project_id)
+		delete_cached_fragment('participant_detail', obj.owner.id)
+		#delete_cached_fragment('exhibition_header', obj.exhibition.slug)
+
 		for nomination in obj.nominations.all():
 			if nomination.category:
-				delete_cached_fragment('projects', nomination.category.slug)
+				delete_cached_fragment('projects_list', nomination.category.slug)
+				delete_cached_fragment('sidebar', nomination.category.slug)
+
+		victories = Winners.objects.filter(portfolio=obj)
+		for victory in victories:
+			delete_cached_fragment('portfolio_list', victory.exhibition.slug, victory.nomination.slug, True)
+			delete_cached_fragment('portfolio_list', victory.exhibition.slug, victory.nomination.slug, False)
+			delete_cached_fragment('portfolio_slider', victory.exhibition.slug, victory.nomination.slug)
 
 
 	# def delete_file(self, pk, request):
@@ -466,11 +515,13 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, admin.ModelAdmin):
 			instance = Gallery(exhibition=obj, file=image)
 			instance.save()
 
-		delete_cached_fragment('exhibition_header', obj.slug)
+		delete_cached_fragment('exhibition_banner', obj.slug)
 		delete_cached_fragment('exhibition_content', obj.slug)
 		delete_cached_fragment('exhibition_events', obj.slug)
 		delete_cached_fragment('exhibition_gallery', obj.slug)
 		delete_cached_fragment('exhibition_overlay', obj.slug)
+		if not change:
+			delete_cached_fragment('exhibitions_list')
 
 		obj.save()
 

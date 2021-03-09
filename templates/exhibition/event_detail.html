@@ -3,14 +3,16 @@
 {% load custom_tags %}
 
 
-{% block header %}
-	<h1><span>Мероприятие </span>{{ object.title }}</h1>
-{% endblock header %}
-
 {% block site_title %}
-{{ block.super }}
-<a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}/{{parent_link}}/{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Назад</a>
+<a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}/{{parent_link}}/{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}">
+	<svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>
+	&nbsp;Назад
+</a>
 {% endblock site_title %}
+
+{% block header %}
+<h1><span>Мероприятие </span>{{ object.title }}</h1>
+{% endblock header %}
 
 {% block content %}
 <div class="content">
@@ -26,4 +28,4 @@
 	</div>
 
 </div>
-{% endblock %}
+{% endblock content %}

@@ -1,12 +1,15 @@
 User-agent: *
-Disallow: /admin          	# папка на хостинге
-Disallow: */?               # все параметры запроса
-Disallow: /search/?q=       # поиск
+# Disallow: /site.wsgi
+Disallow: /admin
+Disallow: /account
+Disallow: /accounts
+Disallow: */None
+Disallow: */?
+Disallow: /search/?q=
 
 Allow: /media
 Disallow: /media/cache
 Disallow: /assets
 Disallow: /static
-
 
 Sitemap: http://sd43.ru/sitemap.xml

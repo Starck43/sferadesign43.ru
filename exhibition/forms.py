@@ -4,6 +4,7 @@ from django.forms.widgets import ClearableFileInput
 from django.utils.html import format_html, escape
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+#from django.contrib.admin.widgets import FilteredSelectMultiple
 
 from uuslug import uuslug
 
@@ -92,6 +93,7 @@ class DeactivateUserForm(forms.Form):
 
 class CustomClearableFileInput(ClearableFileInput):
 	template_name = 'admin/exhibition/widgets/file_input.html'
+
 
 class ExhibitionsForm(forms.ModelForm):
 	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)

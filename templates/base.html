@@ -32,8 +32,17 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
 	<link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
-	{% block styles %}
-	{% endblock %}
+	{% block styles %}{% endblock %}
+
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q63J4DDV30"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'G-Q63J4DDV30');
+	</script>
 
 	<title>{% block title %}{{ main_title }}{% endblock %}</title>
 </head>
@@ -92,17 +101,17 @@
 	<div id="site-header">
 		{# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
 		<a id="branding" class="loading" href="/">
-			{% block site_title %}
 			<div class="brand-logo">
 				<img src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
 			</div>
-			{% endblock site_title %}
 		</a>
+		{% block site_title %}{% endblock site_title %}
 	</div>
 
 	<div class="container container-md loading">
 
 		{% block header %}{% endblock header %}
+		{% block sidebar %}{% endblock sidebar %}
 		{% block content %}{% endblock content %}
 
 	</div>
@@ -111,6 +120,7 @@
 	<!-- Контейнер для диалоговых окон -->
 	<div id="alertContainer" class="hidden centered"></div>
 	{% endblock extra_container %}
+
 
 	<script src="{% md5url 'js/base.min.js' %}"></script>
 	<!-- JavaScript Bundle with Popper.js -->

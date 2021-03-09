@@ -1,13 +1,9 @@
 {% load l10n %}
 
-<script>
-	var message = '<h3>Внимание!</h3><p>Голосовать могут только зарегистрированные пользователи.</p>';
-</script>
-
 {% if user.is_authenticated %}
 <form class="rating-form" method="post" action="{% url 'rating:add-rating' %}" value="{% if user_score %}{{user_score|floatformat:0}}{% endif %}" average="{{average_rate}}" name="rating">
 {% else %}
-<form class="rating-form" method="get" average="{{average_rate}}" name="rating" onclick="alertHandler(message);">
+<form class="rating-form" method="get" average="{{average_rate}}" name="rating">
 {% endif %}
 	Рейтинг:
 	{% csrf_token %}

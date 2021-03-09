@@ -7,16 +7,14 @@
 {% block styles %}
 {% endblock %}
 
-{% cache 86400 index_page %}
 
-{% block site_title %}
-<h1 class="hidden">{{main_title}}</h1>
-{{ block.super }}
-<svg class="site-title"><use xlink:href="#main-title"></use></svg>
-{% endblock site_title %}
+{% block site_title %}<svg class="site-title"><use xlink:href="#main-title"></use></svg>{% endblock site_title %}
 
+{% block header %}<h1 class="hidden">{{main_title}}</h1>{% endblock header %}
 
 {% block content %}
+
+{% cache 86400 index_page %}
 
 	<div class="exh-description">
 		{% for org in organizers %}
@@ -56,6 +54,7 @@
 	</section>
 	{% endif %}
 
+{% endcache %}
+
 {% endblock content%}
 
-{% endcache %}

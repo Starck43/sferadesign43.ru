@@ -3,20 +3,20 @@
 <html lang="ru">
 <head>
 	<meta charset="UTF-8">
-	<title>Новый проект на сайте Сфера Дизайна</title>
+	<title>Обновление портфолио на сайте Сфера Дизайна</title>
 	<style>
 		ul.uploaded-images{display: flex;flex-wrap: wrap;list-style-type: none;}
-		ul.uploaded-images li{margin: 2vw; max-width: 100px;}
+		ul.uploaded-images li{margin: 2vw; max-width: 100px;list-style-type: none;}
 	</style>
 </head>
 <body>
-	<h1>Ваш проект добавлен на сайт sd43.ru</h1>
+	<h1>Ваше портфолио обновлено!</h1>
 	<p>Вы получили это письмо, потому что являетесь зарегистрированным участником выставки "Сфера Дизайна".</p>
-	<h3>Ваш профиль участника: <a href="{{host_url}}{{project.owner.get_absolute_url}}">{{project.owner.name}}</a></h3>
+	<h3>Ваш профиль: <a href="{{host_url}}{{project.owner.get_absolute_url}}">{{project.owner.name}}</a></h3>
 	<h3 class="project-name">Название проекта: <a href="{{host_url}}{{project.get_absolute_url}}">{% if project.title %}{{project.title}}{% else %}{{project.slug}}{% endif %}</a></h3>
-	<h3>Участие в выставке: <b>{{project.exhibition.title}}</b></h3>
+	<h3>Выставка: <b>{{project.exhibition.title}}</b></h3>
 	<h3>Номинация: <b>{{project.nominations.all|join:", "}}</b></h3>
-	<h3>Загруженные фото</h3>
+	<h3>Список фотографий:</h3>
 	<ul class="uploaded-images">
 		{% for image in uploaded_images %}
 		<li><img src="{{host_url}}{% get_media_prefix %}{{image}}"/></li>

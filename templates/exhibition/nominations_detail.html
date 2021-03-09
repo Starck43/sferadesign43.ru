@@ -1,48 +1,23 @@
-{% extends 'base.html' %}
+{% extends 'exhibition/portfolio_detail.html' %}
 {% load static %}
+{% load cache %}
 {% load custom_tags %}
 {% load thumbnail %}
 
+{% block title %}{{ main_title }} {{exh_year}} {{separator}} Номинация "{{nomination.title}}"{% endblock %}
 
-{% block title %}{{ block.super }} {{exh_year}} - номинация "{{nomination}}"{% endblock %}
-
-{% if not is_mobile %}
-
-{% block styles %}
-<link href="{% md5url 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
-{% endblock %}
-
-{% block script %}
-
-{{ block.super }}
-{% if is_mobile %}
-<script type="text/javascript" src="{% md5url 'js/portfolio_mobile.min.js' %}"></script>
-{% else %}
-<script type="text/javascript">var is_mobile = false;</script>
-<script type="text/javascript" src="{% md5url 'js/portfolio.min.js' %}"></script>
-{% endif %}
-
-{% if user.is_authenticated %}
-<script type="text/javascript" src="{% md5url 'js/reviews-rate.min.js' %}"></script>
-{% else %}
-<script type="text/javascript" src="{% md5url 'js/reviews.min.js' %}"></script>
-{% endif %}
-
-{% endblock script %}
-
-{% endif %}
-
-{% block site_title %}
-{{ block.super }}
-<a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}{{parent_link}}{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Назад</a>
-{% endblock site_title %}
 
 {% block header %}
-<h1><div class="sub-title">Номинация</div>{{ nomination }}</h1>
+<h1><div class="sub-title">Номинация</div>{{ nomination.title }}</h1>
+{% if user.is_staff and portfolio %}
+	<a class="admin-edit-link" href="{% url 'portfolio'|admin_change_url portfolio.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+{% endif %}
 {% endblock header %}
 
 
 {% block content %}
+
+{% cache cache_timeout portfolio_list exh_year nomination_slug is_mobile %}
 
 <div class="portfolio-container">
 
@@ -62,6 +37,7 @@
 	{% else %}
 
 		{% if object and not portfolio %}
+
 		<section class="winner-detail">
 			<h2>победитель <a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><b>{{ object.exhibitor.name }}</b></a></h2>
 			{% if object.exhibitor.logo %}
@@ -74,31 +50,44 @@
 			</div>
 			{% endif %}
 		</section>
+
 		{% endif %}
 
 		{% if portfolio %}
-		<section class="portfolio">
-			<h2>{{ portfolio.title }}</h2>
-			<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
-			<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
 
-			{% include "exhibition/images_list.html" %}
-		</section>
+		<h2>{{ portfolio.title }}</h2>
+		<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
+		<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
 
-		{% include "rating/rating_form.html" %}
-		{% include "rating/review.html" %}
+		{% include "exhibition/images_list.html" %}
 
 		{% endif %}
 
 	{% endif %}
 </div>
 
+{% endcache %}
+
+{% if portfolio %}
+
+{% include "rating/rating_form.html" %}
+{% include "rating/review.html" %}
+
+{% endif %}
+
 {% endblock content %}
 
 
 {% block extra_container %}
-{{ block.super }}
-{% include "exhibition/gallery.html" %}
+
+{% if not is_mobile and portfolio %}
+	{% cache cache_timeout portfolio_slider exh_year nomination_slug %}
+	{% include "exhibition/gallery.html" %}
+	{% endcache %}
+{% endif %}
+
+<!-- Контейнер для диалоговых окон -->
+<div id="alertContainer" class="hidden centered"></div>
 
 {% endblock extra_container %}
 

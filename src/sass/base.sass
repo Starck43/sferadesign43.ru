@@ -208,88 +208,97 @@ svg.icon
 		fill: $main-color
 		stroke: $main-color
 		stroke-width: 6px
-		font-size: 120px
+		font-size: 122px
 		text-transform: uppercase
 		font-weight: 300
 		letter-spacing: 1px
 
 #site-header
 	position: relative
-	margin-bottom: 1.5vh
+	display: flex
+	align-items: center
+	padding-top: 1.5vh
+	padding-bottom: 1.5vh
 	//+responsive-ratio(1,1,0, true, absolute)
 	+media-breakpoint-down(sm)
 		margin-bottom: 1em
 
 	#branding
 		position: relative
-		display: flex
-		align-items: center
-		padding-top: 1.5vh
-		.brand-logo
-			display: block
-			//height: 100%
-			margin-left: 0.5em
-			height: $content-margin - 60px
+		&.loaded
+			img
+				opacity: 1
+				//background-color: transparentize($main-color,0)
+			&~.site-title
+				opacity: 1
 
-		.site-title
-			transition: opacity 500ms 300ms ease-out
-			opacity: 0
-			flex: auto
-			margin-left: 50px
-			margin-right: $content-margin
-			margin-top: -2em
-			margin-bottom: -2em
+	.site-title
+		transition: opacity 500ms 300ms ease-out
+		opacity: 0
+		flex: auto
+		max-width: $container-max_w + 100px
+		margin: -2em auto
+		padding-right: 200px
 
+	.brand-logo
+		display: block
+		//height: 100%
+		margin-left: 0.5em
 		img
-			width: auto
-			height: 100%
+			width: $brand-logo-width - 10px
 			opacity: 0
 			//background-color: transparentize($main-color,1)
 			&.lazyloaded
 				//background-color: transparentize($main-color,0)
 				opacity: 1
 
+	.year-text
+		margin-left: 18%
+		font-size: 2.7rem
+		line-height: 0.6
+		color: $main-color !important
+
+
+	+media-breakpoint-down(xxl)
+		.site-title
+			margin-left: 50px
+			margin-right: $content-margin
+			padding-right: 0
+
+	+media-breakpoint-down(xl)
+		.brand-logo img
+			width: $brand-logo-width - 60px
 		.year-text
-			margin-left: 18%
-			font-size: 2.7rem
-			line-height: 0.6
-			color: $main-color !important
-
-		&.loaded
-			img
-				opacity: 1
-				//background-color: transparentize($main-color,0)
-			.site-title
-				opacity: 1
+			font-size: 2.1em
+		.site-title
+			margin-left: 25px
+			margin-right: $content-margin - 75px
 
 
-		+media-breakpoint-down(xl)
-			.brand-logo
-				height: $content-margin - 110px
-			.year-text
-				font-size: 2.1em
-			.site-title
-				margin-left: 25px
-				margin-right: $content-margin - 75px
+	+media-breakpoint-down(lg)
+		.brand-logo img
+			width: $brand-logo-width - 90px
+		.site-title
+			margin-right: 0 //$content-margin - 125px
+
+	+media-breakpoint-down(md)
+		padding-top: 1em
+		.brand-logo img
+			width: $brand-logo-width - 110px
+		.year-text
+			font-size: 1.4em
+		.site-title
+			margin-left: 1em
+			margin-right: 0
 
 
-		+media-breakpoint-down(md)
-			padding-top: 1em
-			.brand-logo
-				height: $content-margin - 160px
-			.year-text
-				font-size: 1.4em
-			.site-title
-				margin-right: $content-margin - 125px
+	+media-breakpoint-down(sm)
 
-
-		+media-breakpoint-down(sm)
-
-			.brand-logo
-				height: $content-margin - 180px
-			.site-title
-				margin-left: 0.75em
-				margin-right: 0.75em
+		.brand-logo img
+			width: $brand-logo-width - 130px
+		.site-title
+			margin-left: 0.75em
+			margin-right: 0.75em
 
 
 .container
@@ -297,6 +306,7 @@ svg.icon
 	max-width: none
 	margin-top: 0
 	margin-bottom: 2rem
+	max-width: $container-max_w + $content-margin * 2
 
 	--bs-gutter-x: #{$content-margin * 2}
 	+media-breakpoint-down(xl)
