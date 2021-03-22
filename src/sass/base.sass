@@ -6,12 +6,13 @@
 @import mixins
 @import fonts
 @import reset
-@import layouts
-@import preloader
 @import navigation
 @import sidebar
-@import exhibition
+@import layouts
 @import person
+@import exhibition
+@import articles
+@import preloader
 @import search
 @import account
 
@@ -23,6 +24,8 @@ html
 		font-size: 18px
 
 body
+	display: flex
+	flex-direction: column
 	min-height: 100vh
 	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
 
@@ -33,6 +36,7 @@ h1, h2, h3, h4, .year-text, .site-title
 h1
 	color: $header-color
 	text-transform: lowercase
+	font-size: calc(2rem + 1vw)
 	+media-breakpoint-up(lg)
 		font-size: 3em
 
@@ -72,6 +76,7 @@ li, img
 
 p
 	img
+		display: block
 		max-width: 100%
 
 	a
@@ -87,14 +92,14 @@ img
 	text-indent: 100%
 	white-space: nowrap
 	overflow: hidden
-	transition: all 300ms ease-out
+	transition: all 300ms ease-in-out
 
 .ratio
 	img
 		object-fit: contain
 
 .img-ratio
-	+responsive-ratio(1,1,0,true)
+	//+responsive-ratio(1,1,0,true)
 
 .logo img
 	width: auto
@@ -107,25 +112,28 @@ img:not([src]):not([srcset])
 img[data-sizes="auto"]
 	display: block
 
-.lazyload,
 .lazyloading
+.lazyload,
 	opacity: 0
+	~figcaption
+		@supports (backdrop-filter: blur(0))
+			backdrop-filter: blur(3px)
 
 .lazyloaded
 	opacity: 1
-
-svg.icon
-	width: 30px
-	height: 30px
+	~figcaption
+		@supports (backdrop-filter: blur(0))
+			backdrop-filter: blur(0)
 
 .loading, .loaded
-	transition: opacity 300ms ease-out
+	transition: opacity 500ms ease
 
 .loading
 	opacity: 0
 
 .loaded
 	opacity: 1 !important
+
 
 .hidden
 	display: none !important
@@ -148,16 +156,29 @@ svg.icon
 	-webkit-tap-highlight-color: transparentize(black, 1)
 	-webkit-touch-callout: none
 
+
+svg.icon
+	width: 30px
+	height: 30px
+	&.arrow-icon
+		&.up
+			transform: rotate(-90deg)
+		&.down
+			transform: rotate(90deg)
+		&.left
+			transform: rotate(180deg)
+
+
 .back-link
 	svg
 		stroke: black
 		stroke-width: 3
-		transform: rotate(180deg)
 		width: 22px
 		height: 22px
+		transform: rotate(180deg)
 	+media-breakpoint-down(sm)
-		top: 1rem
-		right: 1rem
+		top: 1.5rem
+		right: 1.5rem
 
 .btn
 	color: $main-color
@@ -179,12 +200,6 @@ svg.icon
 		background-color: $main-color
 		border-color: $main-color
 
-#site-header .back-link
-	position: absolute
-	top: 2.5vw
-	right: 2.5vw
-	display: flex
-	align-items: center
 
 .social-link
 	display: inline-block
@@ -198,9 +213,48 @@ svg.icon
 			//background-color: #1976D2
 		&.instagram
 			//background-color: #ff543e
+			stroke: white
 
-.arrow-icon.arrow-left
-	transform: rotate(180deg)
+
+#back2top
+	--padding-var: 0.75rem
+	position: fixed
+	bottom: var(--padding-var)
+	right: var(--padding-var)
+	transition: 500ms transform ease-in-out
+	//transform: translateY(0%)
+	&.disable
+		transition: 500ms all ease-in-out
+		//transform: translateY(150%)
+		visibility: hidden
+		z-index: -1
+	+media-breakpoint-up(sm)
+		--padding-var: 2vw
+
+.top-link
+	padding: 3px
+	background-color: $main-color
+	opacity: 0.6
+	.arrow-icon
+		padding: .25em
+		stroke: #fff
+		stroke-width: 2
+		&+span
+			display: none
+	&:hover
+		opacity: 1
+
+	+media-breakpoint-up(lg)
+		padding: 0 .4em
+		font-size: 0.8em
+		background-color: initial
+		&:hover
+			color: #fff !important
+			background-color: $main-color
+		.arrow-icon
+			display: none
+			&+span
+				display: block
 
 #main-title
 	overflow: visible
@@ -219,18 +273,12 @@ svg.icon
 	align-items: center
 	padding-top: 1.5vh
 	padding-bottom: 1.5vh
-	//+responsive-ratio(1,1,0, true, absolute)
-	+media-breakpoint-down(sm)
-		margin-bottom: 1em
+	//margin-top: 76px
 
 	#branding
 		position: relative
-		&.loaded
-			img
-				opacity: 1
-				//background-color: transparentize($main-color,0)
-			&~.site-title
-				opacity: 1
+		&.loaded ~.site-title
+			opacity: 1
 
 	.site-title
 		transition: opacity 500ms 300ms ease-out
@@ -244,13 +292,7 @@ svg.icon
 		display: block
 		//height: 100%
 		margin-left: 0.5em
-		img
-			width: $brand-logo-width - 10px
-			opacity: 0
-			//background-color: transparentize($main-color,1)
-			&.lazyloaded
-				//background-color: transparentize($main-color,0)
-				opacity: 1
+		width: $brand-logo-width - 10px
 
 	.year-text
 		margin-left: 18%
@@ -258,6 +300,12 @@ svg.icon
 		line-height: 0.6
 		color: $main-color !important
 
+	.back-link
+		position: absolute
+		top: 2.5vw
+		right: 2.5vw
+		display: flex
+		align-items: center
 
 	+media-breakpoint-down(xxl)
 		.site-title
@@ -266,7 +314,7 @@ svg.icon
 			padding-right: 0
 
 	+media-breakpoint-down(xl)
-		.brand-logo img
+		.brand-logo
 			width: $brand-logo-width - 60px
 		.year-text
 			font-size: 2.1em
@@ -276,14 +324,14 @@ svg.icon
 
 
 	+media-breakpoint-down(lg)
-		.brand-logo img
+		.brand-logo
 			width: $brand-logo-width - 90px
 		.site-title
 			margin-right: 0 //$content-margin - 125px
 
 	+media-breakpoint-down(md)
 		padding-top: 1em
-		.brand-logo img
+		.brand-logo
 			width: $brand-logo-width - 110px
 		.year-text
 			font-size: 1.4em
@@ -294,37 +342,47 @@ svg.icon
 
 	+media-breakpoint-down(sm)
 
-		.brand-logo img
+		.brand-logo
 			width: $brand-logo-width - 130px
 		.site-title
 			margin-left: 0.75em
 			margin-right: 0.75em
 
+header
+	margin: 2vw 0
+	+push--auto
+
+header, .container
+	--bs-gutter-x: 0.75rem
+	width: 100%
+	padding: 0 var(--bs-gutter-x,.75rem)
+	max-width: $container-max_w + $content-margin - 75px
+	+media-breakpoint-up(sm)
+		--bs-gutter-x: 1rem
+	+media-breakpoint-up(lg)
+		--bs-gutter-x: #{$content-margin - 75px}
+	+media-breakpoint-up(xl)
+		--bs-gutter-x: #{$content-margin}
+		max-width: $container-max_w + $content-margin
+	+media-breakpoint-up(xxl)
+		--bs-gutter-x: #{$content-margin + 50px}
+		max-width: $container-max_w + $content-margin + 100px
+
+.exhibitions .container, .nominations .container, .participant .container,
+.exhibitions header, .nominations header, .participant header
+
+	+media-breakpoint-up(xl)
+		--bs-gutter-x: #{$content-margin - 25px}
+		max-width: $container-max_w + $content-margin * 2
 
 .container
 	position: relative
-	max-width: none
-	margin-top: 0
-	margin-bottom: 2rem
-	max-width: $container-max_w + $content-margin * 2
+	margin-top: 0rem
+	+media-breakpoint-up(sm)
+		margin-top: 1rem
+	+media-breakpoint-up(lg)
+		margin-bottom: 2rem
 
-	--bs-gutter-x: #{$content-margin * 2}
-	+media-breakpoint-down(xl)
-		--bs-gutter-x: #{$content-margin * 2 - 150px}
-	+media-breakpoint-down(lg)
-		--bs-gutter-x: 2em
-		margin-top: 2rem
-		//--bs-gutter-x: #{$content-margin * 2 - 250px}
-		//+make-container()
-	+media-breakpoint-down(sm)
-		--bs-gutter-x: 1.5em
-
-
-.sidebar
-	+media-breakpoint-down(xs)
-		li:first-child
-			width: 100%
-			text-align: center
 
 .nav-pills
 	+media-breakpoint-up(sm)
@@ -333,13 +391,9 @@ svg.icon
 			width: 80px
 			text-align: center
 
-.nav-search input
-	background-color: $menu-bg
-
-
 
 .home
-	header
+	.container header
 		text-align: center
 	h1
 		line-height: 1
@@ -356,8 +410,8 @@ svg.icon
 .participants, .exhibitions, .nominations, .project
 	h1
 		min-height: 0vw
-		margin-bottom: 3vw
-		font-size: calc(2rem + 1vw)
+		//margin-bottom: 3vw
+		font-size: calc(1.5rem + 1vw)
 
 .participant
 	h1
@@ -380,7 +434,7 @@ svg.icon
 
 .project
 	h1
-		margin-bottom: 1vw
+		//margin-bottom: 1vw
 		text-transform: uppercase
 		word-break: break-word
 		.sub-title
@@ -396,33 +450,27 @@ svg.icon
 .partners-list
 	display: flex
 	flex-wrap: wrap
-	justify-content: center
+	justify-content: space-between
+	margin: 0 -2vw
 	header
 		flex: 100%
 		margin-top: 6vh
 		margin-bottom: 3vh
 
 	article
-		max-width: 300px
-		margin: 1em
-		.person-image
-			display: flex
-			justify-content: center
-			align-items: center
-			width: 100px
-			height: 100px
-			margin: auto
+		max-width: 150px
+		margin: 2vw
+		flex: auto
 		>*
 			text-align: center
 
 .organizers-list
+	justify-content: center
 	article
-		flex: 1 1
-
-.partners-list
-	article
-		+media-breakpoint-up(xl)
-			flex: 1
+		.organizer-logo
+			width: 100px
+			height: 100px
+			margin: auto
 
 
 .categories-list
@@ -446,6 +494,11 @@ svg.icon
 				color: #000
 				backdrop-filter: unset !important
 
+.exhibitions-list
+	.exh-title
+		height: auto
+		top: 50%
+		transform: translateY(-50%)
 
 .exhibitions-list, .categories-list
 	.grid-cell
@@ -455,9 +508,6 @@ svg.icon
 			background-color: #fff
 			color: $main-color
 			border-width: $border-thickness
-
-		.exh-title
-			position: absolute
 
 
 .excerpt
@@ -547,3 +597,10 @@ svg.icon
 		height: 1rem
 		margin-left: 5px
 		fill: deepskyblue
+
+#site-footer
+	margin-top: auto
+	padding: 2vh
+	border-top: 1px solid $highlight-border-color
+	.copyright
+		text-align: center

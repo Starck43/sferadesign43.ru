@@ -2,11 +2,13 @@
 @import mixins
 
 .navbar
+	padding: 0
 	+media-breakpoint-down(lg)
 		max-height: 100vh
 		overflow-y: auto
 
 	.container-fluid
+		margin: .6em 0
 		z-index: 1
 
 	.navbar-collapse
@@ -164,47 +166,75 @@ a.nav-link
 		width: 24px
 		height: 24px
 		fill: #fff
-		//border: 1.5px solid #fff
-		//border-radius: 5px
-		//box-sizing: border-box
+		&.instagram
+			//background-color: #ff543e
+			stroke: $main-color
+			stroke-width: 2
+
 	+media-breakpoint-down(lg)
 		display: block
 		margin: 1em 0
 		text-align: center
 
 #searchContainer
-	+push--absolute(0,0,0,0)
+	+push--absolute(0)
 	display: flex
+	margin: 0
 	background-color: $menu-bg
-	//opacity: 0
-	transform: translateY(0)
-	transition: all 300ms ease
+	flex: 1
+	transform: translateY(0%)
+	transition: transform 300ms ease-out
+	form.nav-search
+		position: relative
+		width: 100%
+		max-width: 600px
+		margin: 0 auto
+		justify-content: center
+		input
+			height: 2em
+			transition: all 150ms ease
+			background-color: $menu-bg
+			&:focus
+				padding-left: 22px
+		button[type="submit"]
+			position: relative
+			color: #fff
+			border: none
+			background-color: transparent
+		.clear-input
+			position: absolute
+			left: 7px
+			width: 5px
+			height: 5px
+			visibility: hidden
+			&.show
+				visibility: visible
+
+	&.active
+		transform: translateY(100%)
+
+
 	+media-breakpoint-down(lg)
-		left: 50px
-		right: 0.5em
-		top: 0.5em
-		bottom: unset
-		flex: 1
-		transform: translateY(-150%)
-		z-index: 10000
+		position: relative
+		margin: 0 0.7em
 		form.nav-search
+			position: absolute
+			left: 0
+			bottom: 75px
+			height: 100%
 			justify-content: start
-			button
+			opacity: 0
+			transition: all 300ms ease-out
+			button[type="submit"]
 				position: absolute
 				right: 0
 				color: $main-color
-		&.active
-			transform: translateY(0%)
-	&.active
-		//opacity: 1
-		transform: translateY(100%)
 
-form.nav-search
-	width: 100%
-	input
-		height: 2em
-	button
-		color: #fff
-		border: none
-		background-color: transparent
+		&.active form.nav-search
+			opacity: 1
+			bottom: 0
+
+
+
+
 

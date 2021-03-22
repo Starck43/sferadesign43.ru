@@ -1,0 +1,61 @@
+@import vars
+@import mixins
+
+.articles #sidebar
+	margin-bottom: 3vh
+	+media-breakpoint-up(lg)
+		top: 0 !important
+
+.article .container
+	margin-top: 0
+
+.attribute-title, .article-title
+	text-transform: lowercase
+
+.article-content
+	display: inline-block
+	padding: 3vh 0
+	border-top: 1px solid $highlight-border-color
+	clear: both
+	.modified-date
+		font-size: 0.8em
+		font-weight: bold
+		margin-bottom: 2vw
+	img
+		margin-right: 2vw
+		margin-bottom: 2vw
+		+media-breakpoint-down(sm)
+			float: none !important
+			text-align: center
+
+	&:first-child
+		padding-top: 0
+		border: none
+
+.categories-title
+	margin-bottom: 2vw
+	+media-breakpoint-down(lg)
+		font-size: calc(1.4em + .2vw)
+
+.article-categories
+	.filter-attribute
+		display: flex
+		justify-content: space-between
+		align-items: baseline
+		margin-bottom: 1vw
+		line-height: 1
+		input:checked + label
+			font-weight: bold
+		&:last-child, &.all label
+			margin-bottom: 0
+		label
+			color: $main-color
+			border-bottom: 1px dotted $main-color
+			transition: all 150ms ease-in-out
+			cursor: pointer
+			&:hover
+				border-bottom: 1px solid $main-color
+			+media-breakpoint-up(lg)
+				border-color: transparent
+		.counter
+			opacity: 0.5

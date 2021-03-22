@@ -64,7 +64,7 @@
 				{% endif %}
 
 				{% if not label and link %}
-				<div class="person-details-icon social-link my-2 mr-2">
+				<div class="person-details-icon social-link my-2 me-2">
 					<a href="{{ link }}" target="_blank"><svg class="icon {{name}}"><use xlink:href="#logo-{{name}}"></use></svg></a>
 				</div>
 				{% endif %}
@@ -130,6 +130,17 @@
 
 			{% endcache %}
 
+		{% endif %}
+
+		{% if article_list %}
+			<section id="articleList" class="participant-articles my-5">
+				<h2>Публикации</h2>
+				<ol class="article-list my-2">
+				{% for article in article_list %}
+					<li><a href="{% url 'blog:article-detail-url' article.id %}">{{article.title}}</a></li>
+				{% endfor %}
+				</ol>
+			</section>
 		{% endif %}
 
 	</div>

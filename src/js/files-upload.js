@@ -162,7 +162,13 @@
 
 })(window.jQuery);
 
-
+// Select all images in Portfolio Admin
+function checkImagesSelect(selector) {
+	checkboxes = document.querySelectorAll(`${selector} input[type=checkbox]`);
+	for (var i = 0, n = checkboxes.length; i < n; i++) {
+		checkboxes[i].checked = !checkboxes[i].checked;
+	}
+}
 
 document.addEventListener("DOMContentLoaded", function() {
 

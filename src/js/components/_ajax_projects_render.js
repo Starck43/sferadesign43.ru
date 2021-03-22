@@ -1,14 +1,15 @@
 
-	var currentPage = 1;
+	var preloader = document.querySelector('#preloader');
+	var currentPage = 1, nextPage = true;
 
-	function projectsRender(data){
+	function contentRender(data){
 		var projects_list = data['projects_list'];
 		var html = '';
 		for (var i in projects_list) {
 
 			var id = projects_list[i]['id'],
 				title = projects_list[i]['title'],
-				fullimage = data['media_url']+projects_list[i]['cover'],
+				thumb_mini = data['media_url']+projects_list[i]['thumb_mini'],
 				thumb_xs = data['media_url']+projects_list[i]['thumb_xs'],
 				thumb_sm = data['media_url']+projects_list[i]['thumb_sm'],
 				thumb_xs_w = projects_list[i]['thumb_xs_w'],
@@ -21,7 +22,8 @@
 			html +='<a id="project-'+id+'" class="grid-cell" href="'+url+'" title="'+title+'">\
 					<figure>\
 						<img class="project-cover lazyload"\
-							data-src="'+fullimage+'"\
+							src="'+thumb_mini+'"\
+							data-src="'+thumb_sm+'"\
 							data-srcset="'+thumb_xs+' ' + thumb_xs_w+'w, '+ thumb_sm+' '+thumb_sm_w + 'w"\
 							loading="lazy"\
 							title="'+title+'"\
@@ -44,49 +46,56 @@
 				</a>';
 		}
 
-		nextPage = data['next_page'];
-		currentPage = data['current_page'];
-		if ( currentPage > 1) {
-			// Вставим html в конец родителя последним элементом
-			if (preloader){
-				preloader.insertAdjacentHTML('beforebegin',html);
-			} else {
-				projectsGrid.insertAdjacentHTML('beforeend',html);
-			}
-		} else {
-			if (preloader) {
-				var clone = preloader.cloneNode(false);
-				projectsGrid.innerHTML = html;
-				projectsGrid.append(clone);
-				preloader = document.querySelector('#preloader');
-			} else {
-				projectsGrid.innerHTML = html;
-			}
-		}
+		if (html) {
+			nextPage = data['next_page'];
+			currentPage = data['current_page'];
 
-		if (preloader && nextPage) {
-			window.scrollBy(0, 1);
-			window.scrollBy(0,-1);
-		}
+			if (currentPage == 1) {
+				var clone = preloader.cloneNode(true);
+				contentBlock.innerHTML = html;
+				contentBlock.append(clone);
+				preloader = clone;
+				if (nextPage) {
+					preloader.classList.remove('hidden');
+					preloader.classList.add('show');
+				}
 
-		if (preloader && nextPage == false) {
-			document.removeEventListener('scroll', loadNewProjects);
+			} else {
+				// Вставим контент перед прелоадером
+				preloader.insertAdjacentHTML('beforebegin', html);
+			}
+			jsonRequest(); // сразу подгрузим следующий контент, если прелоадер остался в зоне видимости
+			lazyloadInit(); // обновим lazyload
+
+		} else nextPage = false;
+
+
+		if (nextPage == false) {
+			document.removeEventListener('scroll', jsonRequest);
 			preloader.classList.remove('show');
 			window.setTimeout( () => {
 				preloader.classList.add('hidden');
 			}, 200);
 		}
+	}
 
+	function lazyloadInit() {
 		(async () => {
 			if ('loading' in HTMLImageElement.prototype) {
 				const images = document.querySelectorAll("img.lazyload");
 				images.forEach(img => {
 					if (img.dataset.src) {
 						img.src = img.dataset.src;
-						img.srcset = img.dataset.srcset;
+						if (img.dataset.srcset)
+							img.srcset = img.dataset.srcset;
 					}
-					img.classList.add('lazyloaded');
-					img.classList.remove('lazyload');
+					img.onload = function() {
+						img.removeAttribute('data-src');
+						if (img.dataset.srcset)
+							img.removeAttribute('data-srcset');
+						img.classList.add('lazyloaded');
+						img.classList.remove('lazyload');
+					};
 				});
 
 			} else {
@@ -95,23 +104,25 @@
 		})();
 	}
 
-	function loadNewProjects(e) {
-		e.preventDefault();
+	function jsonRequest() {
 		if (nextPage && isInViewport(preloader, true)) {
+			nextPage = null; // До завершения запроса на сервере, статус след страницы установим в null, чтобы не выполнять новые ajax запросы
 			let url = preloader.href;
 			let params = 'page=' + String(currentPage+1);
 			if (filterForm) {
 				let filters = new URLSearchParams(new FormData(filterForm)).toString();
 				params += '&'+filters;
 			}
-			nextPage = null; // до выполнения запроса на сервере наличие след страницы установим в null для прекращения проверки scroll
-			ajaxSend(url, params, 'get', projectsRender);
+			ajaxSend(url, params, 'get', contentRender);
 		}
 	}
 
 	if (preloader) {
-		document.addEventListener('scroll', loadNewProjects, {passive: true});
-		preloader.addEventListener('click', loadNewProjects);
+		document.addEventListener('scroll', jsonRequest);
+		preloader.addEventListener('click', (e) => {
+			e.preventDefault();
+			jsonRequest();
+		});
 	}
 
 

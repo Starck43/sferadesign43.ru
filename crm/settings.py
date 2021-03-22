@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'watson',
     'exhibition',
     'rating',
+    'blog',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -124,6 +125,8 @@ DATABASES = {
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
 }
+
+#DATABASES['default']['OPTIONS'] = {'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",'charset': 'utf8mb4',}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -257,20 +260,25 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
 FILE_UPLOAD_PERMISSIONS = 0o775
 
 # It uses in exhibition.views.projects_list as parameter for queryset
-PORTFOLIO_COUNT_PER_PAGE = 3
+PORTFOLIO_COUNT_PER_PAGE = 4
+
+# It uses in blog.views.article_list as parameter for queryset
+ARTICLES_COUNT_PER_PAGE = 2
 
 # sorl-thumbnail settings
 
-THUMBNAIL_QUALITY = 85
+THUMBNAIL_QUALITY = 80
 THUMBNAIL_UPSCALE = False
 THUMBNAIL_FILTER_WIDTH = 600
 #Resolution multiplicators, e.g. value 2 means for every thumbnail of regular size x*y, additional thumbnail of 2x*2y size is created.
-THUMBNAIL_ALTERNATIVE_RESOLUTIONS = [2,2]
+#THUMBNAIL_ALTERNATIVE_RESOLUTIONS = [2,2]
 #THUMBNAIL_PROGRESSIVE = False
+
+ADMIN_THUMBNAIL_QUALITY = 75
 ADMIN_THUMBNAIL_SIZE = [100, 100]
 
+DJANGORESIZED_DEFAULT_QUALITY = 85
 DJANGORESIZED_DEFAULT_SIZE = [1500, 1024]
-DJANGORESIZED_DEFAULT_QUALITY = 80
 DJANGORESIZED_DEFAULT_KEEP_META = False
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'

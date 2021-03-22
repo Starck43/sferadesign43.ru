@@ -29,6 +29,7 @@ urlpatterns = [
 	path('accounts/', include('allauth.urls')),
 	path('', include('exhibition.urls')),
 	path('', include('rating.urls')),
+	path('', include('blog.urls')),
 	re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
 	re_path(r'^chaining/', include('smart_selects.urls')),
 	re_path(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

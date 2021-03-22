@@ -35,7 +35,7 @@
 					{% thumbnail e.logo "150x150" as logo_1x %}
 					{% thumbnail e.logo "300x300" as logo_2x %}
 					<img class="lazyload"
-						data-src="{{ e.logo }}"
+						data-src="{{ logo_1x.url }}"
 						data-srcset="{{ logo_1x.url }} {{ logo_1x.x }}w, {{ logo_2x.url }} {{ logo_2x.x }}w"
 						data-sizes="auto"
 						loading="lazy"

@@ -4,13 +4,6 @@
 {% if portfolio.images.count > 0 %}
 
 <div class="portfolio-list my-3{% if is_mobile %} grid{% endif %}">
-	<div id="preloader" class="portfolio-preloader show centered">
-		<div class="dot"></div>
-		<div class="dot"></div>
-		<div class="dot"></div>
-		<div class="dot"></div>
-		<div class="dot"></div>
-	</div>
 
 	{% for img in portfolio.images.all %}
 
@@ -24,10 +17,11 @@
 			{% thumbnail img.file "320" as xs %}
 			{% thumbnail img.file "576" as sm %}
 			{% thumbnail img.file "992" as md %}
+			{% thumbnail img.file "1200" as xl %}
 			<img id="image-{{forloop.counter0}}" class="image-img lazyload"
 				src="{{ xs.url }}"
 				data-src="{% get_media_prefix %}{{ img.file }}"
-				data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w"
+				data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
 				data-sizes="auto"
 				data-expand="50"
 				loading="lazy"
@@ -35,6 +29,7 @@
 				alt="{% if img.description %}{{ img.description }}. {% endif %}Автор {{ img.portfolio.owner.name }}">
 			{% empty %}
 			<img src="{% get_media_prefix %}no-image.png">
+			{% endthumbnail %}
 			{% endthumbnail %}
 			{% endthumbnail %}
 			{% endthumbnail %}

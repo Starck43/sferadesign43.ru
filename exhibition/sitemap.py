@@ -2,22 +2,28 @@ from django.contrib.sitemaps import Sitemap
 from django.shortcuts import reverse
 from django.contrib.sitemaps import ping_google
 
-from .models import *
-
-
-def update_google_sitemap():
-	try:
-		ping_google() #сообщим Google о изменениях в sitemap.xml
-	except Exception:
-		pass
+from exhibition.models import *
+from blog.models import Article
 
 
 class StaticViewSitemap(Sitemap):
 	priority = 0.5          # Приоритет
-	changefreq = 'weekly'   # Частота проверки
+	changefreq = 'daily'   # Частота проверки
 
 	def items(self):
-		return ['index', 'contacts-url']
+		return [
+			'index',
+			'contacts-url',
+			'exhibitions-list-url',
+			'nominations-list-url',
+			'winners-list-url',
+			'events-list-url',
+			'exhibitors-list-url',
+			'jury-list-url',
+			'partners-list-url',
+			'blog:article-list-url',
+		]
+
 
 	def location(self, item):
 		return reverse(item)
@@ -82,6 +88,14 @@ class PartnersSitemap(Sitemap):
 		return Partners.objects.all()
 
 
+class ArticleSitemap(Sitemap):
+	priority = 1
+	changefreq = 'daily'
+	def items(self):
+		return Article.objects.all()
+
+
+
 sitemaps = {
 	'static': StaticViewSitemap,
 	'exhibitions': ExhibitionsSitemap,
@@ -92,4 +106,5 @@ sitemaps = {
 	'exhibitors': ExhibitorsSitemap,
 	'jury': JurySitemap,
 	'partners': PartnersSitemap,
+	'article': ArticleSitemap,
 }

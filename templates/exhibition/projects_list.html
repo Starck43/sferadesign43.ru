@@ -10,7 +10,7 @@
 
 {% block script %}
 {{ block.super }}
-<script type="text/javascript" src="{% md5url 'js/project_pagination.min.js' %}"></script>
+<script type="text/javascript" src="{% md5url 'js/projects.min.js' %}"></script>
 {% endblock script %}
 
 
@@ -26,7 +26,7 @@
 
 
 {% block header %}
-<h1>{% if category_title %}{{ category_title }}{% else %}Категория пустая!{% endif %}</h1>
+<h1>{% if object_list %}{{ category_title }}{% else %}Категория пустая!{% endif %}</h1>
 {% endblock%}
 
 
@@ -74,22 +74,25 @@
 
 	{% if object_list %}
 
-		<div class="projects-list grid">
+		<div id="projectGrid" class="projects-list grid">
 			{% for e in object_list %}
 				{% with e.title as project_title %}
-				<a id="project-{{e.id}}" class="grid-cell" href="{{ e.get_absolute_url }}" title="{{ project_title }}">
+				<a id="project-{{e.id}}" class="grid-cell" href="{% url 'project-detail-url' e.owner__slug e.project_id %}" title="{{ project_title }}">
 					<figure>
 						{% with e.cover as project_cover %}
 						{% if project_cover %}
-							{% thumbnail project_cover "320" crop="center" as xs %}
-							{% thumbnail project_cover "576" crop="center" as sm %}
+							{% thumbnail project_cover "100x100" crop="center" quality=75 as mini %}
+							{% thumbnail project_cover "320" as xs %}
+							{% thumbnail project_cover "576" as sm %}
 							<img class="project-cover lazyload"
-								data-src="{% get_media_prefix %}{{project_cover}}"
+								src="{{ mini.url }}"
+								data-src="{{ sm.url }}"
 								data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
 								data-sizes="auto"
 								loading="lazy"
 								title="{{ project_title }}"
-								alt="{% if project_title %}{{ project_title }}. {% endif %}Автор проекта: {{ e.owner }}">
+								alt="{% if project_title %}{{ project_title }}. {% endif %}Автор проекта: {{ e.owner__slug }}">
+							{% endthumbnail %}
 							{% endthumbnail %}
 							{% endthumbnail %}
 						{% endif %}
@@ -98,8 +101,8 @@
 						<figcaption class="img-title centered">
 							<h2 class="project-title">{{project_title }}</h2>
 
-							{% if e.owner %}
-							<div class="subtitle">{{ e.owner }}</div>
+							{% if e.owner__name %}
+							<div class="subtitle">{{ e.owner__name }}</div>
 							{% endif %}
 
 							{% if e.average > 0 %}
@@ -122,15 +125,13 @@
 
 			{% endfor %}
 
-			{% if next_page %}
-			<a id="preloader" class="centered fade show" href="{% url 'nomination-detail-url' absolute_url %}">
+			<a id="preloader" class="centered fade {% if next_page %}show{% endif %}" href="{% url 'nomination-detail-url' absolute_url %}">
 				<div class="dot"></div>
 				<div class="dot"></div>
 				<div class="dot"></div>
 				<div class="dot"></div>
 				<div class="dot"></div>
 			</a>
-			{% endif %}
 
 		</div>
 

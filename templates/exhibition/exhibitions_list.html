@@ -16,7 +16,7 @@
 
 <div class="exhibitions-list grid">
 	{% for obj in object_list %}
-	<a id="exh-{{obj.slug}}" class="grid-cell img-ratio centered" href="{{obj.get_absolute_url}}" title="{{obj.title}}">
+	<a id="exh-{{obj.slug}}" class="grid-cell ratio ratio-1x1" href="{{obj.get_absolute_url}}" title="{{obj.title}}">
 		<h2 class="exh-title">{{obj.slug}}</h2>
 	</a>
 	{% endfor %}

@@ -1,4 +1,5 @@
-	// Функция проверки полной загрузки изображений
+
+	// Функция проверки загрузки первого изображения
 	const portfolioImages = document.querySelectorAll('.portfolio-list img');
 	var preloader = document.querySelector('.portfolio-preloader');
 

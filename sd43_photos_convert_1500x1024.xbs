@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><XnView_script version="1.0" name="sd43_photos_convert_1500x1024">
+    <Resize mode="0" width="1500" height="1024" unit="0" ratio="true" orientation="false" enlarge="1" resample="7" gamma_correct="false"/>
+    <Set_DPI x="96" y="96" keep="false"/>
+    <Output folder="/Users/admin/Downloads/2020" filename="{Filename}" case="0" startIndex="1" format="JPEG">
+        <Options overwrite="1" orgDate="false" keepMeta="false" keepICC="false" keepFolder="true" keepParentFolder="true" keepExtension="false" delOrg="false" multipage="false" allPages="false" openExplorer="false" openBrowser="false" clearItems="true"/>
+        <JPEG quality="90" progressive="true" optimizeHuffman="false" rebuildThumb="true" orgQuality="true" DCTMethod="0" subSampling="0" smoothFactor="0"/>
+    </Output>
+</XnView_script>

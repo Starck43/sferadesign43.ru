@@ -29,10 +29,10 @@
 		<header><h2>{{ organizers.first|verbose_name_plural }}</h2></header>
 		{% for org in organizers %}
 		<article class="organizer-block">
-			<a href="{{org.site}}">
-				<div class="person-image">
+			<a href="{{ org.site }}">
+				<div class="organizer-logo centered">
 				{% thumbnail org.logo "150x150" as img %}
-					<img src="{{ img.url }}" alt="{{ org.name }}">
+					<img class="lazyload" src="{{ img.url }}" alt="{{ org.name }}">
 				{% endthumbnail %}
 				</div>
 			</a>
@@ -47,7 +47,7 @@
 		{% for partner in exhibitions_list.first.partners.all %}
 		<article class="partner-logo centered">
 		{% thumbnail partner.logo "150x150" as img %}
-			<a href="{{ partner.get_absolute_url }}"><img src="{{ img.url }}" alt="{{ partner.name }}"></a>
+			<a href="{{ partner.get_absolute_url }}"><img class="lazyload" src="{{ img.url }}" alt="{{ partner.name }}"></a>
 		{% endthumbnail %}
 		</article>
 		{% endfor %}

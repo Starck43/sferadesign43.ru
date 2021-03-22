@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 #from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic.list import ListView #, MultipleObjectMixin
+from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg
 from django.db.models.expressions import F, Value
@@ -41,6 +41,8 @@ from django import forms
 from .models import *
 
 from rating.models import Rating, Reviews
+from blog.models import Article
+
 from .forms import ImagesUploadForm, FeedbackForm, UsersListForm, DeactivateUserForm
 from rating.forms import RatingForm
 from .logic import SendEmail, SetUserGroup
@@ -107,9 +109,9 @@ class exhibitors_list(ListView):
 		self.slug = self.kwargs['exh_year']
 
 		if self.slug:
-			return self.model.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.slug)
+			return self.model.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.slug).order_by('name')
 		else:
-			return self.model.objects.prefetch_related('exhibitors_for_exh').all()
+			return self.model.objects.prefetch_related('exhibitors_for_exh').all().order_by('name')
 			#return super().get_queryset()
 
 	def get_context_data(self, **kwargs):
@@ -265,14 +267,15 @@ class projects_list(ListView):
 			Q(project_id__isnull=False)
 		).distinct().prefetch_related('rated_portfolio').annotate(
 			last_exh_year=F('exhibition__slug'),
-			cat_title=F('nominations__category__title'),
+			#cat_title=F('nominations__category__title'),
 			average=Avg('rated_portfolio__star'),
 			win_year=subqry2,
 			cover=subqry
-		).order_by('-last_exh_year','-win_year', '-average')[start_page:end_page+1] # +1 сделано для выявления наличия следующей страницы
+		).values('id','title','last_exh_year','win_year','average','owner__name','owner__slug','project_id','cover'
+		).order_by('-last_exh_year','-win_year', '-average')[start_page:end_page] # +1 сделано для выявления наличия следующей страницы
 
-		self.is_next_page = True if posts.count() > self.PAGE_SIZE else False
-		return posts[:self.PAGE_SIZE]
+		self.is_next_page = False if len(posts) < self.PAGE_SIZE else True
+		return posts #[:self.PAGE_SIZE]
 
 
 	def get_context_data(self, **kwargs):
@@ -297,7 +300,7 @@ class projects_list(ListView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['projects',]
 		context['absolute_url'] = self.slug
-		context['category_title'] = self.object_list.first().cat_title if self.object_list else None
+		context['category_title'] = Categories.objects.get(slug=self.slug)
 		context['next_page'] = self.is_next_page
 		context['filter_attributes'] = list(filter_attributes.values())
 		context['cache_timeout'] = 86400 # one day
@@ -308,18 +311,25 @@ class projects_list(ListView):
 	def get(self, request, *args, **kwargs):
 		self.page = self.request.GET.get('page', None) # Параметр GET запроса ?page текущей страницы
 		self.filters_group = self.request.GET.getlist("filter-group", None) # Выбранные опции checkbox в GET запросе (?nominations=[])
+
 		if self.filters_group or self.page:
-			queryset = self.get_queryset().values('id','title','win_year','average','owner__name','owner__slug','project_id','cover')
+			DEFAULT_QUALITY = getattr(settings, 'THUMBNAIL_QUALITY', 85)
+			ADMIN_THUMBNAIL_SIZE = getattr(settings, 'ADMIN_THUMBNAIL_SIZE', [100, 100])
+			ADMIN_DEFAULT_SIZE = '%sx%s' % (ADMIN_THUMBNAIL_SIZE[0], ADMIN_THUMBNAIL_SIZE[1])
+			ADMIN_DEFAULT_QUALITY = getattr(settings, 'ADMIN_THUMBNAIL_QUALITY', 75)
+
+			queryset = self.get_queryset()
+
 			for i,q in enumerate(queryset):
 				if q['cover']:
-					thumb_320 = get_thumbnail(q['cover'], '320', crop='center', quality=settings.THUMBNAIL_QUALITY)
-					thumb_576 = get_thumbnail(q['cover'], '576', crop='center', quality=settings.THUMBNAIL_QUALITY)
-					queryset[i].update({'thumb_xs':str(thumb_320)})
+					thumb_mini = get_thumbnail(q['cover'], ADMIN_DEFAULT_SIZE, crop='center', quality=ADMIN_DEFAULT_QUALITY)
+					thumb_320 = get_thumbnail(q['cover'], '320', quality=DEFAULT_QUALITY)
+					thumb_576 = get_thumbnail(q['cover'], '576', quality=DEFAULT_QUALITY)
+					queryset[i].update({'thumb_mini':str(thumb_mini)})
+					queryset[i].update({'thumb_xs'	:str(thumb_320)})
+					queryset[i].update({'thumb_sm'	:str(thumb_576)})
 					queryset[i].update({'thumb_xs_w':thumb_320.width})
-					queryset[i].update({'thumb_sm':str(thumb_576)})
 					queryset[i].update({'thumb_sm_w':thumb_576.width})
-
-		#	print( list(queryset).sort(key=lambda k:('last_exh_year' not in k, k.get("last_exh_year", None)) ))
 
 			json_data = {
 				'current_page': int(self.page or 1),
@@ -328,6 +338,7 @@ class projects_list(ListView):
 				'projects_url': '/projects/',
 				'media_url': settings.MEDIA_URL,
 			}
+
 			return JsonResponse(json_data, safe=False)
 		else:
 			# выполняется при загрузке первой страницы
@@ -373,11 +384,16 @@ class exhibitor_detail(DetailView):
 			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')[:1]),
 			cover=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])
 		).order_by('-exh_year')
+		win_list = Nominations.objects.prefetch_related('nomination_for_winner').filter(
+			nomination_for_winner__exhibitor__slug=slug).annotate(
+			exh_year=F('nomination_for_winner__exhibition__slug')
+		).values('title', 'slug', 'exh_year').order_by('-exh_year')
+		#articles = Article.objects.filter()
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant']
-		context['winners_list'] = Nominations.objects.prefetch_related('nomination_for_winner').filter(nomination_for_winner__exhibitor__slug=slug).annotate(exh_year=F('nomination_for_winner__exhibition__slug')).values('title', 'slug', 'exh_year').order_by('exh_year')
 		context['object_list'] = portfolio
-		#context['exh_list'] = ', '.join(Exhibitions.objects.filter(exhibitors=self.object).values_list('title', flat=True))
+		context['winners_list'] = win_list
+		context['article_list'] = Article.objects.filter(owner=self.object.user).only('title').order_by('title') if self.object.user else None
 		context['parent_link'] = self.model.__name__.lower
 		context['cache_timeout'] = 86400
 		return context

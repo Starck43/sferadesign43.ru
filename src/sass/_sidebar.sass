@@ -2,49 +2,70 @@
 @import mixins
 
 #sidebar
-	position: fixed
-	width: 300px
-	left: 0
-	top: 0
-	bottom: 0
-	padding: 1em
-	background-color: #fff
-	transform: translateX(-100%)
-	transition: transform 300ms ease
-	overflow-y: auto
-	z-index: 1000
-	+media-breakpoint-up(lg)
-		position: absolute
-		top: 3.2em !important
-		bottom: unset
-		width: #{$content-margin - 75px}
-		padding: 0.75em
-		transform: unset
-		.filter-title
-			display: none
+	position: relative
+	width: 100%
+	padding: 2vw
+	background-color: $highlight-block-bg
 
-	+media-breakpoint-up(xl)
-		width: #{$content-margin}
-		top: 2.7em !important
-		padding: 25px
-
-	&.active
-		transform: translateX(0)
-	.filter-title
-		margin-top: 0.25em
-		margin-bottom: 1em
-		text-transform: uppercase
-
-	.sidebar-close
-		position: absolute
-		right: 1em
-		top: 1em
+	&.left-side
+		position: fixed
+		width: 300px
+		right: 100%
+		top: 0
+		bottom: 0
+		padding: 1em
+		background-color: #fff
+		transform: translateX(0%)
+		transition: transform 300ms ease
+		overflow-y: auto
+		//visibility: hidden
+		z-index: 1000
 		+media-breakpoint-up(lg)
-			display: none
+			position: absolute
+			top: 0 !important
+			right: unset
+			left: 0
+			bottom: unset
+			width: #{$content-margin - 75px}
+			padding: 0.75em
+			transform: unset
+			.filter-title
+				display: none
 
-	.form-check-input:checked
-		background-color: $main-color
-		border-color: $main-color
+		+media-breakpoint-up(xl)
+			width: #{$content-margin}
+			padding-left: 2em
+			padding-right: 2em
+
+		+media-breakpoint-up(xxl)
+			width: #{$content-margin + 50px}
+			padding-left: 0
+
+		&.active
+			transform: translateX(100%)
+
+		.filter-title
+			margin-top: 0.25em
+			margin-bottom: 1em
+			text-transform: uppercase
+
+		.sidebar-close
+			position: absolute
+			right: 1em
+			top: 1em
+			+media-breakpoint-up(lg)
+				display: none
+
+		.form-check-input:checked
+			background-color: $main-color
+			border-color: $main-color
+
+		.filter-title, .filters-block, .filters-block button
+			font-size: 1.2rem
+			+media-breakpoint-up(md)
+				font-size: 1rem
+			+media-breakpoint-up(lg)
+				font-size: 0.8em
 
 .filter-link
 	position: absolute
@@ -54,12 +75,6 @@
 	+media-breakpoint-up(lg)
 		display: none
 
-.filter-title, .filters-block, .filters-block button
-	font-size: 1.2rem
-	+media-breakpoint-up(md)
-		font-size: 1rem
-	+media-breakpoint-up(lg)
-		font-size: 0.8em
 
 .filters-group
 	+media-breakpoint-up(lg)

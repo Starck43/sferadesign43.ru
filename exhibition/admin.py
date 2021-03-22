@@ -76,7 +76,7 @@ class PersonAdmin(admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('person-block',),
-			'fields': ( ('logo', ), 'name', 'slug', 'description', 'sort', )
+			'fields': ( ('user', 'logo', ), 'name', 'slug', 'description', 'sort', )
 		}),
 	)
 	prepopulated_fields = {"slug": ('name',)} # adding name to slug field
@@ -99,11 +99,7 @@ class ProfileAdmin(admin.ModelAdmin):
 
 
 class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
-	fieldsets = (
-		(None, {
-			'fields': ('user',)
-		}),
-	) + PersonAdmin.fieldsets + ProfileAdmin.fieldsets
+	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets
 	#prepopulated_fields = {"slug": ('name',)} # adding name to slug field
 
 	list_display = ('logo_thumb', 'name', 'user_name',)
@@ -137,8 +133,8 @@ class JuryAdmin(PersonAdmin, admin.ModelAdmin):
 	list_display_links = ('logo_thumb', 'name', )
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('persons','jury')
 		super().save_model(request, obj, form, change)
+		delete_cached_fragment('persons','jury')
 
 
 
@@ -159,8 +155,8 @@ class OrganizerAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
 	description_html.short_description = 'Описание для главной страницы'
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('index_page')
 		super().save_model(request, obj, form, change)
+		delete_cached_fragment('index_page')
 
 
 
@@ -262,6 +258,7 @@ class WinnersAdmin(admin.ModelAdmin):
 		super().save_model(request, obj, form, change)
 
 		delete_cached_fragment('persons', 'winners')
+		delete_cached_fragment('participant_detail', obj.portfolio.id)
 
 
 
@@ -283,11 +280,11 @@ class ImagesInline(admin.StackedInline):
 
 class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
 	fields = ('portfolio', 'title', 'description', 'file', 'sort')
+	readonly_fields = ('file_thumb',)
 	list_display = ('file_thumb', 'portfolio', 'title', 'author', 'sort',)
 	list_display_links = ('file_thumb', 'portfolio', 'title',)
 	list_filter = ('portfolio__owner', 'portfolio',)
-	readonly_fields = ('file_thumb',)
-	search_fields = ('title', 'portfolio__title', 'portfolio__owner__slug', 'portfolio__owner__name',)
+	search_fields = ('title', 'file', 'portfolio__title', 'portfolio__owner__slug', 'portfolio__owner__name', 'portfolio__owner__user__first_name', 'portfolio__owner__user__last_name',)
 
 	list_per_page = 50
 	# def save_model(self, request, obj, form, change):
@@ -322,7 +319,7 @@ class PortfolioAdmin(admin.ModelAdmin):
 
 	list_display = ('owner', 'slug', '__str__', 'exhibition', 'nominations_list', 'attributes_list')
 	list_display_links = ('owner', 'slug', '__str__')
-	search_fields = ('title', 'owner__name', 'exhibition__title', 'nominations__title')
+	search_fields = ('title', 'owner__name', 'owner__user__first_name', 'owner__user__last_name', 'exhibition__title', 'nominations__title')
 	list_filter = ('nominations__category', 'nominations', 'owner',)
 	date_hierarchy = 'exhibition__date_start'
 
@@ -357,7 +354,6 @@ class PortfolioAdmin(admin.ModelAdmin):
 	attributes_list.admin_order_field = 'attributes__group'
 
 	def save_model(self, request, obj, form, change):
-		#request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
 		image_list = request.FILES.getlist('files', None)
 		obj.save(image_list) # сохраним портфолио и связанные фотографии
 
@@ -365,12 +361,12 @@ class PortfolioAdmin(admin.ModelAdmin):
 			protocol = 'https' if request.is_secure() else 'http'
 			host_url = "{0}://{1}".format(protocol, request.get_host())
 
-			# get list of image thumbs 100x100
+			# Before email notification we need to get a list of uploaded thumbs [100x100]
 			uploaded_images = []
 			size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
 			for im in image_list:
 				image = path.join('uploads/', obj.owner.slug, obj.exhibition.slug, obj.slug, im.name)
-				thumb = get_thumbnail(image, size, crop='center', quality=75)
+				thumb = get_thumbnail(image, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
 				uploaded_images.append(thumb)
 
 			subject = 'Добавление фотографий на сайте Сфера Дизайна'

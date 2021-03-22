@@ -16,7 +16,9 @@
        {% endif %}
      {% endfor %}
      {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
-     	<span class="column-delete">{% translate "Delete?" %}</span>
+     	<span class="column-delete">{% translate "Delete?" %}
+        <input id="id_all_images" class="images-check-input" type="checkbox" onClick="checkImagesSelect('#images-group .delete')">
+      </span>
      {% endif %}
   </h3>
 {% for inline_admin_form in inline_admin_formset %}<div class="inline-related{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form last-related{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">

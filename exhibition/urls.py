@@ -15,6 +15,7 @@ urlpatterns = [
 
 	path('category/',views.nominations_list.as_view(), kwargs={'slug': None}, name='nominations-list-url'),
 	path('category/<slug>/',views.projects_list.as_view(), name='nomination-detail-url'),
+	#path('category/<slug>/projects/',views.ajax_projects.as_view(), name='load-projects'), # for ajax
 	path('projects/<owner>/project-<project_id>/', views.project_detail.as_view(), name='project-detail-url'),
 
 	path('jury/',views.jury_list.as_view(), kwargs={'exh_year': None}, name='jury-list-url'),

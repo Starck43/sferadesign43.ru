@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load cache %}
+
+{% block title %}{{ block.super }} {{separator}} {{ category_title }}{% endblock %}
+
+
+{% block script %}
+{{ block.super }}
+<script type="text/javascript" src="{% md5url 'js/articles.min.js' %}"></script>
+{% endblock script %}
+
+
+{% block header %}<h1>{{page_title}}</h1>{% endblock header %}
+
+
+{% block sidebar %}
+
+{% cache cache_timeout sidebar articles %}
+
+{% if filter_attributes %}
+<div id="sidebar" class="fade">
+	<h3 class="categories-title">темы</h3>
+
+	<form class="article-categories filters-block" action="{% url 'blog:article-list-url' %}" method="get" name="articles-filter">
+		{% for item in filter_attributes %}
+		<div class="filter-attribute">
+			<input class="btn-check" id="category-{{item.id}}_id" type="radio" name="article-category" value="{{item.id}}" autocomplete="off">
+			<label class="form-label attribute-title" for="category-{{item.id}}_id">{{ item.name }}</label>
+			<span class="badge counter btn-primary">{{item.count}}</span>
+		</div>
+		{% endfor %}
+		<div class="filter-attribute all">
+			<input class="btn-check" id="all-category_id" type="radio" name="article-category" value="all" autocomplete="off" checked>
+			<label class="form-label" for="all-category_id">все статьи</label>
+		</div>
+	</form>
+</div>
+{% endif %}
+
+{% endcache %}
+
+{% endblock sidebar %}
+
+
+{% block content %}
+
+{% cache cache_timeout articles %}
+
+<div class="content">
+
+	<div id="articleList">
+		{% for article in article_list %}
+		<article id="article-{{article.id}}" class="article-content">
+			<h2 class="article-title "><a href="{% url 'blog:article-detail-url' article.id %}">{{article.title}}</a></h2>
+			{% if article.person %}
+			<a class="article-author" href="{{article.person.get_absolute_url}}"><i>автор: <b>{{ article.person }}</b></i></a>
+			{% endif %}
+			<div class="modified-date">{{article.modified_date|date:"d.m.Y"}}</div>
+			<div class="article-text">{{article.content|safe|truncatechars_html:300}}</div>
+			<span>[<u><i><a href="{% url 'blog:article-detail-url' article.id %}" class="link-dark">читать полностью</a></i></u>]</span>
+		</article>
+		{% endfor %}
+
+		<a id="preloader" class="centered fade {% if next_page %}show{% endif %}" href="{% url 'blog:article-list-url' %}">
+			<div class="dot"></div>
+			<div class="dot"></div>
+			<div class="dot"></div>
+			<div class="dot"></div>
+			<div class="dot"></div>
+		</a>
+	</div>
+
+</div>
+
+{% endcache %}
+
+{% endblock content %}
+
+

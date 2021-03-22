@@ -11,8 +11,9 @@
 				{% thumbnail img.file "992" as md %}
 				{% thumbnail img.file "1200" as xl %}
 				<img class="slide-img lazyload"
-					src="{{ img.file.url }}"
-					srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w"
+					src="{{ sm.url }}"
+					data-src="{{ img.file.url }}"
+					data-srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w, {{ img.file.url }} {{ img.file.width }}w"
 					data-sizes="auto"
 					data-expand="50"
 					loading="lazy"

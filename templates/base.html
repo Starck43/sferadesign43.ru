@@ -1,5 +1,6 @@
 {% load static %}
 {% load custom_tags %}
+{% load i18n %}
 
 <!DOCTYPE html>
 <html lang="ru" class="{{ html_classes|to_string }}{% if is_mobile %} mobile{% else %} desktop{% endif %}">
@@ -10,10 +11,12 @@
 	<meta name="description" content="{% if meta.description %}{{meta.description}}{% else %}{{meta_default.description}}{% endif %}">
 	<meta name="keywords" content="{% if meta.keywords %}{{meta.keywords}}{% else %}{{meta_default.keywords}}{% endif %}">
 	{% endblock meta %}
+
 	<link rel="preload" href="{% static 'fonts/corbel.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/corbelb.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/calibri.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/calibrib.woff2' %}" as="font" type="font/woff2" crossorigin>
+
 	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicons/apple-touch-icon.png' %}">
 	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicons/favicon-32x32.png' %}">
 	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicons/favicon-16x16.png' %}">
@@ -29,7 +32,7 @@
 
 
 	<!-- CSS only -->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css" integrity="sha384-DhY6onE6f3zzKbjUPRc2hOzGAdEf4/Dz+WJwBvEYL/lkkIsI3ihufq9hk9K4lVoK" crossorigin="anonymous">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
 	<link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
 	{% block styles %}{% endblock %}
@@ -40,7 +43,6 @@
 		window.dataLayer = window.dataLayer || [];
 		function gtag(){dataLayer.push(arguments);}
 		gtag('js', new Date());
-
 		gtag('config', 'G-Q63J4DDV30');
 	</script>
 
@@ -71,8 +73,7 @@
 		</symbol>
 		<symbol id="edit-icon" viewBox="0 0 384 384">
 			<polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"/>
-			<path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04
-				C386.027,77.92,386.027,64.373,377.707,56.053z"/>
+			<path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"/>
 		</symbol>
 		<symbol id="star-icon" width="20" height="20" viewBox="2 2 22 22">
 			<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -81,9 +82,9 @@
 			<text>{{ main_title }}</text>
 		</symbol>
 		<symbol id="logo-instagram" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
-			<path d="m4.75 24h14.5c2.619 0 4.75-2.131 4.75-4.75v-14.5c0-2.619-2.131-4.75-4.75-4.75h-14.5c-2.619 0-4.75 2.131-4.75 4.75v14.5c0 2.619 2.131 4.75 4.75 4.75zm-3.25-19.25c0-1.792 1.458-3.25 3.25-3.25h14.5c1.792 0 3.25 1.458 3.25 3.25v14.5c0 1.792-1.458 3.25-3.25 3.25h-14.5c-1.792 0-3.25-1.458-3.25-3.25z"/>
-			<path d="m12 18.13c3.38 0 6.13-2.75 6.13-6.13s-2.75-6.13-6.13-6.13-6.13 2.75-6.13 6.13 2.75 6.13 6.13 6.13zm0-10.76c2.553 0 4.63 2.077 4.63 4.63s-2.077 4.63-4.63 4.63-4.63-2.077-4.63-4.63 2.077-4.63 4.63-4.63z"/>
-			<path d="m18.358 7.362c.986 0 1.729-.74 1.729-1.721 0-1.023-.782-1.721-1.728-1.721-.986 0-1.729.74-1.729 1.721 0 1.021.778 1.721 1.728 1.721zm.177-1.886c.316.279-.405.618-.405.166 0-.27.367-.2.405-.166z"/>
+			<rect x="0" y="0" rx="5" ry="5" width="24" height="24" stroke-width="0"/>
+			<circle cx="19" cy="5" r="2" stroke-width="1.5"/>
+			<circle cx="12" cy="12" r="5" stroke-width="2"/>
 		</symbol>
 		<symbol id="logo-vk" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
 			<path d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"/>
@@ -101,16 +102,17 @@
 	<div id="site-header">
 		{# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
 		<a id="branding" class="loading" href="/">
-			<div class="brand-logo">
-				<img src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
+			<div class="brand-logo ratio ratio-1x1">
+				<img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
 			</div>
 		</a>
 		{% block site_title %}{% endblock site_title %}
 	</div>
 
+	<header class="loading">{% block header %}{% endblock header %}</header>
+
 	<div class="container container-md loading">
 
-		{% block header %}{% endblock header %}
 		{% block sidebar %}{% endblock sidebar %}
 		{% block content %}{% endblock content %}
 
@@ -121,25 +123,27 @@
 	<div id="alertContainer" class="hidden centered"></div>
 	{% endblock extra_container %}
 
-
-	<script src="{% md5url 'js/base.min.js' %}"></script>
-	<!-- JavaScript Bundle with Popper.js -->
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js" integrity="sha384-BOsAfwzjNJHrJ8cZidOg56tcQWfp6y72vEJ8xQ9w6Quywb24iOsW913URv1IS4GD" crossorigin="anonymous"></script>
-
-	{% block script %}{% endblock %}
-
+	<div id="site-footer">
+		<div id="copyright" class="centered">
+			{% now "Y" as current_year %}
+			<small>{% blocktranslate %}© {{ current_year }} Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
+		</div>
+		<div id="back2top" class="disable">
+			<button class="btn top-link">
+				<svg class="icon arrow-icon up"><use xlink:href="#arrow-icon"></use></svg>
+				<span>вверх</span>
+			</button>
+		</div>
+	</div>
 
 	<script>
 		(async () => {
 			if ('loading' in HTMLImageElement.prototype) {
 				const images = document.querySelectorAll("img.lazyload");
 				images.forEach(img => {
-					if (img.dataset.src) {
-						img.src = img.dataset.src;
-						img.srcset = img.dataset.srcset;
-					}
-					img.classList.add('lazyloaded');
-					img.classList.remove('lazyload');
+					if (img.dataset.src) 	img.src = img.dataset.src;
+					if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+					if (! img.hasAttribute('loading')) img.setAttribute('loading','lazy');
 				});
 
 			} else {
@@ -148,6 +152,12 @@
 			}
 		})();
 	</script>
+
+	<script src="{% md5url 'js/base.min.js' %}"></script>
+	<script src="{% md5url 'js/vendors.min.js' %}"></script>
+
+	{% block script %}{% endblock %}
+
 
 </body>
 </html>

@@ -9,13 +9,6 @@
 @import rate
 @import comments
 
-.portfolio-preloader
-	position: absolute
-	left: 50%
-	top: 50%
-	transform: translate(-50%, -50%)
-	z-index: 1
-
 
 figure
 	position: relative
@@ -59,13 +52,13 @@ figure
 				position: absolute
 
 	figure
+		background-color: #ddd
 		img
 			left: 0
 			right: 0
 			top: 0
 			max-height: 85vh
 			object-fit: cover
-			background-color: #ddd
 
 		figcaption
 			position: absolute
@@ -146,7 +139,7 @@ figure
 	&.show
 		display: block
 		visibility: visible
-		>*
+		>*, img
 			opacity: 1
 	ul,
 	svg,

@@ -3,12 +3,16 @@
 
 #preloader
 	$colors: $main-color
+	position: absolute
+	left: 50%
+	transform: translateX(-50%)
+	bottom: -5vw
 	&.show .dot
 		position: relative
-		width: 1vw
-		height: 1vw
-		min-width: .8em
-		min-height: .8em
+		width: 0.8vw
+		height: 0.8vw
+		min-width: .75em
+		min-height: .75em
 		margin: 1em 0.5em
 		border-radius: 50%
 		&::before

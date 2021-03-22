@@ -18,18 +18,14 @@
 
 <div class="categories-list grid">
 	{% for e in object_list %}
-	<a class="grid-cell img-ratio centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
+	<a class="grid-cell ratio ratio-1x1 centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
 		{% if e.logo %}
 		{% thumbnail e.logo "320" crop="center" as xs %}
-		{% thumbnail e.logo "576" crop="center" as sm %}
 		<img class="category-cover lazyload"
-			data-src="{{ e.logo.url }}"
-			data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
-			data-sizes="auto"
+			src="{{ xs.url }}"
 			loading="lazy"
 			title="Раздел {{ e.title }}"
 			alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}">
-		{% endthumbnail %}
 		{% endthumbnail %}
 		{% endif %}
 		<h3 class="category-title centered">{{ e }}</h3>

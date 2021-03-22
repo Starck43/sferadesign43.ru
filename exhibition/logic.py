@@ -21,9 +21,9 @@ from django.core.cache.utils import make_template_fragment_key
 from django.contrib.auth.models import Group #,User
 
 
-DEFAULT_SIZE = getattr(settings, 'DJANGORESIZED_DEFAULT_SIZE', [1920, 1080])
-DEFAULT_QUALITY = getattr(settings, 'DJANGORESIZED_DEFAULT_QUALITY', 80)
-DEFAULT_KEEP_META = getattr(settings, 'DJANGORESIZED_DEFAULT_KEEP_META', True)
+DEFAULT_SIZE = getattr(settings, 'DJANGORESIZED_DEFAULT_SIZE', [1500, 1024])
+DEFAULT_QUALITY = getattr(settings, 'DJANGORESIZED_DEFAULT_QUALITY', 85)
+DEFAULT_KEEP_META = getattr(settings, 'DJANGORESIZED_DEFAULT_KEEP_META', False)
 
 
 
@@ -60,36 +60,39 @@ def GalleryUploadTo(instance, filename):
 	return 'gallery/{0}/{1}'.format(instance.exhibition.slug.lower(), filename)
 
 
+""" Adjusting image size before saving """
 def ImageResize(obj):
-	if (obj.width > DEFAULT_SIZE[0] or obj.height > DEFAULT_SIZE[1]):
-		if path.exists(obj.path):
-			image = Im.open(obj.path)
-		else:
-			image = Im.open(obj)
+	filename, ext = path.splitext(obj.name)
+	if obj.width > DEFAULT_SIZE[0] or obj.height > DEFAULT_SIZE[1] or ext.upper() == '.PNG' :
+		try :
+			fn = obj.path if path.exists(obj.path) else obj
+			image = Im.open(fn)
 
-		if image.mode != 'RGB':
-			image = image.convert('RGB')
+			if image.mode != 'RGB':
+				image = image.convert('RGB')
 
-		#image = image.resize(DEFAULT_SIZE, Im.ANTIALIAS)
-		image.thumbnail(DEFAULT_SIZE, Im.ANTIALIAS)
+			#image = image.resize(DEFAULT_SIZE, Im.ANTIALIAS)
+			image.thumbnail(DEFAULT_SIZE, Im.ANTIALIAS)
 
-		meta = image.info
-		if not DEFAULT_KEEP_META:
-			meta.pop('exif', None)
-		output = BytesIO()
-		image.save(output, format='JPEG', quality=DEFAULT_QUALITY, **meta)
-		output.seek(0)
-		file = InMemoryUploadedFile(output, 'ImageField', obj.name, 'image/jpeg', getsizeof(output), None)
-		if file:
-			if path.exists(obj.path):
-				with open(obj.path, 'wb+') as f:
-					for chunk in file.chunks():
-						f.write(chunk)
-				return None
-		else:
-			return obj
+			meta = image.info
+			if not DEFAULT_KEEP_META:
+				meta.pop('exif', None)
+			output = BytesIO()
+			image.save(output, format='JPEG', quality=DEFAULT_QUALITY, optimize=True, **meta)
+			output.seek(0)
+			file = InMemoryUploadedFile(output, 'ImageField', filename + '.jpg', 'image/jpeg', getsizeof(output), None)
+			if file:
+				if path.exists(obj.path):
+					with open(obj.path, 'wb+') as f:
+						for chunk in file.chunks():
+							f.write(chunk)
+					return None
+			else:
+				return obj
 
-		return file
+			return file
+		except IOError:
+			return HttpResponse('Ошибка открытия файла %s!' % fn)
 	else:
 		# Nothing to compress
 		return None
@@ -190,5 +193,13 @@ def unicode_emoji(data, direction='encode'):
 			return data
 	else:
 		return ''
+
+
+
+def update_google_sitemap():
+	try:
+		ping_google() #сообщим Google о изменениях в sitemap.xml
+	except Exception:
+		pass
 
 

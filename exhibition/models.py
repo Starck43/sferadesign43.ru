@@ -1,5 +1,5 @@
 import re
-from os import path, rename
+from os import path, rename, rmdir, listdir
 from django.conf import settings
 from django.core.validators import RegexValidator
 #from django.utils.text import slugify
@@ -16,14 +16,13 @@ from django.db.models.signals import post_init, post_save
 from django.dispatch import receiver
 
 from crm import models
-from .logic import ImageResize, UploadFilename, GalleryUploadTo, MediaFileStorage
-from .sitemap import update_google_sitemap
+from .logic import ImageResize, UploadFilename, GalleryUploadTo, MediaFileStorage, update_google_sitemap
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 #from django.core.files.base import ContentFile
 from sorl.thumbnail import get_thumbnail, delete
-from uuslug import uuslug #, slugify
+from uuslug import uuslug
 from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField, GroupedForeignKey
 
 
@@ -35,14 +34,15 @@ def get_image_html(obj):
 	#if path.isfile(os.path.join(settings.MEDIA_ROOT,obj.name)):
 	if obj and path.isfile(path.join(settings.MEDIA_ROOT,obj.name)):
 		size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
-		thumb = get_thumbnail(obj.name, size, crop='center', quality=75)
+		thumb = get_thumbnail(obj.name, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
 		return format_html('<img src="{0}" width="50"/>', thumb.url)
 	else:
 		return format_html('<img src="/media/no-image.png" width="50"/>')
 
 
-"""Abstract model for Exhibitors, Jury, Partners"""
+"""Abstract model for Exhibitors, Organizer, Jury, Partners"""
 class Person(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name = 'Пользователь')
 	logo = models.ImageField('Логотип', upload_to=logo_folder, storage=MediaFileStorage(), null=True, blank=True)
 	#avatar = models.ImageField('Аватар', upload_to=avatar_folder, storage=MediaFileStorage(), null=True, blank=True)
 	name = models.CharField('Имя контакта', max_length=100)
@@ -51,8 +51,8 @@ class Person(models.Model):
 	sort = models.IntegerField('Индекс сортировки', null=True, blank=True)
 
 	class Meta:
-		ordering = ['name'] # '-' for DESC ordering
-		abstract = True    # The table will not be created
+		ordering = ['name']
+		abstract = True # Table will not be created
 
 	def __str__(self):
 		return self.name
@@ -68,45 +68,23 @@ class Person(models.Model):
 
 	logo_thumb.short_description = 'Логотип'
 
-	def __iter__(self):
-		for field in self._meta.fields:
-			name = field.name
-			label = field.verbose_name
-			value = field.value_to_string(self)
-			link = None
-			if value and type(field.default) is str :
-				value = value.rsplit('/', 1)[-1]
-				link = field.default+value
-
-			if field.name in ['description','vk','fb','instagram']:
-				label = ''
-
-			if field.name == 'site' and value:
-				value = re.sub(r'^https?:\/\/|\/$', '', value, flags=re.MULTILINE)
-				link = 'http://'+value
-
-			if (name == 'address' or name == 'site' or link) and value :
-				yield (name, label, value, link)
-
 
 """Abstract model for Exhibitors and Partners"""
 class Profile(models.Model):
 	phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Введите номер в формате: '+999999999'")
 	address = models.CharField('Адрес', max_length=100, blank=True)
-	phone = models.CharField('Контактный телефон', validators=[phone_regex], max_length=17, blank=True,default="tel:")
+	phone = models.CharField('Контактный телефон', validators=[phone_regex], max_length=17, blank=True, default="tel:")
 	email = models.EmailField('E-mail', max_length=75, blank=True, default="mailto:")
 	site = models.URLField('Сайт', max_length=75, blank=True)
-	vk = models.CharField('Вконтакте', max_length=75, blank=True, default="https://vk.com/")
-	fb = models.CharField('Facebook', max_length=75, blank=True, default="https://facebook.com/")
-	instagram = models.CharField('Instagram', max_length=75, blank=True, default="https://instagram.com/")
+	instagram = models.CharField('Instagram', max_length=75, blank=True, default="https://instagram.com")
+	fb = models.CharField('Facebook', max_length=75, blank=True, default="https://facebook.com")
+	vk = models.CharField('Вконтакте', max_length=75, blank=True, default="https://vk.com")
 
 	class Meta:
 		abstract = True    # The table will not be created
 
 
-
 class Exhibitors(Person, Profile):
-	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name = 'Пользователь')
 	objects = UserManager()
 
 	# Metadata
@@ -117,6 +95,27 @@ class Exhibitors(Person, Profile):
 		#unique_together = ('name',)
 		db_table = 'exhibitors'
 		unique_together = ['user',]
+
+	def __iter__(self):
+		for field in self._meta.fields:
+			name = field.name
+			label = field.verbose_name
+			value = field.value_to_string(self)
+			link = None
+			if value and type(field.default) is str :
+				value = value.rsplit('/', 1)[-1]
+				link = field.default+'/'+value.lower()
+
+			if field.name in ['description','vk','fb','instagram']:
+				label = ''
+
+			if field.name == 'site' and value:
+				value = re.sub(r'^https?:\/\/|\/$', '', value, flags=re.MULTILINE)
+				link = 'https://'+value
+
+			if (name == 'address' or name == 'site' or link) and value :
+				yield (name, label, value, link)
+
 
 	original_slug = None
 
@@ -169,7 +168,6 @@ class Exhibitors(Person, Profile):
 
 
 class Organizer(Person, Profile):
-	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name = 'Пользователь')
 	objects = UserManager()
 
 	# Metadata
@@ -182,6 +180,7 @@ class Organizer(Person, Profile):
 
 class Jury(Person):
 	excerpt = models.CharField('Краткое описание', max_length=255, null=True, blank=True)
+	objects = UserManager()
 
 	# Metadata
 	class Meta(Person.Meta):
@@ -202,6 +201,7 @@ class Jury(Person):
 
 
 class Partners(Person, Profile):
+	objects = UserManager()
 
 	# Metadata
 	class Meta(Person.Meta):
@@ -442,10 +442,9 @@ class Portfolio(models.Model):
 		db_table = 'portfolio'
 		unique_together = ['owner', 'project_id']
 
-	# удаление связанных фото с портфолио
 	def delete(self, *args, **kwargs):
-		posts = self.images.all()
-		for post in posts:
+		# удаление связанных фото с портфолио
+		for post in self.images.all():
 			post.delete()
 
 		super().delete(*args, **kwargs)
@@ -464,15 +463,14 @@ class Portfolio(models.Model):
 
 		# сохраним связанные с портфолио изображения
 		for image in images:
-			append_image = True
-
 			upload_filename = path.join('uploads/', self.owner.slug, self.exhibition.slug, self.slug, image.name)
 			file_path = path.join(settings.MEDIA_ROOT,upload_filename)
+			append_image = True
 
 			if path.exists(file_path):
 				try:
-					exist_image = Image.objects.get(portfolio=self, file=upload_filename)
 					# Portfolio has an image yet
+					exist_image = Image.objects.get(portfolio=self, file=upload_filename)
 					# Проверим размер загруженного повторно файла и изменим оригинал, если он превысит лимит указанный в settings
 					ImageResize(exist_image.file)
 					append_image = False
@@ -628,7 +626,7 @@ class Image(models.Model):
 	class Meta:
 		verbose_name = 'Фото участника'
 		verbose_name_plural = 'Фото участников'
-		ordering = [Coalesce("sort", F('id') + 500)]
+		ordering = [Coalesce("sort", F('id') + 500)] #сортировка в приоритете по полю sort, а потом уже по-умолчанию
 		db_table = 'images'
 
 
@@ -644,35 +642,44 @@ class Image(models.Model):
 		self.original_file = self.file
 
 
-	# Удаление файла на диске, если файл прикреплен только к текущему портфолио
 	def delete(self, *args, **kwargs):
-		if Image.objects.filter(file=self.file.name).count() == 1:
+		# Удаление файла на диске, если файл прикреплен только к текущему портфолио
+		if len(Image.objects.filter(file=self.file.name)) == 1:
+			# физически удалим файл с диска, если он единственный
 			delete(self.file)
+			folder = path.join(settings.MEDIA_ROOT, path.dirname(self.file.name))
+			if not listdir(folder):
+				rmdir(folder)
+
 		super().delete(*args, **kwargs)
 
+
 	def save(self, *args, **kwargs):
+		# если файл заменен, то требуется удалить все миниатюры в кэше у sorl-thumbnails
 		if self.original_file and self.original_file != self.file:
 			delete(self.original_file)
 
-			# Resizing uploading image
-			# Alternative package - django-resized
-			resized_image = ImageResize(self.file)
-			if resized_image:
-				self.file = resized_image
+		# Resizing uploading image
+		# Alternative package - django-resized
+		resized_image = ImageResize(self.file)
+		if resized_image:
+			self.file = resized_image
 
+		# print(resized_image)
+		# print(self.original_file)
+		# print(self.file)
+		#if self.original_file != self.file:
 		super().save(*args, **kwargs)
 		self.original_file = self.file
 
 
 	def file_thumb(self):
 		return get_image_html(self.file)
-
 	file_thumb.short_description = 'Фото'
 
 
 	def filename(self):
 		return self.file.name.rsplit('/', 1)[-1]
-
 	filename.short_description = 'Имя файла'
 
 
