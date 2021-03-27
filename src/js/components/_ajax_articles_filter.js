@@ -2,7 +2,7 @@
 	 *	Articles Filter - Фильтрация статей с обработчиками
 	 */
 
-	const sidebar = document.querySelector('#sidebar');
+	const sidebar = document.querySelector('.sidebar-primary');
 	const filterForm = sidebar.querySelector('form[name=articles-filter]');
 	var contentBlock = document.querySelector('#articleList');
 
@@ -34,7 +34,11 @@
 		// обработка нажатия на аттрибут фильтра
 		filterAttributes.forEach( (radio) => {
 			radio.addEventListener('change',(e)=>{
-				 submitFilter(filterForm);
+				submitFilter(filterForm);
+				for (let el of filterAttributes) {
+					el.nextElementSibling.classList.remove('active');
+				}
+				e.target.nextElementSibling.classList.add('active');
 			});
 		});
 
@@ -42,6 +46,6 @@
 		window.addEventListener('resize', resizeSidebar);
 		// проверим положение сайдбара при загрузке страницы
 		resizeSidebar(992);
-		sidebar.classList.add('show');
+		//sidebar.classList.add('show');
 
 	}

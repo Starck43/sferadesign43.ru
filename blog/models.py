@@ -2,10 +2,13 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
 
+from django.db.models import F, Q
+from django.db.models.functions import Coalesce
+
 from uuslug import uuslug
 from ckeditor_uploader.fields import RichTextUploadingField
 
-from exhibition.models import Exhibitors
+from exhibition.models import Exhibitors, Partners, Jury
 
 
 class Category(models.Model):
@@ -54,7 +57,13 @@ class Article(models.Model):
 		try:
 			post = Exhibitors.objects.get(user=self.owner)
 		except Exhibitors.DoesNotExist:
-			post = None
+			try:
+				post = Partners.objects.get(user=self.owner)
+			except Partners.DoesNotExist:
+				try:
+					post = Jury.objects.get(user=self.owner)
+				except Jury.DoesNotExist:
+					post = None
 		return post
 
 	def __str__(self):

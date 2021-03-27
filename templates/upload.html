@@ -7,15 +7,11 @@
 <meta name="robots" content="noindex">
 {% endblock meta %}
 
-{% block header %}
-	{% if user.is_authenticated %}
-		<h1>Добавить новое портфолио</h1>
-	{% else %}
-		<h1>Доступ закрыт</h1>
-	{% endif %}
-{% endblock header %}
+{% block page_title %}{% if user.is_authenticated %}Добавить новое портфолио{% else %}Доступ закрыт{% endif %}{% endblock page_title %}
+
 
 {% block content %}
+
 	{% if user.is_authenticated %}
 		<p>Вы вошли как: <i><b>{{user.username}}</b> ({{user.first_name}} {{user.last_name}})</i></p>
 		<form class="upload-form" autocomplete="off" enctype="multipart/form-data" method="post">
@@ -42,5 +38,6 @@
 		<p>Для выгрузки портфолио на сайт Вы должны быть зарегистрированы как участник выставки!</p>
 		<a href="{{ signup_url }}">Зарегистрироваться</a>
 	{% endif %}
-{% endblock %}
+
+{% endblock content %}
 

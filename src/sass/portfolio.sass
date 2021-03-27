@@ -25,11 +25,11 @@ figure
 // Portfolio grid
 
 .portfolio-list
-	margin: 0 -$content-margin
-	width: inherit
 	display: flex
 	flex-flow: row wrap
 	justify-content: space-around
+	width: inherit
+	margin: 0 -1%
 	overflow: hidden
 	>figure
 		flex: 100%
@@ -96,15 +96,6 @@ figure
 			width: 25%
 			min-width: 25%
 
-	+media-breakpoint-down(xl)
-		margin: 0 -$content-margin + 75px
-
-
-	+media-breakpoint-down(lg)
-		//margin: 0 -$content-margin + 125px
-		margin-left: -1%
-		margin-right: -1%
-
 
 	+media-breakpoint-down(sm)
 		.image-link
@@ -114,13 +105,35 @@ figure
 		.grid-item
 			flex: 100%
 
-
 .mobile .portfolio-list
 	.image-wrapper
 		+responsive-ratio
 		margin-bottom: 1.5em
 		img
 			max-height: unset
+
+.project
+	h1
+		text-transform: uppercase
+		word-break: break-word
+		.sub-title
+			font-size: 0.6em
+			text-transform: lowercase
+			font-weight: 300
+
+	.container
+		max-width: 1500px
+		.content
+			width: 100%
+			max-width: unset
+			+push--auto
+			flex: auto
+		.sidebar
+			flex: 0
+
+	.portfolio-container
+		a
+			font-weight: 500
 
 
 // Slider

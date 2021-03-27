@@ -29,7 +29,7 @@ body
 	min-height: 100vh
 	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
 
-h1, h2, h3, h4, .year-text, .site-title
+h1, h2, h3, h4, .year-text, #main-title
 	font-family: $font-family-header
 	//font-weight: bold
 
@@ -177,8 +177,8 @@ svg.icon
 		height: 22px
 		transform: rotate(180deg)
 	+media-breakpoint-down(sm)
-		top: 1.5rem
-		right: 1.5rem
+		top: $container-margin*2
+		right: $container-margin*2
 
 .btn
 	color: $main-color
@@ -217,19 +217,22 @@ svg.icon
 
 
 #back2top
-	--padding-var: 0.75rem
+	--padding-var: $container-margin
 	position: fixed
 	bottom: var(--padding-var)
 	right: var(--padding-var)
 	transition: 500ms transform ease-in-out
-	//transform: translateY(0%)
+	opacity: 1
+	z-index: 10000
 	&.disable
 		transition: 500ms all ease-in-out
-		//transform: translateY(150%)
 		visibility: hidden
+		opacity: 0
 		z-index: -1
 	+media-breakpoint-up(sm)
-		--padding-var: 2vw
+		--padding-var: $container-margin-sm
+	+media-breakpoint-up(lg)
+		--padding-var: $container-margin-lg
 
 .top-link
 	padding: 3px
@@ -270,28 +273,27 @@ svg.icon
 #site-header
 	position: relative
 	display: flex
+	flex-wrap: wrap
 	align-items: center
-	padding-top: 1.5vh
-	padding-bottom: 1.5vh
-	//margin-top: 76px
+	padding-top: 1.5vh !important
+	//padding-bottom: 1.5vh
 
 	#branding
 		position: relative
-		&.loaded ~.site-title
+		&.loaded ~.brand-text
 			opacity: 1
 
-	.site-title
+	.brand-text
 		transition: opacity 500ms 300ms ease-out
 		opacity: 0
-		flex: auto
-		max-width: $container-max_w + 100px
+		flex: 1
+		max-width: $content-width_max /*+100px*/
 		margin: -2em auto
-		padding-right: 200px
+		padding-right: $brand-logo-width
 
 	.brand-logo
 		display: block
 		//height: 100%
-		margin-left: 0.5em
 		width: $brand-logo-width - 10px
 
 	.year-text
@@ -307,94 +309,100 @@ svg.icon
 		display: flex
 		align-items: center
 
+
 	+media-breakpoint-down(xxl)
-		.site-title
+		.brand-logo
+			width: $brand-logo-width - 20px
+		.brand-text
 			margin-left: 50px
-			margin-right: $content-margin
+			margin-right: $col-width-xl
 			padding-right: 0
 
 	+media-breakpoint-down(xl)
 		.brand-logo
-			width: $brand-logo-width - 60px
+			width: $brand-logo-width - 40px
 		.year-text
 			font-size: 2.1em
-		.site-title
-			margin-left: 25px
-			margin-right: $content-margin - 75px
+		.brand-text
+			margin-left: 20px
+			margin-right: $col-width-lg
 
 
 	+media-breakpoint-down(lg)
 		.brand-logo
-			width: $brand-logo-width - 90px
-		.site-title
+			width: $brand-logo-width - 70px
+		.brand-text
 			margin-right: 0 //$content-margin - 125px
 
 	+media-breakpoint-down(md)
-		padding-top: 1em
+		padding-top: $container-margin-sm
 		.brand-logo
-			width: $brand-logo-width - 110px
+			width: $brand-logo-width - 100px
 		.year-text
 			font-size: 1.4em
-		.site-title
-			margin-left: 1em
+		.brand-text
+			margin-left: $container-margin-sm
 			margin-right: 0
 
 
 	+media-breakpoint-down(sm)
-
 		.brand-logo
 			width: $brand-logo-width - 130px
-		.site-title
-			margin-left: 0.75em
-			margin-right: 0.75em
+		.brand-text
+			margin-left: $container-margin
+			margin-right: $container-margin
 
-header
-	margin: 2vw 0
-	+push--auto
-
-header, .container
-	--bs-gutter-x: 0.75rem
-	width: 100%
-	padding: 0 var(--bs-gutter-x,.75rem)
-	max-width: $container-max_w + $content-margin - 75px
-	+media-breakpoint-up(sm)
-		--bs-gutter-x: 1rem
-	+media-breakpoint-up(lg)
-		--bs-gutter-x: #{$content-margin - 75px}
-	+media-breakpoint-up(xl)
-		--bs-gutter-x: #{$content-margin}
-		max-width: $container-max_w + $content-margin
-	+media-breakpoint-up(xxl)
-		--bs-gutter-x: #{$content-margin + 50px}
-		max-width: $container-max_w + $content-margin + 100px
-
-.exhibitions .container, .nominations .container, .participant .container,
-.exhibitions header, .nominations header, .participant header
-
-	+media-breakpoint-up(xl)
-		--bs-gutter-x: #{$content-margin - 25px}
-		max-width: $container-max_w + $content-margin * 2
 
 .container
 	position: relative
-	margin-top: 0rem
-	+media-breakpoint-up(sm)
-		margin-top: 1rem
+	display: flex
+	flex-wrap: wrap
+	width: 100%
+	max-width: $container-max_w
+	margin-top: 0
+	flex-direction: column
+	+media-breakpoint-up(md)
+		flex-direction: unset
 	+media-breakpoint-up(lg)
-		margin-bottom: 2rem
+		margin-bottom: $container-margin-lg
 
+	header
+		padding: $container-margin*2 0 0
+		flex: 100%
+		+media-breakpoint-up(sm)
+			padding: $container-margin-sm*2 0 0
 
-.nav-pills
+	.content
+		flex: 1
+		max-width: $content-width_max
+		z-index: 2
+		+media-breakpoint-up(xxl)
+			width: 100% - $col-width-xxl*2
+
+.container, #site-header
+	padding: 0 $container-margin
 	+media-breakpoint-up(sm)
-		li.nav-item
-			display: table
-			width: 80px
-			text-align: center
+		padding: 0 $container-margin-sm
+	+media-breakpoint-up(lg)
+		padding: 0 $container-margin-lg
 
+.flex-content
+	margin: $container-margin 0
+	+media-breakpoint-up(lg)
+		margin-left: $col-width-lg
+		margin-right: $col-width-lg
+	+media-breakpoint-up(xl)
+		margin-left: $col-width-xl
+		margin-right: $col-width-xl
+	+media-breakpoint-up(xxl)
+		margin-left: $col-width-xxl
+		margin-right: $col-width-xxl
 
 .home
-	.container header
-		text-align: center
+	.content
+		max-width: $content-width_max
+		flex: 1
+
 	h1
 		line-height: 1
 
@@ -403,8 +411,27 @@ header, .container
 		font-weight: bold
 		text-transform: uppercase
 
+	section
+		margin: 5vh 0
+		header
+			text-align: center
+		.person-link
+			display: block
+		.row
+			justify-content: center
+			>*
+				max-width: 150px
+
 	.person-title
 		margin-top: 0.5em
+
+	.organizers-container
+		.organizers-list
+			margin: 0 -1.5rem
+			justify-content: center
+
+		.organizer-item
+			flex: 1 1 auto
 
 
 .participants, .exhibitions, .nominations, .project
@@ -412,12 +439,6 @@ header, .container
 		min-height: 0vw
 		//margin-bottom: 3vw
 		font-size: calc(1.5rem + 1vw)
-
-.participant
-	h1
-		margin-bottom: 0.5em
-	h1 ~.excerpt
-		margin-bottom: 3rem
 
 
 .exhibition, .nominations
@@ -432,45 +453,11 @@ header, .container
 		margin: 0
 
 
-.project
-	h1
-		//margin-bottom: 1vw
-		text-transform: uppercase
-		word-break: break-word
-		.sub-title
-			font-size: 0.6em
-			text-transform: lowercase
-			font-weight: 300
-
-	.portfolio-container
-		a
-			font-weight: 500
-
-.organizers-list,
-.partners-list
-	display: flex
-	flex-wrap: wrap
-	justify-content: space-between
-	margin: 0 -2vw
-	header
-		flex: 100%
-		margin-top: 6vh
-		margin-bottom: 3vh
-
-	article
-		max-width: 150px
-		margin: 2vw
-		flex: auto
-		>*
-			text-align: center
-
-.organizers-list
-	justify-content: center
-	article
-		.organizer-logo
-			width: 100px
-			height: 100px
-			margin: auto
+.exhibitions-list
+	.exh-title
+		height: auto
+		top: 50%
+		transform: translateY(-50%)
 
 
 .categories-list
@@ -494,11 +481,6 @@ header, .container
 				color: #000
 				backdrop-filter: unset !important
 
-.exhibitions-list
-	.exh-title
-		height: auto
-		top: 50%
-		transform: translateY(-50%)
 
 .exhibitions-list, .categories-list
 	.grid-cell
@@ -536,14 +518,16 @@ header, .container
 			&:before
 				content: 'Читать далее'
 
+
 .contacts
+	+push--auto
 	.form-container
 		max-width: 600px
 
 		.form-group
-			margin-bottom: 1.5vw
+			margin-bottom: $container-margin-lg
 			+media-breakpoint-down(sm)
-				margin-bottom: 1em
+				margin-bottom: $container-margin
 
 #alertContainer
 	position: fixed
@@ -553,6 +537,7 @@ header, .container
 	width: 100vw
 	background-color: transparent
 	transition: background-color 150ms linear
+	z-index: 2
 	.btn-close
 		margin-left: auto
 		padding: 0

@@ -2,18 +2,25 @@
 //persons-list.html
 //participant-detail.html
 
+.participant
+	.person-excerpt
+		margin-bottom: 3rem
+
 .persons-container
-	margin: 1.5em -1vw
+	margin: -$container-margin-lg/2
 	justify-content: space-evenly
+	+media-breakpoint-down(sm)
+		margin: 0 -$container-margin
 
 .person-details-block
 	.logo
-		max-width: 300px
+		max-width: $person-logo-max_w
 		margin-left: 0
 
 	.person-description
 		font-size: 1.2
 		letter-spacing: 1.5px
+
 
 .person-logo
 	margin: auto
@@ -23,8 +30,10 @@
 
 .person-wrapper
 	position: relative
-	max-width: $logo-width
-	padding: 1vw
+	max-width: $person-logo-max_w
+	padding: $container-margin
+	+media-breakpoint-down(sm)
+		padding: $container-margin
 
 	.person-title
 		//font-size: 1.2em
@@ -44,12 +53,9 @@
 		filter: grayscale(0)
 
 .persons__list
-	margin: 3vh 2vw
+	margin: 3vh $container-margin-lg
 	flex: 100%
+	+media-breakpoint-down(sm)
+	margin: 3vh 0
 
-+media-breakpoint-down(sm)
-	.persons-container
-		margin: 1em -0.4em
 
-	.person-wrapper
-		padding: 0.4em

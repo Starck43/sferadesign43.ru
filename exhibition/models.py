@@ -84,18 +84,6 @@ class Profile(models.Model):
 		abstract = True    # The table will not be created
 
 
-class Exhibitors(Person, Profile):
-	objects = UserManager()
-
-	# Metadata
-	class Meta(Person.Meta):
-		verbose_name = 'Участник выставки'
-		verbose_name_plural = 'Участники выставки'
-		ordering = ['user__last_name']
-		#unique_together = ('name',)
-		db_table = 'exhibitors'
-		unique_together = ['user',]
-
 	def __iter__(self):
 		for field in self._meta.fields:
 			name = field.name
@@ -116,6 +104,19 @@ class Exhibitors(Person, Profile):
 			if (name == 'address' or name == 'site' or link) and value :
 				yield (name, label, value, link)
 
+
+
+class Exhibitors(Person, Profile):
+	objects = UserManager()
+
+	# Metadata
+	class Meta(Person.Meta):
+		verbose_name = 'Участник выставки'
+		verbose_name_plural = 'Участники выставки'
+		ordering = ['user__last_name']
+		#unique_together = ('name',)
+		db_table = 'exhibitors'
+		unique_together = ['user',]
 
 	original_slug = None
 

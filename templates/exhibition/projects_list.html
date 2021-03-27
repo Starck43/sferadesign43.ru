@@ -22,53 +22,47 @@
 {% endblock svg_icons %}
 
 
-{% block site_title %}<a href="#" class="filter-link">фильтры</a>{% endblock site_title %}
+{% block site_header %}<a href="#" class="sidebar-show-link d-lg-none">фильтры</a>{% endblock site_header %}
 
 
-{% block header %}
-<h1>{% if object_list %}{{ category_title }}{% else %}Категория пустая!{% endif %}</h1>
-{% endblock%}
+{% block page_title %}{% if object_list %}{{ category_title }}{% else %}Категория пустая!{% endif %}{% endblock page_title %}
 
 
 {% block sidebar %}
 
-{% cache cache_timeout sidebar absolute_url %}
+	{% cache cache_timeout sidebar absolute_url %}
 
-{% if filter_attributes %}
-<div id="sidebar" class="left-side">
-	<h3 class="filter-title">фильтры</h3>
-	<button type="button" class="sidebar-close btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+	{% if filter_attributes %}
+	<div id="projectsFilter" class="sidebar-inner">
+		<h3 class="sidebar-title d-lg-none">фильтры</h3>
+		<form class="filters-block {{absolute_url}}-filters" action="{% url 'nomination-detail-url' absolute_url %}" method="get" name="projects-filter">
 
-	<form class="filters-block {{absolute_url}}-filters" action="{% url 'nomination-detail-url' absolute_url %}" method="get" name="projects-filter">
-
-		{% for atttribute in filter_attributes %}
-		<div class="filter-attributes-block">
-		<h4>{{atttribute.0.group_name}}</h4>
-		<ol class="{{atttribute.0.group}}-filters-group filters-group">
-			{% for item in atttribute %}
-			<li class="form-check form-switch">
-				<input class="form-check-input" id="{{item.group}}-{{item.id}}_id" type="checkbox" name="filter-group" value="{{ item.id }}">
-				<label class="filter-checkbox form-check-label" for="{{item.group}}-{{item.id}}_id">{{ item.name }}</label>
-			</li>
+			{% for atttribute in filter_attributes %}
+			<div class="filter-attributes-block">
+			<h4>{{atttribute.0.group_name}}</h4>
+			<ol class="{{atttribute.0.group}}-filters-group filters-group">
+				{% for item in atttribute %}
+				<li class="form-check form-switch">
+					<input class="form-check-input" id="{{item.group}}-{{item.id}}_id" type="checkbox" name="filter-group" value="{{ item.id }}">
+					<label class="filter-checkbox form-check-label" for="{{item.group}}-{{item.id}}_id">{{ item.name }}</label>
+				</li>
+				{% endfor %}
+			</ol>
+			</div>
 			{% endfor %}
-		</ol>
-		</div>
-		{% endfor %}
 
-		<button class="form-control" type="submit" disabled="disabled">сбросить фильтры</button>
+			<button class="form-control" type="submit" disabled="disabled">сбросить фильтры</button>
 
-	</form>
-</div>
-{% endif %}
+		</form>
+	</div>
+	{% endif %}
 
-{% endcache %}
+	{% endcache %}
 
 {% endblock sidebar %}
 
 
 {% block content %}
-
-<div class="content">
 
 	{% cache cache_timeout projects_list absolute_url %}
 
@@ -148,8 +142,6 @@
 	{% endif %}
 
 	{% endcache %}
-
-</div>
 
 {% endblock content %}
 

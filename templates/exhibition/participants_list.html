@@ -1,22 +1,29 @@
 {% extends 'exhibition/persons_list.html' %}
 {% load static %}
 {% load custom_tags %}
+{% load cache %}
 {% load thumbnail %}
 
-{% block person %}
 
-<ol class="my-4">
-{% for person in object_list %}
-	<li>
-	{% if absolute_url == 'winners' %}
-		<a href="{% url 'exhibitor-detail-url' person.exhibitor__slug %}">{{ person.exhibitor__name }}</a>
-	{% else %}
-		<a href="{{ person.get_absolute_url }}">{{ person }}</a>
-	{% endif %}
-	</li>
-{% endfor %}
-</ol>
 
-{% endblock person %}
+{% block content %}
+
+	{% cache 2592000 persons absolute_url exh_year %}
+	<ol>
+		{% for person in object_list %}
+		<li>
+			{% if absolute_url == 'winners' %}
+			<a href="{% url 'exhibitor-detail-url' person.exhibitor__slug %}"><h3>{{ person.exhibitor__name }}</h3></a>
+			{% else %}
+			<a href="{{ person.get_absolute_url }}"><h3>{{ person }}</h3></a>
+			{% endif %}
+		</li>
+		{% empty %}
+			<h2>Список пустой</h2>
+		{% endfor %}
+	</ol>
+	{% endcache %}
+
+{% endblock content %}
 
 

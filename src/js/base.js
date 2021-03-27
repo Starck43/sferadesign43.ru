@@ -206,13 +206,8 @@ document.addEventListener("DOMContentLoaded", function() {
 		e.preventDefault();
 		scroll2Top(-window.scrollY, navbar.clientHeight); // скролл вверх ло блока навигации
 	});
-/*
-	filterItems.on('click', '.filter__title', function(e) {
-		if ( $(this).hasClass(collapsed) || $(this).hasClass(expanded) ) {
-			$(this).toggleClass(collapsed).toggleClass(expanded);
-			$(this).parent().siblings('.filter__inner').slideToggle(300);
-		}
-	});
-*/
+
+	//= components/_sidebar.js
+
 
 });

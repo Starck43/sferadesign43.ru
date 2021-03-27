@@ -8,53 +8,58 @@
 {% endblock %}
 
 
-{% block site_title %}<svg class="site-title"><use xlink:href="#main-title"></use></svg>{% endblock site_title %}
+{% block site_header %}<svg class="brand-text"><use xlink:href="#main-title"></use></svg>{% endblock site_header %}
 
-{% block header %}<h1 class="hidden">{{main_title}}</h1>{% endblock header %}
+{% block page_title %}<div class="hidden">{{main_title}}</div>{% endblock page_title %}
+
 
 {% block content %}
 
-{% cache 86400 index_page %}
+	{% cache 86400 index_page %}
 
 	<div class="exh-description">
-		{% for org in organizers %}
-			{% if org.description %}
-				{{org.description|safe}}
-			{% endif %}
-		{% endfor %}
+	{% for org in organizers %}
+		{% if org.description %}{{org.description|safe}}{% endif %}
+	{% endfor %}
 	</div>
 
 	{% if organizers %}
-	<section class="organizers-list">
+	<section class="organizers-container">
 		<header><h2>{{ organizers.first|verbose_name_plural }}</h2></header>
-		{% for org in organizers %}
-		<article class="organizer-block">
-			<a href="{{ org.site }}">
-				<div class="organizer-logo centered">
-				{% thumbnail org.logo "150x150" as img %}
+		<div class="organizers-list row">
+			{% for org in organizers %}
+			{% with org.site  as org_url %}
+			<article class="organizer-item">
+				<a class="person-link ratio ratio-1x1" href="{% if org_url %}{{ org_url }}{% else %}#{% endif %}">
+					{% thumbnail org.logo "150x150" as img %}
 					<img class="lazyload" src="{{ img.url }}" alt="{{ org.name }}">
-				{% endthumbnail %}
-				</div>
-			</a>
-		</article>
-		{% endfor %}
+					{% endthumbnail %}
+				</a>
+			</article>
+			{% endwith %}
+			{% endfor %}
+		</div>
 	</section>
 	{% endif %}
 
 	{% if exhibitions_list %}
-	<section class="partners-list">
+	<section class="partners-container">
 		<header><h2>{{ exhibitions_list.first.partners.first|verbose_name_plural }}</h2></header>
-		{% for partner in exhibitions_list.first.partners.all %}
-		<article class="partner-logo centered">
-		{% thumbnail partner.logo "150x150" as img %}
-			<a href="{{ partner.get_absolute_url }}"><img class="lazyload" src="{{ img.url }}" alt="{{ partner.name }}"></a>
-		{% endthumbnail %}
-		</article>
-		{% endfor %}
+		<div class="partners-list row">
+			{% for partner in exhibitions_list.first.partners.all %}
+			<article class="partner-item col-6 col-sm-4 col-md-3">
+				<a class="person-link ratio ratio-1x1" href="{{ partner.get_absolute_url }}">
+					{% thumbnail partner.logo "150x150" as img %}
+					<img class="lazyload" src="{{ img.url }}" alt="{{ partner.name }}">
+					{% endthumbnail %}
+				</a>
+			</article>
+			{% endfor %}
+		</div>
 	</section>
 	{% endif %}
 
-{% endcache %}
+	{% endcache %}
 
 {% endblock content%}
 

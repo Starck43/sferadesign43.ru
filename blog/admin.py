@@ -40,7 +40,7 @@ class ArticleAdmin(admin.ModelAdmin):
 	""" Отобразим список авторов статьи только для участников, партнеров, жюри"""
 	def formfield_for_foreignkey(self, db_field, request, **kwargs):
 		if db_field.name == "owner":
-			kwargs["queryset"] = User.objects.filter(groups__name__in=['Exhibitors', 'Organizers', 'Partners', 'Jury']).order_by('last_name')
+			kwargs["queryset"] = User.objects.filter(groups__name__in=['Exhibitors', 'Partners', 'Jury']).order_by('last_name')
 		return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 	""" заменим вывод User.username в списке авторов статьи на полное имя """

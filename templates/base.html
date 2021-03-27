@@ -95,9 +95,9 @@
 	{% endblock svg_icons %}
 	</svg>
 
-	{% block navigation %}
-		{% include "navbar.html" %}
-	{% endblock navigation %}
+
+	{% block navigation %}{% include "navbar.html" %}{% endblock navigation %}
+
 
 	<div id="site-header">
 		{# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
@@ -106,22 +106,35 @@
 				<img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
 			</div>
 		</a>
-		{% block site_title %}{% endblock site_title %}
+		{% block site_header %}{% endblock site_header %}
 	</div>
 
-	<header class="loading">{% block header %}{% endblock header %}</header>
 
-	<div class="container container-md loading">
 
-		{% block sidebar %}{% endblock sidebar %}
-		{% block content %}{% endblock content %}
+
+	<div class="container loading">
+		<header id="page-title" class="flex-content loading"><h1>{% block page_title %}{% endblock page_title %}</h1></header>
+
+		<aside class="sidebar sidebar-primary left-side">
+			{% block sidebar %}{% endblock sidebar %}
+		</aside>
+
+		<div class="content">
+			{% block content %}{% endblock content %}
+		</div>
+
+		<aside class="sidebar sidebar-secondary right-side">
+			{% block sidebar_secondary %}{% endblock sidebar_secondary %}
+		</aside>
 
 	</div>
+
 
 	{% block extra_container %}
 	<!-- Контейнер для диалоговых окон -->
 	<div id="alertContainer" class="hidden centered"></div>
 	{% endblock extra_container %}
+
 
 	<div id="site-footer">
 		<div id="copyright" class="centered">
@@ -156,7 +169,7 @@
 	<script src="{% md5url 'js/base.min.js' %}"></script>
 	<script src="{% md5url 'js/vendors.min.js' %}"></script>
 
-	{% block script %}{% endblock %}
+	{% block script %}{% endblock script %}
 
 
 </body>

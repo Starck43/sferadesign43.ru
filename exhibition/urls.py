@@ -13,7 +13,7 @@ urlpatterns = [
 	path('exhibition/<exh_year>/',views.exhibition_detail.as_view(), name='exhibition-detail-url'),
 	path('exhibition/<exh_year>/<slug>/', views.winner_project_detail.as_view(), name='winner-project-detail-url'),
 
-	path('category/',views.nominations_list.as_view(), kwargs={'slug': None}, name='nominations-list-url'),
+	path('category/',views.category_list.as_view(), kwargs={'slug': None}, name='category-list-url'),
 	path('category/<slug>/',views.projects_list.as_view(), name='nomination-detail-url'),
 	#path('category/<slug>/projects/',views.ajax_projects.as_view(), name='load-projects'), # for ajax
 	path('projects/<owner>/project-<project_id>/', views.project_detail.as_view(), name='project-detail-url'),

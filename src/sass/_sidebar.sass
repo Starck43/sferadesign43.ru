@@ -1,86 +1,134 @@
 @import vars
 @import mixins
 
-#sidebar
-	position: relative
-	width: 100%
-	padding: 2vw
-	background-color: $highlight-block-bg
 
-	&.left-side
+.sidebar
+	position: relative
+	//background-color: $highlight-block-bg
+	max-width: 300px
+	&.sidebar-primary
 		position: fixed
-		width: 300px
-		right: 100%
 		top: 0
 		bottom: 0
-		padding: 1em
 		background-color: #fff
 		transform: translateX(0%)
 		transition: transform 300ms ease
 		overflow-y: auto
 		//visibility: hidden
-		z-index: 1000
+		z-index: 1
+		+media-breakpoint-down(lg)
+			width: 75%
+			z-index: 3
+
 		+media-breakpoint-up(lg)
-			position: absolute
+			position: relative
 			top: 0 !important
-			right: unset
 			left: 0
 			bottom: unset
-			width: #{$content-margin - 75px}
-			padding: 0.75em
 			transform: unset
-			.filter-title
-				display: none
 
-		+media-breakpoint-up(xl)
-			width: #{$content-margin}
-			padding-left: 2em
-			padding-right: 2em
-
-		+media-breakpoint-up(xxl)
-			width: #{$content-margin + 50px}
-			padding-left: 0
-
-		&.active
+	&.left-side
+		right: 100%
+		&.show
 			transform: translateX(100%)
 
-		.filter-title
-			margin-top: 0.25em
-			margin-bottom: 1em
-			text-transform: uppercase
+	&-inner
+		width: 100%
+		padding: $container-margin-sm
 
-		.sidebar-close
-			position: absolute
-			right: 1em
-			top: 1em
-			+media-breakpoint-up(lg)
-				display: none
+
+	+media-breakpoint-up(lg)
+		max-width: $col-width-lg
+		flex: auto
+		&.right-side
+			width: 100%
+
+		.sidebar-inner
+			padding: 0 $container-margin 0 0
+
+	+media-breakpoint-up(xl)
+		max-width: $col-width-xl
+		.sidebar-inner
+			padding: 0 $container-margin-lg 0 0
+
+	+media-breakpoint-up(xxl)
+		max-width: $col-width-xxl
+		flex: 100%
+		.sidebar-inner
+			max-width: $col-max_w
+
+	&-close
+		position: absolute
+		right: $container-margin-sm
+		top: $container-margin-sm
+
+	&-title
+		margin-top: 0.5em
+		margin-bottom: $container-margin-sm
+		//text-transform: uppercase
+		+media-breakpoint-down(lg)
+			font-size: calc(1.4em + .2vw)
+
+	form
+		+media-breakpoint-up(lg)
+			font-size: 0.8em
+			button
+				font-size: 1em
 
 		.form-check-input:checked
 			background-color: $main-color
 			border-color: $main-color
 
-		.filter-title, .filters-block, .filters-block button
-			font-size: 1.2rem
-			+media-breakpoint-up(md)
-				font-size: 1rem
+		.filters-group
 			+media-breakpoint-up(lg)
-				font-size: 0.8em
+				color: $light-text-color
 
-.filter-link
+		.filter-attributes-block
+			li
+				margin: 5px 0
+
+
+.sidebar-show-link
 	position: absolute
-	top: 1em
-	right: 1em
+	top: $container-margin
+	right: $container-margin
 	text-transform: lowercase
+	+media-breakpoint-up(sm)
+		top: $container-margin-sm
+		right: $container-margin-sm
 	+media-breakpoint-up(lg)
-		display: none
+		right: $container-margin-lg
 
+.brand-text ~.sidebar-show-link
+	position: relative
+	left: 0
+	top: 2vw
+	//font-size: 0.8em
+	//font-weight: bold
+	flex: 100%
+	svg
+		height: 1.2em
+		width: 1.2em
+		stroke: $main-color
+		stroke-width: 3
 
-.filters-group
-	+media-breakpoint-up(lg)
-		color: $light-text-color
-
-.filter-attributes-block
+.nav
 	li
-		margin: 5px 0
+		display: table
+		+push--auto
 
+	+media-breakpoint-down(lg)
+		font-size: 1.2em
+
+.nav-title
+	color: $main-color
+	border-bottom: 1px dotted $main-color
+	transition: all 150ms ease-in-out
+	cursor: pointer
+	&.active
+		font-weight: bold
+	&.active, &:hover,
+		border-bottom: 1px solid $main-color
+
+.form-switch .form-check-input:hover
+	border: 1px solid $main-color !important

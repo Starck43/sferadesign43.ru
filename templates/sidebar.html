@@ -1,8 +1,11 @@
-<aside class="sidebar col mb-4">
-	<ul class="nav nav-pills flex-sm-column flex-row">
-		<li class="nav-item"><a class="nav-link {% if not exhibition %}active{% endif %}" href="/{{absolute_url}}/">Все</a></li>
+
+<div id="exh-years-filter" class="sidebar-inner">
+	<ul class="nav flex-column">
+		<li class="nav-title mb-3 {% if not exh_year %}active{% endif %}"><a href="/{{absolute_url}}/">за все годы</a></li>
 		{% for e in exhibitions_list %}
-		<li class="nav-item"><a class="nav-link {% if exhibition and exhibition.exh_year == e.exh_year|stringformat:'s' %}active{% endif %}" href="/{{absolute_url}}/{{e.exh_year}}/">{{ e.exh_year }}</a></li>
+		<li class="nav-title my-2 {% if exh_year and exh_year == e.exh_year|stringformat:'s' %}active{% endif %}">
+			<a href="/{{absolute_url}}/{{e.exh_year}}/">{{ e.exh_year }}</a>
+		</li>
 		{% endfor %}
 	</ul>
-</aside>
+</div>

@@ -6,60 +6,51 @@
 
 {% block title %}{{ block.super }} {{separator}} {{page_title}} {{ exh_year }}{% endblock %}
 
-{% block site_title %}<svg class="site-title"><use xlink:href="#main-title"></use></svg>{% endblock site_title %}
+{% block site_header %}
+	<svg class="brand-text"><use xlink:href="#main-title"></use></svg>
+	<a href="#" class="sidebar-show-link d-lg-none"><svg class="icon arrow-icon left"><use xlink:href="#arrow-icon"></use></svg>выбрать год</a>
+{% endblock site_header %}
+
+{% block page_title %}{{ page_title }} {% if exh_year %}{{ exh_year }}{% else %}за все годы{% endif %}{% endblock page_title %}
 
 
-{% block header %}
-<h1>{{ page_title }} {% if exh_year %}{{ exh_year }}{% else %}за все годы{% endif %}</h1>
-{% endblock%}
-
-
-{% block sidebar %}{% endblock sidebar %}
+{% block sidebar %}{% include "sidebar.html" %}{% endblock sidebar %}
 
 
 {% block content %}
 
-<div class="content">
+	{% block person %}
 
-	{% cache 2592000 persons absolute_url %}
+	{% cache 2592000 persons absolute_url exh_year %}
 
-	{% if object_list %}
+	<div class="persons-container row">
+		{% for e in object_list %}
+		<a class="person-wrapper col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3" href="{{ e.get_absolute_url }}">
 
-		{% block person %}
-
-		<div class="persons-container row">
-			{% for e in object_list %}
-			<a class="person-wrapper col-6 col-xxl-2 col-md-3 col-sm-4" href="{{ e.get_absolute_url }}">
-
-				<div class="person-logo ratio ratio-1x1">
-					{% thumbnail e.logo "150x150" as logo_1x %}
-					{% thumbnail e.logo "300x300" as logo_2x %}
-					<img class="lazyload"
-						data-src="{{ logo_1x.url }}"
-						data-srcset="{{ logo_1x.url }} {{ logo_1x.x }}w, {{ logo_2x.url }} {{ logo_2x.x }}w"
-						data-sizes="auto"
-						loading="lazy"
-						title="{{ e.name }}"
-						alt="{{ e.name }}">
-					{% empty %}
-					<img src="{% get_media_prefix %}no-person.png">
-					{% endthumbnail %}
-					{% endthumbnail %}
-				</div>
-				<h3 class="person-title">{{ e }}</h3>
-
-			</a>
-			{% endfor %}
-		</div>
-
-		{% endblock person %}
-
-	{% else %}
-		<h4>Список пустой</h4>
-	{% endif %}
+			<div class="person-logo ratio ratio-1x1">
+				{% thumbnail e.logo "150x150" as logo_1x %}
+				{% thumbnail e.logo "300x300" as logo_2x %}
+				<img class="lazyload"
+					data-src="{{ logo_1x.url }}"
+					data-srcset="{{ logo_1x.url }} {{ logo_1x.x }}w, {{ logo_2x.url }} {{ logo_2x.x }}w"
+					data-sizes="auto"
+					loading="lazy"
+					title="{{ e.name }}"
+					alt="{{ e.name }}">
+				{% empty %}
+				<img src="{% get_media_prefix %}no-person.png">
+				{% endthumbnail %}
+				{% endthumbnail %}
+			</div>
+			<h3 class="person-title">{{ e }}</h3>
+		</a>
+		{% empty %}
+			<h2>Список пустой</h2>
+		{% endfor %}
+	</div>
 
 	{% endcache %}
 
-</div>
+	{% endblock person %}
 
-{% endblock %}
+{% endblock content %}

@@ -5,9 +5,11 @@ from django.http import HttpResponse, JsonResponse
 
 from django.views.generic.list import ListView #, MultipleObjectMixin
 from django.views.generic.detail import DetailView
-from django.db.models import F, Q, Count, OuterRef, Subquery #, Prefetch
+
+from django.contrib.auth.models import User
+from django.db.models import Count #, F, Q , OuterRef, Subquery, Prefetch
 # from django.db.models.expressions import F, Value
-# from django.db.models.functions import Coalesce
+#from django.db.models.functions import Coalesce
 
 from .models import Category, Article
 
@@ -19,7 +21,6 @@ class article_list(ListView):
 	PAGE_SIZE = getattr(settings, 'ARTICLES_COUNT_PER_PAGE', 10) # Количество выводимых записей на странице
 
 	def get_queryset(self):
-
 		# self.page - текущая страница для получения диапазона выборки записей,  (см. функцию get ниже )
 		self.page = int(self.page) if self.page else 1
 
@@ -42,17 +43,21 @@ class article_list(ListView):
 		self.filter_cat = self.request.GET.get("article-category", None) # Выбранные опции checkbox в GET запросе (?nominations=[])
 
 		if self.filter_cat or self.page:
-			queryset = self.get_queryset().values()
-			for i,q in enumerate(queryset):
-				person = self.get_queryset()[i].person()
+			queryset = self.get_queryset()
+			article_list = list(queryset.values())
+			if self.is_next_page:
+				article_list.pop()
+
+			for i,q in enumerate(article_list):
+				person = queryset[i].person()
 				if person:
-					queryset[i].update({'person':person.name})
-					queryset[i].update({'person_url':person.get_absolute_url()})
+					q.update({'person':person.name})
+					q.update({'person_url':person.get_absolute_url()})
 
 			json_data = {
 				'current_page': int(self.page or 1),
 				'next_page': self.is_next_page,
-				'articles': list(queryset),
+				'articles': list(article_list),
 				#'media_url': settings.MEDIA_URL,
 			}
 			return JsonResponse(json_data, safe=False)

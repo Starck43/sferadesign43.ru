@@ -4,9 +4,7 @@
 
 {% if user.is_authenticated %}
 
-	{% block header %}
-		<h1>Портфолио успешно создано!</h1>
-	{% endblock header %}
+	{% block page_title %}Портфолио успешно создано!{% endblock page_title %}
 
 	{% block content %}
 
@@ -36,11 +34,11 @@
 				<li>{{ f.name }}</li>
 			{% endfor %}
 			</ul>
-			{% else %}
-				<p>Фото отсутствует!</p>
+		{% else %}
+			<p>Фото отсутствует!</p>
 		{% endif %}
 		</b>
-		<p>Важно!!! Информация будет модерироваться администратором выставки</p>
+		<p>Важно!!! Информация будет модерироваться администратором сайта</p>
 		<a href="{{request.META.HTTP_REFERER}}"><button class="btn btn-outline-primary" type="button">Назад</button></a>
 	{% endblock %}
 {% endif %}

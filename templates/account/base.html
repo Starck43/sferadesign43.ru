@@ -8,7 +8,7 @@
 	{# <meta http-equiv="Cache-Control" content="no-cache"> #}
 {% endblock meta %}
 
-{% block header %}<h1>Личный кабинет</h1>{% endblock %}
+{% block page_title %}Личный кабинет{% endblock %}
 
 {% block content %}
 
@@ -32,7 +32,7 @@ E-mail: <b>{{user.email}}</b>
 {% endif %}
 
 <section class="user-ratings">
-	<h2>все оценки работ</h2>
+	<h2>выставленные оценки</h2>
 	<ol class="user-ratings-list">
 	{% for rate in rates %}
 		<li class="user-rating">
@@ -45,7 +45,7 @@ E-mail: <b>{{user.email}}</b>
 			</span>
 		</li>
 	{% empty %}
-		<div>Пусто</div>
+		<i>оценки пока не выставлены</i>
 	{% endfor %}
 	</ol>
 </section>
@@ -66,7 +66,7 @@ E-mail: <b>{{user.email}}</b>
 			</div>
 		</li>
 		{% empty %}
-		<div>Пусто</div>
+		<i>список пуст</i>
 		{% endfor %}
 	</ol>
 </section>

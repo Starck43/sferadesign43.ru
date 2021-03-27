@@ -1,9 +1,9 @@
 {% load l10n %}
 
 {% if user.is_authenticated %}
-<form class="rating-form" method="post" action="{% url 'rating:add-rating' %}" value="{% if user_score %}{{user_score|floatformat:0}}{% endif %}" average="{{average_rate}}" name="rating">
+<form class="rating-form flex-content" method="post" action="{% url 'rating:add-rating' %}" value="{% if user_score %}{{user_score|floatformat:0}}{% endif %}" average="{{average_rate}}" name="rating">
 {% else %}
-<form class="rating-form" method="get" average="{{average_rate}}" name="rating">
+<form class="rating-form flex-content" method="get" average="{{average_rate}}" name="rating">
 {% endif %}
 	Рейтинг:
 	{% csrf_token %}

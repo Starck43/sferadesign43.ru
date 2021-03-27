@@ -100,14 +100,23 @@ def contacts(request):
 	return render(request, 'contacts.html', context)
 
 
+
+class ExhibitionYearListMixin:
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['page_title'] = self.model._meta.verbose_name_plural
+		context['absolute_url'] = self.model.__name__.lower
+		context['exh_year'] = self.slug
+		return context
+
+
 """ Exhibitors view """
-class exhibitors_list(ListView):
+class exhibitors_list(ExhibitionYearListMixin, ListView):
 	model = Exhibitors
 	template_name = 'exhibition/participants_list.html'
 
 	def get_queryset(self):
 		self.slug = self.kwargs['exh_year']
-
 		if self.slug:
 			return self.model.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.slug).order_by('name')
 		else:
@@ -117,27 +126,22 @@ class exhibitors_list(ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants',]
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower
-		context['exh_year'] = self.slug
 
 		return context
 
 
 """ Partners view """
-class partners_list(ListView):
+class partners_list(ExhibitionYearListMixin, ListView):
 	model = Partners
 	template_name = 'exhibition/partners_list.html'
 
 	def get_queryset(self):
 		self.slug = self.kwargs['exh_year']
-
 		if self.slug:
 			q = Q(partners_for_exh__slug=self.slug)
 		else:
 			last_year = Exhibitions.objects.values_list('slug', flat=True).first()
-			# Only not in last year
-			q = ~Q(partners_for_exh__slug=last_year)
+			q = ~Q(partners_for_exh__slug=last_year) # Only not in last year
 
 		posts = self.model.objects.prefetch_related('partners_for_exh').filter(q)
 
@@ -146,22 +150,18 @@ class partners_list(ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants', 'partners',]
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower
-		context['exh_year'] = self.slug
 
 		return context
 
 
 
 """ Jury view """
-class jury_list(ListView):
+class jury_list(ExhibitionYearListMixin, ListView):
 	model = Jury
 	template_name = 'exhibition/persons_list.html'
 
 	def get_queryset(self):
 		self.slug = self.kwargs['exh_year']
-
 		if self.slug:
 			posts = self.model.objects.prefetch_related('jury_for_exh').filter(jury_for_exh__slug=self.slug)
 		else:
@@ -172,13 +172,55 @@ class jury_list(ListView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-
 		context['html_classes'] = ['participants', 'jury',]
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower
-		context['exh_year'] = self.slug
 
 		return context
+
+
+
+""" Events view """
+class events_list(ExhibitionYearListMixin,ListView):
+	model = Events
+	template_name = 'exhibition/participants_list.html'
+
+	def get_queryset(self):
+		self.slug = self.kwargs['exh_year']
+		if self.slug:
+			posts = self.model.objects.filter(exhibition__slug=self.slug).order_by('title')
+		else:
+			posts = self.model.objects.all().order_by('-exhibition__slug','title')
+
+		return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['events',]
+
+		return context
+
+
+
+""" Winners view """
+class winners_list(ExhibitionYearListMixin, ListView):
+	model = Winners
+	template_name = 'exhibition/participants_list.html'
+
+	def get_queryset(self):
+		self.slug = self.kwargs['exh_year']
+
+		if self.slug:
+			posts = self.model.objects.filter(exhibition__slug=self.slug).values('exhibitor__name', 'exhibitor__slug')
+		else:
+			posts = self.model.objects.values('exhibitor__name', 'exhibitor__slug').distinct() #.annotate(exhibitors_count=Count('exhibitor_id'))
+
+		return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['participants','winners']
+
+		return context
+
 
 
 """ Exhibitons view """
@@ -193,10 +235,11 @@ class exhibitions_list(ListView):
 		return context
 
 
-""" Nominations view """
-class nominations_list(ListView):
+
+""" Categories (Union Nominations) view """
+class category_list(ListView):
 	model = Categories
-	template_name = 'exhibition/nominations_list.html'
+	template_name = 'exhibition/category_list.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -207,30 +250,6 @@ class nominations_list(ListView):
 
 		return context
 
-
-""" Events view """
-class events_list(ListView):
-	model = Events
-	template_name = 'exhibition/participants_list.html'
-
-	def get_queryset(self):
-		self.slug = self.kwargs['exh_year']
-
-		if self.slug:
-			posts = self.model.objects.filter(exhibition__slug=self.slug).order_by('title')
-		else:
-			posts = self.model.objects.all().order_by('-exhibition__slug','title')
-
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['events',]
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower
-		context['exh_year'] = self.slug
-
-		return context
 
 
 """ Projects view """
@@ -346,32 +365,6 @@ class projects_list(ListView):
 
 
 
-""" Winners view """
-class winners_list(ListView):
-	model = Winners
-	template_name = 'exhibition/participants_list.html'
-
-	def get_queryset(self):
-		self.slug = self.kwargs['exh_year']
-
-		if self.slug:
-			posts = self.model.objects.filter(exhibition__slug=self.slug).values('exhibitor__name', 'exhibitor__slug')
-		else:
-			posts = self.model.objects.values('exhibitor__name', 'exhibitor__slug').distinct() #.annotate(exhibitors_count=Count('exhibitor_id'))
-
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['participants','winners']
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower
-		context['exh_year'] = self.slug
-
-		return context
-
-
-
 """ Exhibitors detail """
 class exhibitor_detail(DetailView):
 	model = Exhibitors
@@ -394,7 +387,7 @@ class exhibitor_detail(DetailView):
 		context['object_list'] = portfolio
 		context['winners_list'] = win_list
 		context['article_list'] = Article.objects.filter(owner=self.object.user).only('title').order_by('title') if self.object.user else None
-		context['parent_link'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower
 		context['cache_timeout'] = 86400
 		return context
 
@@ -407,7 +400,7 @@ class jury_detail(DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'jury']
-		context['parent_link'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower
 		context['cache_timeout'] = 86400
 		return context
 
@@ -420,7 +413,7 @@ class partner_detail(DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'partner']
-		context['parent_link'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower
 		context['cache_timeout'] = 86400
 		return context
 
@@ -433,13 +426,14 @@ class event_detail(DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['event']
-		context['parent_link'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower
 		return context
 
 
 """ Exhibitions detail """
 class exhibition_detail(DetailView):
 	model = Exhibitions
+
 	def get_object(self, queryset=None):
 		slug = self.kwargs['exh_year']
 		try:
@@ -529,7 +523,7 @@ class winner_project_detail(DetailView):
 		context['portfolio'] = portfolio
 		context['exhibitors'] = self.exhibitors
 		context['nomination'] = self.nomination
-		context['parent_link'] = '/exhibition/%s/' % self.exh_year
+		context['model_name'] = '/exhibition/%s/' % self.exh_year
 		context['exh_year'] = self.exh_year
 		context['nomination_slug'] = self.nom_slug
 
@@ -583,13 +577,13 @@ class project_detail(DetailView):
 		context['owner'] = self.owner
 		context['project_id'] = self.project
 
-		context['parent_link'] = self.request.META.get('HTTP_REFERER')
-		if context['parent_link'] == None:
+		context['model_name'] = self.request.META.get('HTTP_REFERER')
+		if context['model_name'] == None:
 			q = self.object.nominations.filter(category__slug__isnull=False).first()
 			if q and self.object:
-				context['parent_link'] = '/category/%s/' % q.category.slug
+				context['model_name'] = '/category/%s/' % q.category.slug
 			else:
-				context['parent_link'] = '/category/'
+				context['model_name'] = '/category/'
 
 		score = Rating.calculate(self.object)
 		rate = score.average
@@ -605,6 +599,7 @@ class project_detail(DetailView):
 		context['cache_timeout'] = 86400
 
 		return context
+
 
 
 """ Watson model's search """

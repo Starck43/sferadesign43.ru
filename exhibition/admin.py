@@ -14,6 +14,7 @@ from sorl.thumbnail.admin import AdminImageMixin
 # Exhibitors, Jury, Partners, Events, Nominations, Exhibitions, Portfolio, Image
 from crm import models
 from .models import *
+from blog.models import Article
 from .forms import ExhibitionsForm, ImagesUploadForm, CustomClearableFileInput
 from .logic import UploadFilename, ImageResize, delete_cached_fragment, SendEmailAsync
 from rating.admin import RatingInline, ReviewInline
@@ -76,7 +77,7 @@ class PersonAdmin(admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('person-block',),
-			'fields': ( ('user', 'logo', ), 'name', 'slug', 'description', 'sort', )
+			'fields': ( 'user', ( 'logo', ), 'name', 'slug', 'description', 'sort', )
 		}),
 	)
 	prepopulated_fields = {"slug": ('name',)} # adding name to slug field
@@ -84,6 +85,15 @@ class PersonAdmin(admin.ModelAdmin):
 	search_fields = ('name', 'slug', 'description',)
 	list_display_links = ('logo_thumb', 'name',)
 	list_per_page = 20
+
+	def save_model(self, request, obj, form, change):
+		if change and obj.user:
+			articles = Article.objects.filter(owner=obj.user)
+			for article in articles:
+				delete_cached_fragment('article', article.id)
+		delete_cached_fragment('articles')
+		super().save_model(request, obj, form, change)
+
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -139,12 +149,7 @@ class JuryAdmin(PersonAdmin, admin.ModelAdmin):
 
 
 class OrganizerAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
-	fieldsets = (
-		(None, {
-			'classes': ('user-block',),
-			'fields': ('logo', 'user', 'name', 'slug', 'description', 'sort',),
-		}),
-	) + ProfileAdmin.fieldsets
+	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'description_html',)
 	list_display_links = ('logo_thumb', 'name', )
 	ordering = ('sort',)
@@ -161,12 +166,7 @@ class OrganizerAdmin(PersonAdmin, ProfileAdmin, admin.ModelAdmin):
 
 
 class PartnersAdmin(PersonAdmin, ProfileAdmin):
-	fieldsets = (
-		(None, {
-			'classes': ('person-block',),
-			'fields': ('logo', 'name', 'slug', 'description',)
-		}),
-	) + ProfileAdmin.fieldsets
+	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'name', 'phone',)
 	list_display_links = ('logo_thumb', 'name', 'phone',)
@@ -339,6 +339,7 @@ class PortfolioAdmin(admin.ModelAdmin):
 		return ', '.join(obj.nominations.values_list('title', flat=True))
 	nominations_list.short_description = 'Номинации'
 	nominations_list.admin_order_field = 'nominations__title'
+
 
 	# def category(self, obj):
 	# 	categories = obj.nominations.filter(category__isnull=False).values_list('category__title', flat=True)

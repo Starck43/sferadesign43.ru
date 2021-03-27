@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ block.super }} - Контакты{% endblock %}
+{% block title %}{{ block.super }} | Контакты{% endblock %}
 
-{% block header %}<h1>Обратная связь</h1>{% endblock header %}
+{% block page_title %}Обратная связь{% endblock page_title %}
 
-{% block content %}
-	{% include "contacts/feedback.html" %}
-{% endblock %}
+{% block content %}{% include "contacts/feedback.html" %}{% endblock content %}
