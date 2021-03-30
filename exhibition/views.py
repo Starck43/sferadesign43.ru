@@ -42,6 +42,7 @@ from .models import *
 
 from rating.models import Rating, Reviews
 from blog.models import Article
+from ads.models import Banner
 
 from .forms import ImagesUploadForm, FeedbackForm, UsersListForm, DeactivateUserForm
 from rating.forms import RatingForm
@@ -105,8 +106,18 @@ class ExhibitionYearListMixin:
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower
+		context['absolute_url'] = self.model.__name__.lower()
 		context['exh_year'] = self.slug
+		return context
+
+class BannersMixin:
+	def get_context_data(self, **kwargs):
+		banners = Banner.get_banners(self)
+		context = super().get_context_data(**kwargs)
+		context['ads_banners'] = list(banners)
+		if banners and banners[0].is_general:
+			context['general_banner'] = banners[0]
+			del context['ads_banners'][0]
 		return context
 
 
@@ -179,7 +190,7 @@ class jury_list(ExhibitionYearListMixin, ListView):
 
 
 """ Events view """
-class events_list(ExhibitionYearListMixin,ListView):
+class events_list(ExhibitionYearListMixin, ListView):
 	model = Events
 	template_name = 'exhibition/participants_list.html'
 
@@ -224,7 +235,7 @@ class winners_list(ExhibitionYearListMixin, ListView):
 
 
 """ Exhibitons view """
-class exhibitions_list(ListView):
+class exhibitions_list(BannersMixin, ListView):
 	model = Exhibitions
 
 	def get_context_data(self, **kwargs):
@@ -237,7 +248,7 @@ class exhibitions_list(ListView):
 
 
 """ Categories (Union Nominations) view """
-class category_list(ListView):
+class category_list(BannersMixin, ListView):
 	model = Categories
 	template_name = 'exhibition/category_list.html'
 
@@ -247,13 +258,12 @@ class category_list(ListView):
 		context['absolute_url'] = 'category'
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['cache_timeout'] = 2592000
-
 		return context
 
 
 
 """ Projects view """
-class projects_list(ListView):
+class projects_list(BannersMixin, ListView):
 	model = Portfolio
 	template_name = 'exhibition/projects_list.html'
 	PAGE_SIZE = getattr(settings, 'PORTFOLIO_COUNT_PER_PAGE', 20) # Количество выводимых записей на странице
@@ -387,51 +397,51 @@ class exhibitor_detail(DetailView):
 		context['object_list'] = portfolio
 		context['winners_list'] = win_list
 		context['article_list'] = Article.objects.filter(owner=self.object.user).only('title').order_by('title') if self.object.user else None
-		context['model_name'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 86400
 		return context
 
 
 """ Jury detail """
-class jury_detail(DetailView):
+class jury_detail(BannersMixin, DetailView):
 	model = Jury
 	template_name = 'exhibition/participant_detail.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'jury']
-		context['model_name'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 86400
 		return context
 
 
 """ Partners detail """
-class partner_detail(DetailView):
+class partner_detail(BannersMixin, DetailView):
 	model = Partners
 	template_name = 'exhibition/participant_detail.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant', 'partner']
-		context['model_name'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 86400
 		return context
 
 
 """ Event detail """
-class event_detail(DetailView):
+class event_detail(BannersMixin, DetailView):
 	model = Events
 	template_name = 'exhibition/event_detail.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['event']
-		context['model_name'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower()
 		return context
 
 
 """ Exhibitions detail """
-class exhibition_detail(DetailView):
+class exhibition_detail(BannersMixin, DetailView):
 	model = Exhibitions
 
 	def get_object(self, queryset=None):
@@ -474,13 +484,13 @@ class exhibition_detail(DetailView):
 		context['last_exh'] = self.model.objects.only('slug')[:1].first().slug
 		context['exh_year'] = self.kwargs['exh_year']
 		context['today'] = now().date()
-		context['model_name'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 2592000
 		return context
 
 
 """ Winner project detail """
-class winner_project_detail(DetailView):
+class winner_project_detail(BannersMixin, DetailView):
 	model = Winners
 	template_name = 'exhibition/nominations_detail.html'
 	#slug_url_kwarg = 'name'
@@ -517,7 +527,7 @@ class winner_project_detail(DetailView):
 					owner=self.object.exhibitor
 				)
 		except (Portfolio.DoesNotExist, Portfolio.MultipleObjectsReturned):
-			portfolio = None
+			pass
 
 		context['html_classes'] = ['project']
 		context['portfolio'] = portfolio
@@ -527,11 +537,10 @@ class winner_project_detail(DetailView):
 		context['exh_year'] = self.exh_year
 		context['nomination_slug'] = self.nom_slug
 
+		rate = 0
 		if portfolio:
 			score = Rating.calculate(portfolio)
 			rate = score.average
-		else:
-			rate = 0
 
 		if self.request.user.is_authenticated:
 			context['user_score'] = Rating.objects.filter(portfolio=portfolio, user=self.request.user).values_list('star',flat=True).first()
@@ -595,7 +604,7 @@ class project_detail(DetailView):
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
-		context['model_name'] = self.model.__name__.lower
+		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 86400
 
 		return context

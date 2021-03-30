@@ -15,8 +15,9 @@ from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
+from django.utils.html import format_html
 
-#from sorl.thumbnail import get_thumbnail, delete
+from sorl.thumbnail import get_thumbnail
 
 from django.contrib.auth.models import Group #,User
 
@@ -24,6 +25,16 @@ from django.contrib.auth.models import Group #,User
 DEFAULT_SIZE = getattr(settings, 'DJANGORESIZED_DEFAULT_SIZE', [1500, 1024])
 DEFAULT_QUALITY = getattr(settings, 'DJANGORESIZED_DEFAULT_QUALITY', 85)
 DEFAULT_KEEP_META = getattr(settings, 'DJANGORESIZED_DEFAULT_KEEP_META', False)
+
+
+def get_image_html(obj):
+	#if path.isfile(os.path.join(settings.MEDIA_ROOT,obj.name)):
+	if obj and path.isfile(path.join(settings.MEDIA_ROOT,obj.name)):
+		size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
+		thumb = get_thumbnail(obj.name, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
+		return format_html('<img src="{0}" width="50"/>', thumb.url)
+	else:
+		return format_html('<img src="/media/no-image.png" width="50"/>')
 
 
 

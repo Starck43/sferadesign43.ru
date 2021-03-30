@@ -22,11 +22,22 @@
 {% endblock svg_icons %}
 
 
-{% block site_header %}<a href="#" class="sidebar-show-link d-lg-none">фильтры</a>{% endblock site_header %}
+{% block site_header %}
+
+	{% if general_banner %}
+	{% with general_banner as banner %}
+		{% include "ads/banner_horizontal.html" %}
+	{% endwith %}
+	{% endif %}
+
+	<a href="#" class="sidebar-show-link d-lg-none">фильтры</a>
+
+{% endblock site_header %}
 
 
 {% block page_title %}{% if object_list %}{{ category_title }}{% else %}Категория пустая!{% endif %}{% endblock page_title %}
 
+{% block sidebar_secondary %}{% endblock sidebar_secondary %}
 
 {% block sidebar %}
 
@@ -56,6 +67,8 @@
 		</form>
 	</div>
 	{% endif %}
+
+	{% include "ads/sidebar_banners_list.html" %}
 
 	{% endcache %}
 

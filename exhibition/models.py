@@ -3,7 +3,6 @@ from os import path, rename, rmdir, listdir
 from django.conf import settings
 from django.core.validators import RegexValidator
 #from django.utils.text import slugify
-from django.utils.html import format_html
 from django.urls import reverse # Used to generate URLs by reversing the URL patterns
 from django.db import models
 from django.contrib.auth.models import User, UserManager
@@ -16,28 +15,18 @@ from django.db.models.signals import post_init, post_save
 from django.dispatch import receiver
 
 from crm import models
-from .logic import ImageResize, UploadFilename, GalleryUploadTo, MediaFileStorage, update_google_sitemap
+from .logic import get_image_html, ImageResize, UploadFilename, GalleryUploadTo, MediaFileStorage, update_google_sitemap
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 #from django.core.files.base import ContentFile
-from sorl.thumbnail import get_thumbnail, delete
+from sorl.thumbnail import delete
 from uuslug import uuslug
 from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField, GroupedForeignKey
 
 
 logo_folder = 'logos/'
 banner_folder = 'banners/'
-
-
-def get_image_html(obj):
-	#if path.isfile(os.path.join(settings.MEDIA_ROOT,obj.name)):
-	if obj and path.isfile(path.join(settings.MEDIA_ROOT,obj.name)):
-		size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
-		thumb = get_thumbnail(obj.name, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
-		return format_html('<img src="{0}" width="50"/>', thumb.url)
-	else:
-		return format_html('<img src="/media/no-image.png" width="50"/>')
 
 
 """Abstract model for Exhibitors, Organizer, Jury, Partners"""

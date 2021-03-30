@@ -7,14 +7,15 @@ from django.views.generic.list import ListView #, MultipleObjectMixin
 from django.views.generic.detail import DetailView
 
 from django.contrib.auth.models import User
-from django.db.models import Count #, F, Q , OuterRef, Subquery, Prefetch
+from django.db.models import Count, F, Q #, OuterRef, Subquery, Prefetch
 # from django.db.models.expressions import F, Value
 #from django.db.models.functions import Coalesce
 
 from .models import Category, Article
+from ads.models import Banner
+from exhibition.views import BannersMixin
 
-
-class article_list(ListView):
+class article_list(BannersMixin, ListView):
 	model = Article
 	template_name = 'blog/article_list.html'
 
@@ -67,6 +68,7 @@ class article_list(ListView):
 
 
 	def get_context_data(self, **kwargs):
+
 		attrs = Category.objects.prefetch_related('article_set').annotate(count=Count('article')).filter(count__gt=0).values('id','name','count')
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['articles',]
@@ -78,7 +80,7 @@ class article_list(ListView):
 
 
 
-class article_detail(DetailView):
+class article_detail(BannersMixin, DetailView):
 	model = Article
 
 	def get_context_data(self, **kwargs):

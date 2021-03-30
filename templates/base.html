@@ -101,10 +101,8 @@
 
 	<div id="site-header">
 		{# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
-		<a id="branding" class="loading" href="/">
-			<div class="brand-logo ratio ratio-1x1">
-				<img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
-			</div>
+		<a id="branding" class="brand-logo ratio ratio-1x1 loading" href="/">
+			<img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
 		</a>
 		{% block site_header %}{% endblock site_header %}
 	</div>

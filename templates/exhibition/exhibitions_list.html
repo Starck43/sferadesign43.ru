@@ -5,7 +5,22 @@
 
 {% block title %}{{ block.super }} {{separator}} {{page_title}}{% endblock %}
 
+
+{% block site_header %}
+
+	{% if general_banner %}
+	{% with general_banner as banner %}
+		{% include "ads/banner_horizontal.html" %}
+	{% endwith %}
+	{% endif %}
+
+{% endblock site_header %}
+
+
 {% block page_title %}{{ page_title }}{% endblock page_title %}
+
+{% block sidebar %}{% include "ads/sidebar_banners_list.html" %}{% endblock sidebar %}
+
 
 
 {% block content %}

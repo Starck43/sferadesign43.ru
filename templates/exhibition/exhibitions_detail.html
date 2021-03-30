@@ -73,7 +73,6 @@ var is_mobile = false;
 {% endblock site_header %}
 
 
-
 {% block page_title %}
 {{ object.title }}
 
@@ -83,6 +82,8 @@ var is_mobile = false;
 
 {% endblock page_title %}
 
+
+{% block sidebar %}{% include "ads/sidebar_banners_list.html" %}{% endblock sidebar %}
 
 
 {% block content %}
@@ -98,6 +99,14 @@ var is_mobile = false;
 				<div>Адрес площадки: <span>{{ object.location }}</span></div>
 			</div>
 		</div>
+
+
+		{% if general_banner %}
+		{% with general_banner as banner %}
+		<div class="ads-block">{% include "ads/banner_horizontal.html" %}</div>
+		{% endwith %}
+		{% endif %}
+
 
 		{% if nominations_list %}
 

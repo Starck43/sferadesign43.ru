@@ -36,24 +36,26 @@
 		width: 100%
 		padding: $container-margin-sm
 
+	.ads-banner
+		height: auto
+		margin-bottom: 2vw
 
 	+media-breakpoint-up(lg)
 		max-width: $col-width-lg
 		flex: auto
 		&.right-side
 			width: 100%
-
-		.sidebar-inner
-			padding: 0 $container-margin 0 0
+			padding-left: $container-margin-lg
+		&.left-side
+			padding-right: $container-margin-lg
 
 	+media-breakpoint-up(xl)
 		max-width: $col-width-xl
-		.sidebar-inner
-			padding: 0 $container-margin-lg 0 0
 
 	+media-breakpoint-up(xxl)
 		max-width: $col-width-xxl
 		flex: 100%
+
 		.sidebar-inner
 			max-width: $col-max_w
 

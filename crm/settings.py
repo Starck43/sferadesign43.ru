@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'exhibition',
     'rating',
     'blog',
+    'ads',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
