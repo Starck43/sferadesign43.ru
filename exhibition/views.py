@@ -17,6 +17,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 #from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
+#from django.views.generic import View
+from django.views import View
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg
@@ -34,25 +36,27 @@ from allauth.socialaccount.signals import social_account_removed
 from sorl.thumbnail import get_thumbnail
 from watson import search as watson
 from watson.views import SearchMixin
-#from django.views.generic import View
-from django.views import View
 
 from django import forms
 from .models import *
 
 from rating.models import Rating, Reviews
 from blog.models import Article
-from ads.models import Banner
 
-from .forms import ImagesUploadForm, FeedbackForm, UsersListForm, DeactivateUserForm
+from .forms import PortfolioForm, FeedbackForm, UsersListForm, DeactivateUserForm
 from rating.forms import RatingForm
 from .logic import SendEmail, SetUserGroup
+from .mixins import ExhibitionYearListMixin,  BannersMixin, MetaMixin
 
-#from itertools import groupby
 from collections import defaultdict
+
 
 def success_message(request):
 	return HttpResponse('<h1>Сообщение отправлено!</h1><p>Спасибо за обращение</p>')
+
+""" Policy page """
+def registration_policy(request):
+	return render(request, 'policy.html')
 
 
 """ Main page """
@@ -61,20 +65,7 @@ def index(request):
 		'html_classes': ['home'],
 		'organizers': Organizer.objects.all().only('logo','name','description').order_by('sort','name'),
 	}
-	url_name = request.resolver_match.url_name
-	try:
-		meta = MetaSEO.objects.get(page=url_name)
-	except MetaSEO.DoesNotExist:
-		meta = None
-
-	context['meta'] = meta
-
 	return render(request, 'index.html', context)
-
-
-""" Main page """
-def registration_policy(request):
-	return render(request, 'policy.html')
 
 
 """ Send email on Contacts page """
@@ -101,28 +92,8 @@ def contacts(request):
 	return render(request, 'contacts.html', context)
 
 
-
-class ExhibitionYearListMixin:
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['page_title'] = self.model._meta.verbose_name_plural
-		context['absolute_url'] = self.model.__name__.lower()
-		context['exh_year'] = self.slug
-		return context
-
-class BannersMixin:
-	def get_context_data(self, **kwargs):
-		banners = Banner.get_banners(self)
-		context = super().get_context_data(**kwargs)
-		context['ads_banners'] = list(banners)
-		if banners and banners[0].is_general:
-			context['general_banner'] = banners[0]
-			del context['ads_banners'][0]
-		return context
-
-
 """ Exhibitors view """
-class exhibitors_list(ExhibitionYearListMixin, ListView):
+class exhibitors_list(MetaMixin, ExhibitionYearListMixin, ListView):
 	model = Exhibitors
 	template_name = 'exhibition/participants_list.html'
 
@@ -137,12 +108,11 @@ class exhibitors_list(ExhibitionYearListMixin, ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants',]
-
 		return context
 
 
 """ Partners view """
-class partners_list(ExhibitionYearListMixin, ListView):
+class partners_list(MetaMixin, ExhibitionYearListMixin, ListView):
 	model = Partners
 	template_name = 'exhibition/partners_list.html'
 
@@ -167,7 +137,7 @@ class partners_list(ExhibitionYearListMixin, ListView):
 
 
 """ Jury view """
-class jury_list(ExhibitionYearListMixin, ListView):
+class jury_list(MetaMixin, ExhibitionYearListMixin, ListView):
 	model = Jury
 	template_name = 'exhibition/persons_list.html'
 
@@ -190,7 +160,7 @@ class jury_list(ExhibitionYearListMixin, ListView):
 
 
 """ Events view """
-class events_list(ExhibitionYearListMixin, ListView):
+class events_list(MetaMixin, ExhibitionYearListMixin, ListView):
 	model = Events
 	template_name = 'exhibition/participants_list.html'
 
@@ -212,7 +182,7 @@ class events_list(ExhibitionYearListMixin, ListView):
 
 
 """ Winners view """
-class winners_list(ExhibitionYearListMixin, ListView):
+class winners_list(MetaMixin, ExhibitionYearListMixin, ListView):
 	model = Winners
 	template_name = 'exhibition/participants_list.html'
 
@@ -235,7 +205,7 @@ class winners_list(ExhibitionYearListMixin, ListView):
 
 
 """ Exhibitons view """
-class exhibitions_list(BannersMixin, ListView):
+class exhibitions_list(MetaMixin, BannersMixin, ListView):
 	model = Exhibitions
 
 	def get_context_data(self, **kwargs):
@@ -248,7 +218,7 @@ class exhibitions_list(BannersMixin, ListView):
 
 
 """ Categories (Union Nominations) view """
-class category_list(BannersMixin, ListView):
+class category_list(MetaMixin, BannersMixin, ListView):
 	model = Categories
 	template_name = 'exhibition/category_list.html'
 
@@ -263,13 +233,19 @@ class category_list(BannersMixin, ListView):
 
 
 """ Projects view """
-class projects_list(BannersMixin, ListView):
-	model = Portfolio
+class projects_list(MetaMixin, BannersMixin, ListView):
+	model = Categories
 	template_name = 'exhibition/projects_list.html'
 	PAGE_SIZE = getattr(settings, 'PORTFOLIO_COUNT_PER_PAGE', 20) # Количество выводимых записей на странице
 
+	# использовано для миксина MetaMixin, где проверяется self.object
+	def setup(self, request, *args, **kwargs):
+		super().setup(request, *args, **kwargs)
+		self.slug = kwargs['slug']
+		self.object = self.model.objects.get(slug=self.slug)
+
+
 	def get_queryset(self):
-		self.slug = self.kwargs['slug']
 
 		# self.page - текущая страница для получения диапазона выборки записей,  (см. функцию get ниже )
 		self.page = int(self.page) if self.page else 1
@@ -278,8 +254,6 @@ class projects_list(BannersMixin, ListView):
 		end_page = self.page*self.PAGE_SIZE # конец диапазона
 
 		query = Q(nominations__category__slug=self.slug)
-		#nominations_list = Nominations.objects.filter(category__slug=self.slug).values_list('id',flat=True)
-		#nominations_query = Q(nominations__in=list(nominations_list))
 
 		# Если выбраны опции фильтра, то найдем все номинации в текущей категории "self.slug"
 		if self.filters_group and self.filters_group[0] != '0':
@@ -291,7 +265,7 @@ class projects_list(BannersMixin, ListView):
 			nomination__category__slug=self.slug
 		).values('exhibition__slug')[:1]) # Подзапрос для получения статуса победителя
 
-		posts = self.model.objects.filter(
+		posts = Portfolio.objects.filter(
 			query &
 			Q(project_id__isnull=False)
 		).distinct().prefetch_related('rated_portfolio').annotate(
@@ -329,13 +303,12 @@ class projects_list(BannersMixin, ListView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['projects',]
 		context['absolute_url'] = self.slug
-		context['category_title'] = Categories.objects.get(slug=self.slug)
+		context['category_title'] = self.object
 		context['next_page'] = self.is_next_page
 		context['filter_attributes'] = list(filter_attributes.values())
 		context['cache_timeout'] = 86400 # one day
-
-		#context['nominations'] = self.nominations
 		return context
+
 
 	def get(self, request, *args, **kwargs):
 		self.page = self.request.GET.get('page', None) # Параметр GET запроса ?page текущей страницы
@@ -376,21 +349,24 @@ class projects_list(BannersMixin, ListView):
 
 
 """ Exhibitors detail """
-class exhibitor_detail(DetailView):
+class exhibitor_detail(MetaMixin, DetailView):
 	model = Exhibitors
 	template_name = 'exhibition/participant_detail.html'
 
 	def get_context_data(self, **kwargs):
 		slug = self.kwargs['slug']
+
 		portfolio = Portfolio.objects.filter(owner__slug=slug).annotate(
 			exh_year=F('exhibition__slug'),
 			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')[:1]),
 			cover=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])
 		).order_by('-exh_year')
+
 		win_list = Nominations.objects.prefetch_related('nomination_for_winner').filter(
 			nomination_for_winner__exhibitor__slug=slug).annotate(
 			exh_year=F('nomination_for_winner__exhibition__slug')
 		).values('title', 'slug', 'exh_year').order_by('-exh_year')
+
 		#articles = Article.objects.filter()
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant']
@@ -403,9 +379,9 @@ class exhibitor_detail(DetailView):
 
 
 """ Jury detail """
-class jury_detail(BannersMixin, DetailView):
+class jury_detail(MetaMixin, BannersMixin, DetailView):
 	model = Jury
-	template_name = 'exhibition/participant_detail.html'
+	template_name = 'exhibition/jury_detail.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -416,9 +392,9 @@ class jury_detail(BannersMixin, DetailView):
 
 
 """ Partners detail """
-class partner_detail(BannersMixin, DetailView):
+class partner_detail(MetaMixin, BannersMixin, DetailView):
 	model = Partners
-	template_name = 'exhibition/participant_detail.html'
+	template_name = 'exhibition/partner_detail.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -429,7 +405,7 @@ class partner_detail(BannersMixin, DetailView):
 
 
 """ Event detail """
-class event_detail(BannersMixin, DetailView):
+class event_detail(MetaMixin, BannersMixin, DetailView):
 	model = Events
 	template_name = 'exhibition/event_detail.html'
 
@@ -437,15 +413,17 @@ class event_detail(BannersMixin, DetailView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['event']
 		context['model_name'] = self.model.__name__.lower()
+		context['exh_year'] = self.kwargs['exh_year']
 		return context
 
 
 """ Exhibitions detail """
-class exhibition_detail(BannersMixin, DetailView):
+class exhibition_detail(MetaMixin, BannersMixin, DetailView):
 	model = Exhibitions
 
 	def get_object(self, queryset=None):
 		slug = self.kwargs['exh_year']
+		self.kwargs['id'] = 1
 		try:
 			q = self.model.objects.prefetch_related('events','gallery').get(slug=slug)
 		except self.model.DoesNotExist:
@@ -490,7 +468,7 @@ class exhibition_detail(BannersMixin, DetailView):
 
 
 """ Winner project detail """
-class winner_project_detail(BannersMixin, DetailView):
+class winner_project_detail(MetaMixin, BannersMixin, DetailView):
 	model = Winners
 	template_name = 'exhibition/nominations_detail.html'
 	#slug_url_kwarg = 'name'
@@ -500,11 +478,11 @@ class winner_project_detail(BannersMixin, DetailView):
 		self.nom_slug = self.kwargs['slug']
 		self.exh_year = self.kwargs['exh_year']
 
-		q = self.model.objects.filter(exhibition__slug=self.exh_year,nomination__slug=self.nom_slug)[0]
-		if q:
+		qs = self.model.objects.filter(exhibition__slug=self.exh_year,nomination__slug=self.nom_slug)[0]
+		if qs:
 			self.exhibitors = None
-			self.nomination = q.nomination
-			return q
+			self.nomination = qs.nomination
+			return qs
 		else:
 			self.exhibitors = Exhibitors.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.exh_year).only('name', 'slug')
 			self.nomination = Nominations.objects.only('title', 'description').get(slug=self.nom_slug)
@@ -556,7 +534,7 @@ class winner_project_detail(BannersMixin, DetailView):
 
 
 """ Project detail """
-class project_detail(DetailView):
+class project_detail(MetaMixin, DetailView):
 	model = Portfolio
 	context_object_name = 'portfolio'
 	#slug_url_kwarg = 'slug'
@@ -585,9 +563,9 @@ class project_detail(DetailView):
 		context['victories'] = Winners.objects.filter(portfolio=self.object.id, exhibitor__slug=self.owner)
 		context['owner'] = self.owner
 		context['project_id'] = self.project
+		#context['model_name'] = self.model.__name__.lower()
 
-		context['model_name'] = self.request.META.get('HTTP_REFERER')
-		if context['model_name'] == None:
+		if self.request.META.get('HTTP_REFERER') == None:
 			q = self.object.nominations.filter(category__slug__isnull=False).first()
 			if q and self.object:
 				context['model_name'] = '/category/%s/' % q.category.slug
@@ -604,7 +582,6 @@ class project_detail(DetailView):
 		context['average_rate'] = round(rate, 2)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
-		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 86400
 
 		return context
@@ -634,7 +611,7 @@ def portfolio_upload(request):
 		pass
 
 	if request.method == 'POST':
-		form = ImagesUploadForm(request.POST, request.FILES)
+		form = PortfolioForm(request.POST, request.FILES)
 
 		if form.is_valid():
 			obj = form.save(commit=False)
@@ -647,10 +624,10 @@ def portfolio_upload(request):
 			return render(request, 'success_upload.html', { 'portfolio': obj, 'files': request.FILES.getlist('files') })
 	else:
 		if not request.user.is_staff:
-			form = ImagesUploadForm(user=request.user, initial={'owner': exhibitor})
+			form = PortfolioForm(user=request.user, initial={'owner': exhibitor})
 			form.fields['owner'].widget = forms.TextInput()
 		else:
-			form = ImagesUploadForm(user=request.user)
+			form = PortfolioForm(user=request.user)
 
 	return render(request, 'upload.html', { 'form': form, 'exhibitor': exhibitor })
 

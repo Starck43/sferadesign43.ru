@@ -5,13 +5,12 @@ from django.utils.html import format_html, escape
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 #from django.contrib.admin.widgets import FilteredSelectMultiple
-
 from uuslug import uuslug
 
 from django.db.models import OuterRef, Subquery
 from django.db.models.expressions import F, Value
 
-from .models import Exhibitors, Exhibitions, Winners, Nominations, Portfolio, Image
+from .models import Exhibitors, Exhibitions, Winners, Nominations, Portfolio, Image, MetaSEO
 from .logic import SetUserGroup
 
 from allauth.account.forms import SignupForm
@@ -95,12 +94,28 @@ class CustomClearableFileInput(ClearableFileInput):
 	template_name = 'admin/exhibition/widgets/file_input.html'
 
 
-class ExhibitionsForm(forms.ModelForm):
+class MetaFieldsForm(forms.ModelForm):
+	meta_title = forms.CharField(label='Мета Заголовок')
+	meta_description = forms.CharField(label='Мета описание')
+	meta_keywords = forms.CharField(label='Ключевые фразы', widget=forms.TextInput(attrs={'placeholder': 'ключевые теги через запятую'}))
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		if self.meta:
+			self.fields['meta_title'].initial = self.meta.title
+			self.fields['meta_description'].initial = self.meta.description
+			self.fields['meta_keywords'].initial = self.meta.keywords
+
+
+
+class ExhibitionsForm(MetaFieldsForm, forms.ModelForm):
 	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
 
 	class Meta:
 		model = Exhibitions
 		fields = '__all__'
+		#fields = ('meta_title','meta_description','meta_keywords')
 		#exclude = ('slug',)
 		#template_name = 'django/forms/widgets/checkbox_select.html'
 
@@ -112,7 +127,8 @@ class ExhibitionsForm(forms.ModelForm):
 		}
 
 
-class ImagesUploadForm(forms.ModelForm):
+
+class PortfolioForm(MetaFieldsForm, forms.ModelForm):
 	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
 
 	class Meta:

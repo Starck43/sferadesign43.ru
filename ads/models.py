@@ -1,12 +1,13 @@
 from datetime import date
 
 from django.db import models
+from django.db.models import Q, Value, CharField
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from blog.models import Article
-from django.db.models import Q, Value, CharField
 
+from blog.models import Article
+from exhibition.models import Exhibitors, Partners
 from exhibition.logic import get_image_html, MediaFileStorage
 from sorl.thumbnail import delete
 
@@ -62,10 +63,22 @@ class Banner(models.Model):
 	def get_banners(self):
 		model_name = self.model.__name__.lower() #возьмем имя модели для отбора баннеров
 		today = date.today()
+
 		banners = Banner.objects.filter(
 			Q(pages__model=model_name) & (Q(show_start__lte=today) & Q(show_end__gte=today) | Q(is_general=True))
 		).annotate(page=Value(model_name, output_field=CharField())) # добавим значение модели как строка
 		return banners
+
+
+	def owner(self):
+		try:
+			q = Exhibitors.objects.get(user=self.user)
+		except Exhibitors.DoesNotExist:
+			try:
+				q = Partners.objects.get(user=self.user)
+			except Partners.DoesNotExist:
+				q = None
+		return q
 
 
 	def banner_thumb(self):

@@ -3,6 +3,12 @@
 {% load custom_tags %}
 {% load cache %}
 
+
+{% block meta_og_type %}article{% endblock %}
+{% block meta_og_image %}{{site_url}}{% get_media_prefix %}{{ person.logo }}{% endblock %}
+
+{% block title %}{{ block.super }} {{separator}} Статья "{{object.title}}"{% endblock %}
+
 {% block site_header %}
 
 	{% if general_banner %}

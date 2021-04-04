@@ -4,6 +4,14 @@
 {% load cache %}
 {% load thumbnail %}
 
+
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}Выставка-конкурс реализованных проектов {{ object.title }} в Кирове{% endif %}{% endblock %}
+
+{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Выставка {{ object.title }}{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}Выставка-конкурс реализованных проектов {{ object.title }} в Кирове{% endif %}{% endblock %}
+
+{% block meta_og_image %}{{site_url}}{% get_media_prefix %}{{ banner_slider.0 }}{% endblock %}
+
 {% block title %}{{ block.super }} {{separator}} {{object.title}}{% endblock %}
 
 {% block styles %}
@@ -20,10 +28,10 @@ var is_mobile = false;
 </script>
 
 {% if is_mobile %}
-<script type="text/javascript" src="{% static 'js/pinchzoom.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/pinchzoom.min.js' %}" defer></script>
 {% endif %}
 
-<script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}"></script>
+<script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}" defer></script>
 
 {% endblock script %}
 
@@ -116,7 +124,7 @@ var is_mobile = false;
 			</h2>
 			<ol>
 				{% for item in nominations_list %}
-				<li><a class="nomination-link" href="{% url 'winner-project-detail-url' exh_year item.slug %}">
+				<li><a class="nomination-link" href="{% url 'winner-detail-url' exh_year item.slug %}">
 					<h3 class="exh-title subtitle">{{ item.title }}</h3>
 					{% if item.exhibitor_name %}</a><a class="exhibitor-link" href="{% url 'exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}
 					{% endif %}

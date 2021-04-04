@@ -7,6 +7,7 @@ from django.urls import reverse # Used to generate URLs by reversing the URL pat
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 
 from django.db.models import F
 from django.db.models.functions import Coalesce
@@ -210,10 +211,10 @@ class Partners(Person, Profile):
 
 ''' Таблица Категорий '''
 class Categories(models.Model):
-	logo = models.ImageField('Логотип', upload_to=logo_folder, storage=MediaFileStorage(), null=True, blank=True)
 	title = models.CharField('Категория', max_length=150)
 	slug = models.SlugField('Ярлык', max_length=150, unique=True)
 	description = models.TextField('Описание категории', blank=True)
+	logo = models.ImageField('Логотип', upload_to=logo_folder, storage=MediaFileStorage(), null=True, blank=True)
 	sort = models.IntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
@@ -242,7 +243,7 @@ class Categories(models.Model):
 	logo_thumb.short_description = 'Логотип'
 
 	def get_absolute_url(self):
-		return reverse('nomination-detail-url', kwargs={'slug': self.slug })
+		return reverse('projects-list-url', kwargs={'slug': self.slug })
 
 
 ''' Таблица Номинаций '''
@@ -272,9 +273,9 @@ class Nominations(models.Model):
 
 	def get_absolute_url(self):
 		if self.category:
-			return reverse('nomination-detail-url', kwargs={'slug': self.category.slug })
+			return reverse('projects-list-url', kwargs={'slug': self.category.slug })
 		else:
-			return reverse('nomination-detail-url', kwargs={'slug': None })
+			return reverse('projects-list-url', kwargs={'slug': None })
 
 
 
@@ -523,7 +524,7 @@ class Winners(models.Model):
 	# Metadata
 	class Meta:
 		ordering = ['exhibitor__name']
-		verbose_name = 'Победитель'
+		verbose_name = 'Победитель выставки'
 		verbose_name_plural = 'Победители'
 		db_table = 'winners'
 		unique_together = ['exhibition', 'exhibitor', 'nomination']
@@ -534,7 +535,7 @@ class Winners(models.Model):
 
 
 	def __str__(self):
-		return '%s / Номинация: "%s"' % (self.exhibitor.name, self.nomination.title)
+		return '%s | %s, %s' % (self.exhibitor.name, self.nomination.title, self.exhibition.slug)
 
 	def exh_year(self):
 		# return only Exhibition's year from date_start
@@ -546,7 +547,7 @@ class Winners(models.Model):
 	name.short_description = 'Победитель'
 
 	def get_absolute_url(self):
-		return reverse('winner-project-detail-url', kwargs={'exh_year': self.exhibition.slug, 'slug': self.nomination.slug})
+		return reverse('winner-detail-url', kwargs={'exh_year': self.exhibition.slug, 'slug': self.nomination.slug})
 
 
 
@@ -675,34 +676,23 @@ class Image(models.Model):
 
 
 class MetaSEO(models.Model):
-	PAGES = (
-		('index', 'Главная страница'),
-		('contacts', 'Обратная связь'),
-		('exhibitors-list', 'Список участников'),
-		('exhibitor-detail', 'Профиль участника'),
-		('jury-list', 'Список жюри'),
-		('jury-detail', 'Профиль жюри'),
-		('partners-list', 'Список партнеров'),
-		('partner-detail', 'Профиль партнера'),
-		('nominations-list', 'Разделы номинаций'),
-		('nomination-detail', 'Список проектов'),
-		('exhibitions-list', 'Список выставок'),
-		('exhibition-detail', 'Выставка'),
-		('events-list', 'Мероприятия выставки'),
-		('winners-list', 'Список победителей'),
-		('winner-project-detail', 'Проект победителя'),
-		('project-detail', 'Проект участника'),
-	)
-
-	page = models.CharField('Страница', choices=PAGES, unique=True, max_length=30, help_text='Выберите страницу для SEO данных')
-	description = models.CharField('Мета описание', max_length=100, help_text='Описание в поисковой выдаче. Рекомендуется 70-80 символов')
-	keywords = models.CharField('Поисковые фразы', max_length=255, blank=True, help_text='Поисковые фразы. Указывать через запятую')
+	model = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name='Раздел')
+	post_id = models.PositiveIntegerField('Запись в разделе', null=True, blank=True)
+	title = models.CharField('Заголовок страницы', max_length=100, blank=True)
+	description = models.CharField('Мета описание', max_length=100, blank=True, help_text='Описание в поисковой выдаче. Рекомендуется 70-80 символов')
+	keywords = models.CharField('Ключевые слова', max_length=255, blank=True, help_text='Поисковые словосочетания указывать через запятую. Рекомендуется до 20 слов и не более 3-х повторов')
 
 	# Metadata
 	class Meta:
 		verbose_name = 'SEO описание'
 		verbose_name_plural = 'SEO описания'
 		db_table = 'meta'
+		unique_together = ['model', 'post_id']
+
+
+	def get_model(model):
+		return ContentType.objects.get(model=model).model_class()
 
 	def __str__(self):
-		return self.page
+		return self.title
+

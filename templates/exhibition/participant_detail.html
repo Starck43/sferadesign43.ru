@@ -5,6 +5,13 @@
 {% load thumbnail %}
 
 
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.name}} - профиль участника выставки Сфера Дизайна{% endif %}{% endblock %}
+
+{% block meta_og_type %}profile{% endblock %}
+{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Участник выставки {{object.name}}{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.name}} - профиль участника выставки Сфера Дизайна{% endif %}{% endblock %}
+{% block meta_og_image %}{{site_url}}{% get_media_prefix %}{{ object.logo }}{% endblock %}
+
 {% block title %}{{ block.super }} {{separator}} {{object.name}}{% endblock %}
 
 
@@ -79,7 +86,7 @@
 				<ol class="winners-list my-2">
 					{% for item in winners_list %}
 					<li>
-						<a href="{% url 'winner-project-detail-url' item.exh_year item.slug %}">
+						<a href="{% url 'winner-detail-url' item.exh_year item.slug %}">
 							{{ item.title }}, {{ item.exh_year }}
 						</a>
 					</li>

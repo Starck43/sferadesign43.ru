@@ -38,9 +38,7 @@ var site = {
 
 gulp.task('styles', function() { // таск 'styles' обработает все файлы *.sass, вложенные в любые подпапки
 	return gulp.src(path.src+'sass/*.+(sass|scss)')
-	// Пример: gulp.src('src/sass/*.+(sass|scss)')
-	// Пример: gulp.src(['src/sass/**/*.sass','!src/sass/libs.sass'])  ! - кроме styles.sass
-	.pipe(sourcemaps.init()) //инициализируем soucemap
+	//.pipe(sourcemaps.init()) //инициализируем soucemap
 	.pipe(sass({ outputStyle: 'expanded' })) //  Опция { outputStyle: 'expanded' } развертывает все унификации
 	/*
 		файлы с подчеркиванием не участвуют в компиляции, например, _part.sass.
@@ -52,7 +50,7 @@ gulp.task('styles', function() { // таск 'styles' обработает вс�
 	})) // Создаем префиксы
 	.pipe(combineCSS()) //Объединяем медиа запросы
 	.pipe(postcss([ cssImport ])) // Импортируем стили, прописанные через команду @import в начале файла
-	.pipe(sourcemaps.write()) //пропишем sourcemap
+	//.pipe(sourcemaps.write()) //пропишем sourcemap
 	//.pipe(concat('main.min.css')) // Объединяем все найденные файлы в один
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 	//.pipe(cleanCSS({level:2})) // Сжимаем CSS файл

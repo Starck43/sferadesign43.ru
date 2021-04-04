@@ -1,24 +1,30 @@
 #from django.views.decorators.cache import cache_page
+from django.conf import settings
+from django.urls import resolve, Resolver404
 
-from .models import Exhibitions
+from .models import Exhibitions, MetaSEO
 from .apps import ExhibitionConfig
 from .logic import IsMobile
 
-
 """ Global context processor variables """
 def common_context(request):
-	meta = {
-		'description' : "Выставка реализованных дизайн-проектов Сфера Дизайна",
-		'keywords' : "дизайнерская выставка, реализованные проекты интерьеров, лучшие интерьеры, дизайн интерьеров,сфера дизайна, современные отделочные материалы"
-	}
 	exh_list = Exhibitions.objects.all().only('slug', 'date_end')
+	meta = {
+		'title'			: "Дизайнерская выставка Сфера Дизайна",
+		'description'	: "Выставка дизайн-проектов, где представлены портфолио дизайнеров и победители в номинациях с 2008 года",
+		'keywords'		: "дизайнерская выставка, реализованные проекты интерьеров, дизайн интерьеров, сфера дизайна, портфолио дизайнеров, победители выставки"
+	}
+
+	scheme = request.is_secure() and "https" or "http"
+	site_url = '%s://%s' % (scheme, settings.ALLOWED_HOSTS[0])
 
 	context = {
 		'is_mobile'			: IsMobile(request),
 		'separator'			: '|',
 		'main_title'		: ExhibitionConfig.verbose_name,
 		'exhibitions_list'	: exh_list,
-		#'last_exh_date' : exh_list.first().date_end,
-		'meta_default'		: meta
+		'site_url'			: site_url,
+		'page_url'			: site_url + request.path_info,
+		'default_meta'		: meta,
 	}
 	return context

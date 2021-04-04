@@ -4,8 +4,14 @@
 {% load custom_tags %}
 {% load thumbnail %}
 
-{% block title %}{{ main_title }} {{exh_year}} {{separator}} Номинация "{{nomination.title}}"{% endblock %}
 
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.exhibitor.name}} - победитель дизайнерсокй выставки Сфера Дизайна {{exh_year}} в номинации "{{nomination.title}}"{% endif %}{% endblock %}
+
+{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Победитель выставки {{object.exhibitor.name}}{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.exhibitor.name}} - победитель дизайнерсокй выставки Сфера Дизайна {{exh_year}} в номинации "{{nomination.title}}"{% endif %}{% endblock %}
+{% block meta_og_image %}{% if portfolio %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block title %}{{ main_title }} {{exh_year}} {{separator}} Номинация "{{nomination.title}}"{% endblock %}
 
 {% block page_title %}
 <div class="sub-title">Номинация</div>{{ nomination.title }}

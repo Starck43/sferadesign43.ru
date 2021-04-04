@@ -7,11 +7,18 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
-	{% block meta %}
-	<meta name="description" content="{% if meta.description %}{{meta.description}}{% else %}{{meta_default.description}}{% endif %}">
-	<meta name="keywords" content="{% if meta.keywords %}{{meta.keywords}}{% else %}{{meta_default.keywords}}{% endif %}">
-	{% endblock meta %}
+	<meta name="description" content="{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
+	<meta name="keywords" content="{% block meta_keywords %}{% if meta.keywords %}{{ meta.keywords }}{% else %}{{ default_meta.keywords }}{% endif %}{% endblock %}">
 
+	<meta property="og:locale" content="ru_RU">
+	<meta property="og:url" content="{{ page_url }}">
+	<meta property="og:site_name" content="{{ main_title }}">
+	<meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
+	<meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
+	<meta property="og:image" content="{% block meta_og_image %}{{site_url}}{% get_media_prefix %}sd-logo-2.png{% endblock %}">
+	<meta property="og:description" content="{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
+
+	<link rel="canonical" href="{{ site_url }}"/>
 	<link rel="preload" href="{% static 'fonts/corbel.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/corbelb.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/calibri.woff2' %}" as="font" type="font/woff2" crossorigin>
@@ -23,8 +30,8 @@
 	<link rel="manifest" href="{% static 'favicons/site.webmanifest' %}">
 	<link rel="mask-icon" href="{% static 'favicons/safari-pinned-tab.svg' %}" color="#160d32">
 	<link rel="shortcut icon" href="{% static 'favicons/favicon.ico' %}">
-	<meta name="apple-mobile-web-app-title" content="Сфера дизайна">
-	<meta name="application-name" content="Сфера дизайна">
+	<meta name="apple-mobile-web-app-title" content="Выставка Сфера Дизайна">
+	<meta name="application-name" content="Выставка Сфера дизайна">
 	<meta name="msapplication-TileColor" content="#160d32">
 	<meta name="msapplication-TileImage" content="{% static 'favicons/mstile-144x144.png' %}">
 	<meta name="msapplication-config" content="{% static 'favicons/browserconfig.xml' %}">
@@ -32,7 +39,7 @@
 
 
 	<!-- CSS only -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 	<link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
 	{% block styles %}{% endblock %}

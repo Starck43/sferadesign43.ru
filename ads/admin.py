@@ -35,3 +35,11 @@ class BannerAdmin(admin.ModelAdmin):
 		if db_field.name == "pages":
 			kwargs["queryset"] = ContentType.objects.filter(model__in=['article', 'portfolio', 'exhibitions', 'categories', 'winners', 'exhibitors', 'partners', 'jury', 'events'])
 		return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+
+	""" заменим название модели в ContentType """
+	def get_name(self):
+		return self.model_class()._meta.verbose_name
+
+	ContentType.add_to_class("__str__", get_name)
+

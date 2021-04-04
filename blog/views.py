@@ -13,9 +13,10 @@ from django.db.models import Count, F, Q #, OuterRef, Subquery, Prefetch
 
 from .models import Category, Article
 from ads.models import Banner
-from exhibition.views import BannersMixin
+from exhibition.mixins import BannersMixin, MetaMixin
 
-class article_list(BannersMixin, ListView):
+
+class article_list(MetaMixin, BannersMixin, ListView):
 	model = Article
 	template_name = 'blog/article_list.html'
 
@@ -80,7 +81,7 @@ class article_list(BannersMixin, ListView):
 
 
 
-class article_detail(BannersMixin, DetailView):
+class article_detail(MetaMixin, BannersMixin, DetailView):
 	model = Article
 
 	def get_context_data(self, **kwargs):

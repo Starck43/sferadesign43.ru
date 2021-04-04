@@ -1,0 +1,5 @@
+{% extends 'exhibition/participant_detail.html' %}
+
+{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Член жюри выставки {{object.name}}{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.name}} - профиль члена жюри выставки Сфера Дизайна{% endif %}{% endblock %}
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.name}} - профиль члена жюри выставки Сфера Дизайна{% endif %}{% endblock %}

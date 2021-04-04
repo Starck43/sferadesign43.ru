@@ -2,7 +2,9 @@
 {% load static %}
 {% load custom_tags %}
 
-{% block title %}{{ block.super }} {{separator}} Мероприятие на выставке {{object.exhibition.slug}}{% endblock %}
+{% block meta_og_type %}article{% endblock %}
+
+{% block title %}{{ block.super }} {{separator}} Мероприятие "{{ object.title }}"{% endblock %}
 
 {% block site_header %}
 <a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}/{{model_name}}/{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}">
@@ -16,7 +18,7 @@
 {% block content %}
 
 	<div class="event-details">
-		<p><b>Выставка: </b>{{object.exhibition.slug}}</p>
+		<p><b>Выставка: </b>{{exh_year}}</p>
 		<p><b>Дата мероприятия: </b>{{ object.date_event }}</p>
 		<p><b>Время мероприятия: </b>{{ object.time_event }}</p>
 		<p><b>Площадка: </b>{{ object.location }}</p>

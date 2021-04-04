@@ -46,7 +46,7 @@
 	{% if filter_attributes %}
 	<div id="projectsFilter" class="sidebar-inner">
 		<h3 class="sidebar-title d-lg-none">фильтры</h3>
-		<form class="filters-block {{absolute_url}}-filters" action="{% url 'nomination-detail-url' absolute_url %}" method="get" name="projects-filter">
+		<form class="filters-block {{absolute_url}}-filters" action="{% url 'projects-list-url' absolute_url %}" method="get" name="projects-filter">
 
 			{% for atttribute in filter_attributes %}
 			<div class="filter-attributes-block">
@@ -132,7 +132,7 @@
 
 			{% endfor %}
 
-			<a id="preloader" class="centered fade {% if next_page %}show{% endif %}" href="{% url 'nomination-detail-url' absolute_url %}">
+			<a id="preloader" class="centered fade {% if next_page %}show{% endif %}" href="{% url 'projects-list-url' absolute_url %}">
 				<div class="dot"></div>
 				<div class="dot"></div>
 				<div class="dot"></div>

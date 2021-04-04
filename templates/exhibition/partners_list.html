@@ -38,7 +38,7 @@
 		{% if exhibitions_list.first.slug != exh_year %}
 		<ol class="persons__list">
 			{% for person in object_list %}
-			<li><a href="{{ person.get_absolute_url }}"><h3>{{ person }}</h3></li></a>
+			<li><h3>{{ person }}</h3></li>
 			{% endfor %}
 		</ol>
 		{% endif %}

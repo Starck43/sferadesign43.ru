@@ -4,7 +4,9 @@
 {% load cache %}
 {% load thumbnail %}
 
-{% block title %}{{ block.super }} {{separator}} {{ category_title }}{% endblock %}
+{% block meta_og_type %}article{% endblock %}
+
+{% block title %}{{ block.super }} {{separator}} Статьи по ремонту{% endblock %}
 
 
 {% block script %}
