@@ -1,42 +1,46 @@
-<h1>sd43.ru web project</h1>
+<h1>sd43.ru designer's projects</h1>
 
-## Available Scripts
+
+## Install
 
 Start new project:
 ### `pip install git+https://github.com/Starck43/sferadesign.git`
-### `bash startproject.sh [appname]`
+### `bash startproject.sh [appname]` - start a new Django project script
 
 In the project directory run:
 ### `npm i`
 ### `npm update`
 
-Runs the app in the development mode.<br />
-### `gulp [default|styles|scripts|vendors-scripts|css-compress|browser-sync|watch|rsync]`
+Start project with Gulp:<br />
+### `gulp [default|styles|scripts|scripts-compress|css-compress|deploy|rsync]`
 
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-## Applications list:
+
+## Project structure:
 
 BASE FOLDER APPS (`sd43.ru`):
 `crm` - main app
-`exhibition`
+`exhibition` - designer's portfolio
 `rating` - rates & reviews
+`blog` - articles
+`ads` - sponsor's banners
 
 
-## Additional Django packages:
+## Django packages:
 
-`django-environ`
+`django-environ` - environments with main parameters for development (.env) and production (prod.env)
 `python-memcached`
 `django-uuslug`
 `python-slugify`
 `django-debug-toolbar`
-`django-crispy-forms`
 `django-static-jquery-ui`
+`django-crispy-forms`
+`mysqlclient` - client for mySQL databases
 `django-smart-selects` - auto select field's values on changing value for related table in admin
 `django-tabbed-changeform-admin` - tabs structure in admin forms
-`sorl-thumbnail` - auto thumbnail generator (requires Pillow, Wand)
+`sorl-thumbnail` - thumbnail generator (requires Pillow, Wand)
 `django-ckeditor` - html editor for text fields in admin
-`django-cleanup` - delete all related files with instance removing on disk
 `django-watson` - search through the site ( look exhibition/apps.py for adjusting included sesarching tables )
 `django-allauth` - login & register package for all users via social accounts also (needs to include 'django.contrib.sites')
 
@@ -64,7 +68,7 @@ Insert the following code in the `head` section of `base.html`:
 *Optional* - Check your favicon with the [favicon checker](https://realfavicongenerator.net/favicon_checker)
 
 
-## Developer Tools
+## Analytics Tools
 
 Webmaster Yandex <code>https://webmaster.yandex.ru</code>
 Analytics Google <code>https://analytics.google.com</code>

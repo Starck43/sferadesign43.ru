@@ -15,7 +15,7 @@ class StaticViewSitemap(Sitemap):
 			'index',
 			'contacts-url',
 			'exhibitions-list-url',
-			'nominations-list-url',
+			'category-list-url',
 			'winners-list-url',
 			'events-list-url',
 			'exhibitors-list-url',
