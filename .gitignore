@@ -35,6 +35,7 @@ datadamp.json
 
 # Environment
 .env
+prod.env
 .venv
 venv/
 
