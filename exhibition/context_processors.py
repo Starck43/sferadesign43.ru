@@ -24,7 +24,7 @@ def common_context(request):
 		'main_title'		: ExhibitionConfig.verbose_name,
 		'exhibitions_list'	: exh_list,
 		'site_url'			: site_url,
-		'page_url'			: site_url + request.path_info,
+		#'page_url'			: site_url + request.path,
 		'default_meta'		: meta,
 	}
 	return context
