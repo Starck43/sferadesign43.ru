@@ -46,7 +46,7 @@
 	{% if filter_attributes %}
 	<div id="projectsFilter" class="sidebar-inner">
 		<h3 class="sidebar-title d-lg-none">фильтры</h3>
-		<form class="filters-block {{absolute_url}}-filters" action="{% url 'projects-list-url' absolute_url %}" method="get" name="projects-filter">
+		<form class="filters-block {{absolute_url}}-filters" action="{% url 'exhibition:projects-list-url' absolute_url %}" method="get" name="projects-filter">
 
 			{% for atttribute in filter_attributes %}
 			<div class="filter-attributes-block">
@@ -84,7 +84,7 @@
 		<div id="projectGrid" class="projects-list grid">
 			{% for e in object_list %}
 				{% with e.title as project_title %}
-				<a id="project-{{e.id}}" class="grid-cell" href="{% url 'project-detail-url' e.owner__slug e.project_id %}" title="{{ project_title }}">
+				<a id="project-{{e.id}}" class="grid-cell" href="{% url 'exhibition:project-detail-url' e.owner__slug e.project_id %}" title="{{ project_title }}">
 					<figure>
 						{% with e.cover as project_cover %}
 						{% if project_cover %}
@@ -132,7 +132,7 @@
 
 			{% endfor %}
 
-			<a id="preloader" class="centered fade {% if next_page %}show{% endif %}" href="{% url 'projects-list-url' absolute_url %}">
+			<a id="preloader" class="centered fade {% if next_page %}show{% endif %}" href="{% url 'exhibition:projects-list-url' absolute_url %}">
 				<div class="dot"></div>
 				<div class="dot"></div>
 				<div class="dot"></div>

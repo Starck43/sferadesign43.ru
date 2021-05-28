@@ -5,6 +5,7 @@ from watson import search as watson
 class ExhibitionConfig(AppConfig):
 	name = 'exhibition'
 	verbose_name = 'Сфера дизайна'
+	default_auto_field = 'django.db.models.BigAutoField'
 
 	def ready(self):
 		Exhibtitors = self.get_model("Exhibitors")

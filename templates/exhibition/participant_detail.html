@@ -86,7 +86,7 @@
 				<ol class="winners-list my-2">
 					{% for item in winners_list %}
 					<li>
-						<a href="{% url 'winner-detail-url' item.exh_year item.slug %}">
+						<a href="{% url 'exhibition:winner-detail-url' item.exh_year item.slug %}">
 							{{ item.title }}, {{ item.exh_year }}
 						</a>
 					</li>

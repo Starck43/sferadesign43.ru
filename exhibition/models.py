@@ -154,7 +154,7 @@ class Exhibitors(Person, Profile):
 		return None
 
 	def get_absolute_url(self):
-		return reverse('exhibitor-detail-url', kwargs={'slug': self.slug })
+		return reverse('exhibition:exhibitor-detail-url', kwargs={'slug': self.slug })
 
 
 
@@ -187,7 +187,7 @@ class Jury(Person):
 
 
 	def get_absolute_url(self):
-		return reverse('jury-detail-url', kwargs={'slug': self.slug })
+		return reverse('exhibition:jury-detail-url', kwargs={'slug': self.slug })
 
 
 
@@ -205,7 +205,7 @@ class Partners(Person, Profile):
 		update_google_sitemap() # обновим карту сайта Google
 
 	def get_absolute_url(self):
-		return reverse('partner-detail-url', kwargs={'slug': self.slug })
+		return reverse('exhibition:partner-detail-url', kwargs={'slug': self.slug })
 
 
 
@@ -243,7 +243,7 @@ class Categories(models.Model):
 	logo_thumb.short_description = 'Логотип'
 
 	def get_absolute_url(self):
-		return reverse('projects-list-url', kwargs={'slug': self.slug })
+		return reverse('exhibition:projects-list-url', kwargs={'slug': self.slug })
 
 
 ''' Таблица Номинаций '''
@@ -273,9 +273,9 @@ class Nominations(models.Model):
 
 	def get_absolute_url(self):
 		if self.category:
-			return reverse('projects-list-url', kwargs={'slug': self.category.slug })
+			return reverse('exhibition:projects-list-url', kwargs={'slug': self.category.slug })
 		else:
-			return reverse('projects-list-url', kwargs={'slug': None })
+			return reverse('exhibition:projects-list-url', kwargs={'slug': None })
 
 
 
@@ -333,7 +333,7 @@ class Exhibitions(models.Model):
 	banner_thumb.short_description = 'Логотип'
 
 	def get_absolute_url(self):
-		return reverse('exhibition-detail-url', kwargs={'exh_year': self.slug})
+		return reverse('exhibition:exhibition-detail-url', kwargs={'exh_year': self.slug})
 
 
 
@@ -369,7 +369,7 @@ class Events(models.Model):
 	time_event.short_description = 'Время мероприятия'
 
 	def get_absolute_url(self):
-		return reverse('event-detail-url', kwargs={'exh_year': self.exhibition.slug, 'pk': self.id})
+		return reverse('exhibition:event-detail-url', kwargs={'exh_year': self.exhibition.slug, 'pk': self.id})
 
 
 
@@ -490,7 +490,7 @@ class Portfolio(models.Model):
 			return ('project-%s') % self.project_id
 
 	def get_absolute_url(self):
-		return reverse('project-detail-url', kwargs={'owner': self.owner.slug, 'project_id': self.project_id })
+		return reverse('exhibition:project-detail-url', kwargs={'owner': self.owner.slug, 'project_id': self.project_id })
 		#return reverse('portfolio-detail-url', kwargs={'year': self.exhibition.date_start, 'owner': self.owner.slug, 'id': self.pk })
 
 
@@ -547,7 +547,7 @@ class Winners(models.Model):
 	name.short_description = 'Победитель'
 
 	def get_absolute_url(self):
-		return reverse('winner-detail-url', kwargs={'exh_year': self.exhibition.slug, 'slug': self.nomination.slug})
+		return reverse('exhibition:winner-detail-url', kwargs={'exh_year': self.exhibition.slug, 'slug': self.nomination.slug})
 
 
 

@@ -9,7 +9,7 @@
 		</div>
 
 		<div id="searchContainer">
-			<form class="nav-search centered" action="{% block search-action %}{% url 'search-results' %}{% endblock %}" method="GET">
+			<form class="nav-search centered" action="{% block search-action %}{% url 'exhibition:search-results' %}{% endblock %}" method="GET">
 				<input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск" aria-label="Search">
 				<button type="submit">Найти</button>
 				<button class="clear-input btn-close btn-sm fade" type="button" aria-label="Close"></button>
@@ -41,25 +41,25 @@
 				</li>
 
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'exhibitors-list-url' %}">Участники</a>
+					<a class="nav-link" href="{% url 'exhibition:exhibitors-list-url' %}">Участники</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'category-list-url' %}">Работы</a>
+					<a class="nav-link" href="{% url 'exhibition:category-list-url' %}">Работы</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'winners-list-url' %}">Победители</a>
+					<a class="nav-link" href="{% url 'exhibition:winners-list-url' %}">Победители</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'jury-list-url' %}">Жюри</a>
+					<a class="nav-link" href="{% url 'exhibition:jury-list-url' %}">Жюри</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'partners-list-url' %}">Партнеры</a>
+					<a class="nav-link" href="{% url 'exhibition:partners-list-url' %}">Партнеры</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="{% url 'blog:article-list-url' %}">Статьи</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'contacts-url' %}">Обратная связь</a>
+					<a class="nav-link" href="{% url 'exhibition:contacts-url' %}">Обратная связь</a>
 				</li>
 
 				{% endcache %}

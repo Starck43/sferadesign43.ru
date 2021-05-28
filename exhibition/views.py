@@ -511,7 +511,7 @@ class winner_project_detail(MetaMixin, BannersMixin, DetailView):
 		context['portfolio'] = portfolio
 		context['exhibitors'] = self.exhibitors
 		context['nomination'] = self.nomination
-		context['model_name'] = '/exhibition/%s/' % self.exh_year
+		context['parent_link'] = '/exhibition/%s/' % self.exh_year
 		context['exh_year'] = self.exh_year
 		context['nomination_slug'] = self.nom_slug
 
@@ -563,14 +563,13 @@ class project_detail(MetaMixin, DetailView):
 		context['victories'] = Winners.objects.filter(portfolio=self.object.id, exhibitor__slug=self.owner)
 		context['owner'] = self.owner
 		context['project_id'] = self.project
-		#context['model_name'] = self.model.__name__.lower()
 
 		if self.request.META.get('HTTP_REFERER') == None:
 			q = self.object.nominations.filter(category__slug__isnull=False).first()
 			if q and self.object:
-				context['model_name'] = '/category/%s/' % q.category.slug
+				context['parent_link'] = '/category/%s/' % q.category.slug
 			else:
-				context['model_name'] = '/category/'
+				context['parent_link'] = '/category/'
 
 		score = Rating.calculate(self.object)
 		rate = score.average

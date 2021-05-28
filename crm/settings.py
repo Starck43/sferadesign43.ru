@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
     'django.forms',
+    'debug_toolbar',
     'ckeditor',
     'ckeditor_uploader',
     'sorl.thumbnail',
@@ -86,12 +87,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'django.middleware.cache.FetchFromCacheMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware', # debug_tollbar
     # watson search
     #'django.middleware.transaction.TransactionMiddleware',
     'watson.middleware.SearchContextMiddleware',
 ]
 
 ROOT_URLCONF = 'crm.urls'
+
+INTERNAL_IPS = [
+    'localhost',
+]
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
@@ -347,4 +353,7 @@ else:
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, PUBLIC_ROOT + 'media/')
+
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

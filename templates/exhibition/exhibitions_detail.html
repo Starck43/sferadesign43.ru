@@ -124,9 +124,9 @@ var is_mobile = false;
 			</h2>
 			<ol>
 				{% for item in nominations_list %}
-				<li><a class="nomination-link" href="{% url 'winner-detail-url' exh_year item.slug %}">
+				<li><a class="nomination-link" href="{% url 'exhibition:winner-detail-url' exh_year item.slug %}">
 					<h3 class="exh-title subtitle">{{ item.title }}</h3>
-					{% if item.exhibitor_name %}</a><a class="exhibitor-link" href="{% url 'exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}
+					{% if item.exhibitor_name %}</a><a class="exhibitor-link" href="{% url 'exhibition:exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}
 					{% endif %}
 				</a></li>
 				{% endfor %}
