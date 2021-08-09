@@ -73,25 +73,28 @@ class MetaFieldsAdmin:
 		}),
 	)
 
+
 	def get_form(self, request, obj=None, **kwargs):
 		form = super().get_form(request, obj, **kwargs)
 		self.meta_model = ContentType.objects.get(model=self.model.__name__.lower())
-		try:
-			self.meta = MetaSEO.objects.get(model=self.meta_model, post_id=obj.id)
-		except MetaSEO.DoesNotExist:
-			self.meta = None
+		self.meta = None
+		if obj:
+			try:
+				self.meta = MetaSEO.objects.get(model=self.meta_model, post_id=obj.id)
+			except MetaSEO.DoesNotExist:
+				pass
 		form.meta = self.meta
 		return form
 
 
 	def save_model(self, request, obj, form, change):
-		#super().save_model(request, obj, form, change)
-		instance = self.meta
-		if instance:
-			print(form.cleaned_data['meta_title'])
-			instance.title=form.cleaned_data['meta_title']
-			instance.description=form.cleaned_data['meta_description']
-			instance.keywords=form.cleaned_data['meta_keywords']
+		super().save_model(request, obj, form, change)
+
+		if change and self.meta:
+			instance = self.meta #MetaSEO.objects.get(model=self.meta_model, post_id=obj.id)
+			instance.title = form.cleaned_data['meta_title']
+			instance.description = form.cleaned_data['meta_description']
+			instance.keywords = form.cleaned_data['meta_keywords']
 			instance.save()
 		else:
 			MetaSEO.objects.create(
@@ -157,7 +160,7 @@ class ProfileAdmin(admin.ModelAdmin):
 	list_display = ('phone',)
 
 
-class ExhibitorsAdmin(MetaFieldsAdmin, PersonAdmin, ProfileAdmin, admin.ModelAdmin):
+class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmin):
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaFieldsAdmin.fieldsets
 	#prepopulated_fields = {"slug": ('name',)} # adding name to slug field
 
@@ -181,7 +184,8 @@ class ExhibitorsAdmin(MetaFieldsAdmin, PersonAdmin, ProfileAdmin, admin.ModelAdm
 		super().save_model(request, obj, form, change)
 
 
-class JuryAdmin(MetaFieldsAdmin, PersonAdmin, admin.ModelAdmin):
+
+class JuryAdmin(PersonAdmin, MetaFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('user-block',),
@@ -193,12 +197,12 @@ class JuryAdmin(MetaFieldsAdmin, PersonAdmin, admin.ModelAdmin):
 	list_display_links = ('logo_thumb', 'name', )
 
 	def save_model(self, request, obj, form, change):
-		super().save_model(request, obj, form, change)
 		delete_cached_fragment('persons','jury')
+		super().save_model(request, obj, form, change)
 
 
 
-class OrganizerAdmin(MetaFieldsAdmin, PersonAdmin, ProfileAdmin, admin.ModelAdmin):
+class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmin):
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'description_html',)
 	list_display_links = ('logo_thumb', 'name', )
@@ -215,7 +219,7 @@ class OrganizerAdmin(MetaFieldsAdmin, PersonAdmin, ProfileAdmin, admin.ModelAdmi
 
 
 
-class PartnersAdmin(MetaFieldsAdmin, PersonAdmin, ProfileAdmin):
+class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmin):
 
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'phone',)
@@ -231,9 +235,16 @@ class PartnersAdmin(MetaFieldsAdmin, PersonAdmin, ProfileAdmin):
 		super().save_model(request, obj, form, change)
 
 
+
 @admin.register(Categories)
 class CategoriesAdmin(MetaFieldsAdmin, admin.ModelAdmin):
-	#fields = ('title', 'slug', 'description', 'logo', 'sort',)
+	fieldsets = (
+		(None, {
+			'classes': ('user-block',),
+			'fields': ('title', 'slug', 'description', 'logo', 'sort',),
+		}),
+	) + MetaFieldsAdmin.fieldsets
+
 	list_display = ('logo_thumb', 'title', 'nominations_list', 'description',)
 	list_display_links = ('logo_thumb', 'title',)
 
@@ -246,9 +257,16 @@ class CategoriesAdmin(MetaFieldsAdmin, admin.ModelAdmin):
 		super().save_model(request, obj, form, change)
 
 
+
 @admin.register(Nominations)
-class NominationsAdmin(admin.ModelAdmin):
-	#fields = ('category', 'title', 'slug', 'description', 'sort',)
+class NominationsAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+	fieldsets = (
+		(None, {
+			'classes': ('user-block',),
+			'fields': ('category', 'title', 'slug', 'description', 'sort',),
+		}),
+	) + MetaFieldsAdmin.fieldsets
+
 	list_display = ('category', 'title', 'description_html',)
 	list_display_links = ('title',)
 	list_per_page = 20
@@ -260,6 +278,7 @@ class NominationsAdmin(admin.ModelAdmin):
 	description_html.short_description = 'Описание'
 
 
+
 class EventsInlineAdmin(admin.StackedInline):
 	model = Events
 	extra = 1 #new blank record count
@@ -269,7 +288,15 @@ class EventsInlineAdmin(admin.StackedInline):
 	verbose_name_plural = ""
 
 
+
 class EventsAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+	fieldsets = (
+		(None, {
+			'classes': ('user-block',),
+			'fields': ('exhibition', 'title', 'date_event', 'time_start', 'time_event', 'location', 'hoster', 'lector', 'description',),
+		}),
+	) + MetaFieldsAdmin.fieldsets
+
 	list_display = ('title', 'date_event', 'time_event', 'hoster', 'exhibition',)
 	search_fields = ('title', 'description', 'hoster', 'lector',)
 	list_filter = ('exhibition__date_start', 'date_event',)
@@ -287,6 +314,13 @@ class EventsAdmin(MetaFieldsAdmin, admin.ModelAdmin):
 
 
 class WinnersAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+	fieldsets = (
+		(None, {
+			'classes': ('user-block',),
+			'fields': ('exhibition', 'nomination', 'exhibitor','portfolio',),
+		}),
+	) + MetaFieldsAdmin.fieldsets
+
 	list_display = ('exh_year', 'nomination', 'exhibitor','portfolio')
 	list_display_links = list_display
 	#search_fields = ('nomination__title', 'exhibitor__name',)
