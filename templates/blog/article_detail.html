@@ -25,7 +25,12 @@
 {% endblock site_header %}
 
 
-{% block page_title %}{{object.title}}{% endblock page_title %}
+{% block page_title %}
+	{{object.title}}
+	{% if user.is_staff %}
+	<a class="admin-edit-link" href="{% url 'article'|admin_change_url:"blog" object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+	{% endif %}
+{% endblock page_title %}
 
 {% block sidebar %}{% include "ads/sidebar_banners_list.html" %}{% endblock sidebar %}
 
@@ -36,7 +41,7 @@
 	<article id="{{object.id}}" class="article-content">
 		{% with object.person as person %}
 		{% if person %}
-		<span>автор: </span><a class="article-author" href="{{person.get_absolute_url}}"><i><b>{{ person.name }}</b></i></a>
+			<span>автор: </span><a class="article-author" href="{{person.get_absolute_url}}"><i><b>{{ person.name }}</b></i></a>
 		{% endif %}
 		{% endwith %}
 

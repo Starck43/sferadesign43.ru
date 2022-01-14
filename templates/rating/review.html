@@ -103,8 +103,9 @@
 
 {% endblock comments %}
 
+
 {% if user.is_authenticated %}
-<div id="editCommentContainer" class="modal fade" tabindex="-1" aria-labelledby="commentTitle" aria-hidden="true">
+<div id="editCommentContainer" class="modal fade" tabindex="-1" data-bs-backdrop="static" aria-labelledby="commentTitle" aria-hidden="true">
 	<div class="modal-dialog modal-xl modal-fullscreen-sm-down">
 		<div class="modal-content">
 			<div class="modal-header">

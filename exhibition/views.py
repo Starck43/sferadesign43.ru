@@ -46,7 +46,7 @@ from blog.models import Article
 from .forms import PortfolioForm, FeedbackForm, UsersListForm, DeactivateUserForm
 from rating.forms import RatingForm
 from .logic import SendEmail, SetUserGroup
-from .mixins import ExhibitionYearListMixin,  BannersMixin, MetaMixin
+from .mixins import ExhibitionYearListMixin,  BannersMixin, MetaSeoMixin
 
 from collections import defaultdict
 
@@ -93,7 +93,7 @@ def contacts(request):
 
 
 """ Exhibitors view """
-class exhibitors_list(MetaMixin, ExhibitionYearListMixin, ListView):
+class exhibitors_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	model = Exhibitors
 	template_name = 'exhibition/participants_list.html'
 
@@ -112,7 +112,7 @@ class exhibitors_list(MetaMixin, ExhibitionYearListMixin, ListView):
 
 
 """ Partners view """
-class partners_list(MetaMixin, ExhibitionYearListMixin, ListView):
+class partners_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	model = Partners
 	template_name = 'exhibition/partners_list.html'
 
@@ -121,8 +121,8 @@ class partners_list(MetaMixin, ExhibitionYearListMixin, ListView):
 		if self.slug:
 			q = Q(partners_for_exh__slug=self.slug)
 		else:
-			last_year = Exhibitions.objects.values_list('slug', flat=True).first()
-			q = ~Q(partners_for_exh__slug=last_year) # Only not in last year
+			last_exh = Exhibitions.objects.values_list('slug', flat=True).first()
+			q = ~Q(partners_for_exh__slug=last_exh) # except last exhibition
 
 		posts = self.model.objects.prefetch_related('partners_for_exh').filter(q)
 
@@ -137,7 +137,7 @@ class partners_list(MetaMixin, ExhibitionYearListMixin, ListView):
 
 
 """ Jury view """
-class jury_list(MetaMixin, ExhibitionYearListMixin, ListView):
+class jury_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	model = Jury
 	template_name = 'exhibition/persons_list.html'
 
@@ -160,7 +160,7 @@ class jury_list(MetaMixin, ExhibitionYearListMixin, ListView):
 
 
 """ Events view """
-class events_list(MetaMixin, ExhibitionYearListMixin, ListView):
+class events_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	model = Events
 	template_name = 'exhibition/participants_list.html'
 
@@ -182,7 +182,7 @@ class events_list(MetaMixin, ExhibitionYearListMixin, ListView):
 
 
 """ Winners view """
-class winners_list(MetaMixin, ExhibitionYearListMixin, ListView):
+class winners_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	model = Winners
 	template_name = 'exhibition/participants_list.html'
 
@@ -205,7 +205,7 @@ class winners_list(MetaMixin, ExhibitionYearListMixin, ListView):
 
 
 """ Exhibitons view """
-class exhibitions_list(MetaMixin, BannersMixin, ListView):
+class exhibitions_list(MetaSeoMixin, BannersMixin, ListView):
 	model = Exhibitions
 
 	def get_context_data(self, **kwargs):
@@ -217,8 +217,8 @@ class exhibitions_list(MetaMixin, BannersMixin, ListView):
 
 
 
-""" Categories (Union Nominations) view """
-class category_list(MetaMixin, BannersMixin, ListView):
+""" Categories (groupped Nominations) view """
+class category_list(MetaSeoMixin, BannersMixin, ListView):
 	model = Categories
 	template_name = 'exhibition/category_list.html'
 
@@ -233,12 +233,12 @@ class category_list(MetaMixin, BannersMixin, ListView):
 
 
 """ Projects view """
-class projects_list(MetaMixin, BannersMixin, ListView):
+class projects_list(MetaSeoMixin, BannersMixin, ListView):
 	model = Categories
 	template_name = 'exhibition/projects_list.html'
 	PAGE_SIZE = getattr(settings, 'PORTFOLIO_COUNT_PER_PAGE', 20) # Количество выводимых записей на странице
 
-	# использовано для миксина MetaMixin, где проверяется self.object
+	# использовано для миксина MetaSeoMixin, где проверяется self.object
 	def setup(self, request, *args, **kwargs):
 		super().setup(request, *args, **kwargs)
 		self.slug = kwargs['slug']
@@ -349,7 +349,7 @@ class projects_list(MetaMixin, BannersMixin, ListView):
 
 
 """ Exhibitors detail """
-class exhibitor_detail(MetaMixin, DetailView):
+class exhibitor_detail(MetaSeoMixin, DetailView):
 	model = Exhibitors
 	template_name = 'exhibition/participant_detail.html'
 
@@ -362,7 +362,7 @@ class exhibitor_detail(MetaMixin, DetailView):
 			cover=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])
 		).order_by('-exh_year')
 
-		win_list = Nominations.objects.prefetch_related('nomination_for_winner').filter(
+		awards = Nominations.objects.prefetch_related('nomination_for_winner').filter(
 			nomination_for_winner__exhibitor__slug=slug).annotate(
 			exh_year=F('nomination_for_winner__exhibition__slug')
 		).values('title', 'slug', 'exh_year').order_by('-exh_year')
@@ -371,7 +371,7 @@ class exhibitor_detail(MetaMixin, DetailView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participant']
 		context['object_list'] = portfolio
-		context['winners_list'] = win_list
+		context['awards_list'] = awards
 		context['article_list'] = Article.objects.filter(owner=self.object.user).only('title').order_by('title') if self.object.user else None
 		context['model_name'] = self.model.__name__.lower()
 		context['cache_timeout'] = 86400
@@ -379,7 +379,7 @@ class exhibitor_detail(MetaMixin, DetailView):
 
 
 """ Jury detail """
-class jury_detail(MetaMixin, BannersMixin, DetailView):
+class jury_detail(MetaSeoMixin, BannersMixin, DetailView):
 	model = Jury
 	template_name = 'exhibition/jury_detail.html'
 
@@ -392,7 +392,7 @@ class jury_detail(MetaMixin, BannersMixin, DetailView):
 
 
 """ Partners detail """
-class partner_detail(MetaMixin, BannersMixin, DetailView):
+class partner_detail(MetaSeoMixin, BannersMixin, DetailView):
 	model = Partners
 	template_name = 'exhibition/partner_detail.html'
 
@@ -405,7 +405,7 @@ class partner_detail(MetaMixin, BannersMixin, DetailView):
 
 
 """ Event detail """
-class event_detail(MetaMixin, BannersMixin, DetailView):
+class event_detail(MetaSeoMixin, BannersMixin, DetailView):
 	model = Events
 	template_name = 'exhibition/event_detail.html'
 
@@ -418,7 +418,7 @@ class event_detail(MetaMixin, BannersMixin, DetailView):
 
 
 """ Exhibitions detail """
-class exhibition_detail(MetaMixin, BannersMixin, DetailView):
+class exhibition_detail(MetaSeoMixin, BannersMixin, DetailView):
 	model = Exhibitions
 
 	def get_object(self, queryset=None):
@@ -438,6 +438,7 @@ class exhibition_detail(MetaMixin, BannersMixin, DetailView):
 			exhibitor_slug=F('nomination_for_winner__exhibitor__slug'),
 			#cover=Coalesce(Subquery(Image.objects.filter(portfolio_id=OuterRef('portfolio_for_winner')).values('file')[:1]), None)
 		).values('id', 'exhibitor_name', 'exhibitor_slug', 'title', 'slug')
+
 		# Добавляем слайды в баннер (основной + первые фото победных проектов)
 		banner_slider = []
 		if self.object.banner and self.object.banner.width > 0 :
@@ -453,10 +454,9 @@ class exhibition_detail(MetaMixin, BannersMixin, DetailView):
 			if cover:
 				banner_slider.append(cover['file'])
 
-
 		context['html_classes'] = ['exhibition']
 		context['banner_slider'] = banner_slider
-		context['nominations_list'] = win_nominations if win_nominations else self.object.nominations.all
+		context['win_nominations'] = win_nominations
 		context['events_title'] = Events._meta.verbose_name_plural
 		context['gallery_title'] = Gallery._meta.verbose_name_plural
 		context['last_exh'] = self.model.objects.only('slug')[:1].first().slug
@@ -468,7 +468,7 @@ class exhibition_detail(MetaMixin, BannersMixin, DetailView):
 
 
 """ Winner project detail """
-class winner_project_detail(MetaMixin, BannersMixin, DetailView):
+class winner_project_detail(MetaSeoMixin, BannersMixin, DetailView):
 	model = Winners
 	template_name = 'exhibition/nominations_detail.html'
 	#slug_url_kwarg = 'name'
@@ -478,11 +478,11 @@ class winner_project_detail(MetaMixin, BannersMixin, DetailView):
 		self.nom_slug = self.kwargs['slug']
 		self.exh_year = self.kwargs['exh_year']
 
-		qs = self.model.objects.filter(exhibition__slug=self.exh_year,nomination__slug=self.nom_slug)[0]
+		qs = self.model.objects.filter(exhibition__slug=self.exh_year,nomination__slug=self.nom_slug)
 		if qs:
 			self.exhibitors = None
 			self.nomination = qs.nomination
-			return qs
+			return qs[0]
 		else:
 			self.exhibitors = Exhibitors.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.exh_year).only('name', 'slug')
 			self.nomination = Nominations.objects.only('title', 'description').get(slug=self.nom_slug)
@@ -534,7 +534,7 @@ class winner_project_detail(MetaMixin, BannersMixin, DetailView):
 
 
 """ Project detail """
-class project_detail(MetaMixin, DetailView):
+class project_detail(MetaSeoMixin, DetailView):
 	model = Portfolio
 	context_object_name = 'portfolio'
 	#slug_url_kwarg = 'slug'
@@ -683,6 +683,7 @@ def account(request):
 	return render(request, 'account/base.html', { 'profile': profile, 'rates': rates, 'reviews': reviews })
 
 
+""" Удаление аккаунта пользователя """
 @login_required
 #@method_decorator(csrf_exempt, name='dispatch')
 def deactivate_user(request):

@@ -7,17 +7,16 @@
 		var article_list = data['articles'];
 		var html = '';
 		for (var i in article_list) {
-			// усечем контент, если он превышает 300 символов
+			// усечем контент, если он превышает 350 символов
 			var id = article_list[i]['id'];
 			var person = (article_list[i]['person']) ? `<span>автор: </span><a class="article-author" href="${article_list[i]['person_url']}"><i><b>${article_list[i]['person']}</b></i></a>` : '';
-			var content = truncateHTML(article_list[i]['content'], 300, { keepImageTag: true, ellipsis: '...' });
+			var content = truncateHTML(article_list[i]['content'], 350, { keepImageTag: true, ellipsis: '...' });
 			var date = new Date(article_list[i]['modified_date']).toLocaleDateString();
 			html += `<article id="article-${id}" class="article-content">\
 				<h2 class="article-title"><a href="${id}">${article_list[i]['title']}</a></h2>\
 				${person}\
 				<div class="modified-date">${date}</div>\
-				<div class="article-text">${content}</div>\
-				<span>[<u><i><a href="${id}" class="link-dark">читать полностью</a></i></u>]</span>\
+				<div class="article-text">${content}<span>[<u><i><a href="${id}" class="link-dark">читать полностью</a></i></u>]</span></div>\
 			</article>`;
 		}
 

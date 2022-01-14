@@ -69,8 +69,12 @@
 		{% with article.id as article_id %}
 
 		<article id="article-{{article_id}}" class="article-content">
-			<h2 class="article-title "><a href="{% url 'blog:article-detail-url' article_id %}">{{ article.title }}</a></h2>
-
+			<h2 class="article-title ">
+				<a href="{% url 'blog:article-detail-url' article_id %}">{{ article.title }}</a>
+				{% if user.is_staff %}
+				<a class="admin-edit-link" href="{% url 'article'|admin_change_url:"blog" article.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+				{% endif %}
+			</h2>
 			{% with article.person as person %}
 			{% if person %}
 			<span>автор: </span><a class="article-author" href="{{person.get_absolute_url}}"><i><b>{{ person.name }}</b></i></a>
@@ -78,9 +82,10 @@
 			{% endwith %}
 
 			<div class="modified-date">{{article.modified_date|date:"d.m.Y"}}</div>
-			<div class="article-text">{{article.content|safe|truncatechars_html:300}}</div>
-			<span>[<u><i><a href="{% url 'blog:article-detail-url' article_id %}" class="link-dark">читать полностью</a></i></u>]</span>
-
+			<div class="article-text">
+				{{article.content|safe|truncatechars_html:350}}
+				<span>[<u><i><a href="{% url 'blog:article-detail-url' article_id %}" class="link-dark">читать полностью</a></i></u>]</span>
+			</div>
 			<div class="article-ads-block">
 				{% for banner in ads_banners %}
 					{% if banner.article.id == article_id and banner.file_1000 %}

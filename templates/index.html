@@ -43,7 +43,7 @@
 	</section>
 	{% endif %}
 
-	{% if exhibitions_list %}
+	{% if exhibitions_list.first.partners.first %}
 	<section class="partners-container">
 		<header><h2>{{ exhibitions_list.first.partners.first|verbose_name_plural }}</h2></header>
 		<div class="partners-list row">

@@ -20,8 +20,8 @@ from crm import models
 from .models import *
 from blog.models import Article
 
-from .forms import ExhibitionsForm, PortfolioForm, CustomClearableFileInput, MetaFieldsForm
-from .logic import UploadFilename, ImageResize, delete_cached_fragment, SendEmailAsync
+from .forms import ExhibitionsForm, PortfolioForm, CustomClearableFileInput, MetaSeoFieldsForm
+from .logic import delete_cached_fragment, SendEmailAsync
 from rating.admin import RatingInline, ReviewInline
 
 
@@ -62,8 +62,8 @@ admin.AdminSite.get_app_list = get_app_list
 
 
 
-class MetaFieldsAdmin:
-	form = MetaFieldsForm
+class MetaSeoFieldsAdmin:
+	form = MetaSeoFieldsForm
 
 	meta_fields = ('meta_title', 'meta_description', 'meta_keywords')
 	fieldsets = (
@@ -160,8 +160,8 @@ class ProfileAdmin(admin.ModelAdmin):
 	list_display = ('phone',)
 
 
-class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmin):
-	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaFieldsAdmin.fieldsets
+class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
+	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	#prepopulated_fields = {"slug": ('name',)} # adding name to slug field
 
 	list_display = ('logo_thumb', 'name', 'user_name',)
@@ -180,30 +180,40 @@ class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdm
 	user_name.short_description = 'Пользователь'
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('persons','exhibitors')
+		delete_cached_fragment('persons','exhibitors', 'all')
+		exhibitions = Exhibitions.objects.filter(exhibitors=obj.id).only('slug')
+		for exh in exhibitions:
+			delete_cached_fragment('persons','exhibitors', exh.slug)
+			delete_cached_fragment('exhibition_content', exh.slug)
+
 		super().save_model(request, obj, form, change)
 
 
 
-class JuryAdmin(PersonAdmin, MetaFieldsAdmin, admin.ModelAdmin):
+class JuryAdmin(PersonAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('user-block',),
 			'fields': ('logo', 'name', 'slug', 'excerpt', 'description', 'sort',),
 		}),
-	) + MetaFieldsAdmin.fieldsets
+	) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'name', 'excerpt',)
 	list_display_links = ('logo_thumb', 'name', )
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('persons','jury')
+		delete_cached_fragment('persons','jury', 'all')
+		exhibitions = Exhibitions.objects.filter(jury=obj.id).only('slug')
+		for exh in exhibitions:
+			delete_cached_fragment('persons','jury', exh.slug)
+			delete_cached_fragment('exhibition_content', exh.slug)
+
 		super().save_model(request, obj, form, change)
 
 
 
-class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmin):
-	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaFieldsAdmin.fieldsets
+class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
+	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'description_html',)
 	list_display_links = ('logo_thumb', 'name', )
 	ordering = ('sort',)
@@ -214,36 +224,37 @@ class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmi
 	description_html.short_description = 'Описание для главной страницы'
 
 	def save_model(self, request, obj, form, change):
-		super().save_model(request, obj, form, change)
 		delete_cached_fragment('index_page')
+		super().save_model(request, obj, form, change)
 
 
 
-class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaFieldsAdmin, admin.ModelAdmin):
+class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 
-	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaFieldsAdmin.fieldsets
+	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'phone',)
 	list_display_links = ('logo_thumb', 'name', 'phone',)
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('persons','partners')
+		delete_cached_fragment('index_page')
+		delete_cached_fragment('persons','partners', 'all')
 
-		if change:
-			exhibitions = Exhibitions.objects.filter(partners=obj).only('slug')
-			for exhibition in exhibitions:
-				delete_cached_fragment('exhibition_content', exhibition.slug)
+		exhibitions = Exhibitions.objects.filter(partners=obj).only('slug')
+		for exh in exhibitions:
+			delete_cached_fragment('persons','partners', exh.slug)
+			delete_cached_fragment('exhibition_content', exh.slug)
 		super().save_model(request, obj, form, change)
 
 
 
 @admin.register(Categories)
-class CategoriesAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('user-block',),
 			'fields': ('title', 'slug', 'description', 'logo', 'sort',),
 		}),
-	) + MetaFieldsAdmin.fieldsets
+	) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'title', 'nominations_list', 'description',)
 	list_display_links = ('logo_thumb', 'title',)
@@ -259,13 +270,13 @@ class CategoriesAdmin(MetaFieldsAdmin, admin.ModelAdmin):
 
 
 @admin.register(Nominations)
-class NominationsAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+class NominationsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('user-block',),
 			'fields': ('category', 'title', 'slug', 'description', 'sort',),
 		}),
-	) + MetaFieldsAdmin.fieldsets
+	) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('category', 'title', 'description_html',)
 	list_display_links = ('title',)
@@ -289,13 +300,13 @@ class EventsInlineAdmin(admin.StackedInline):
 
 
 
-class EventsAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('user-block',),
-			'fields': ('exhibition', 'title', 'date_event', 'time_start', 'time_event', 'location', 'hoster', 'lector', 'description',),
+			'fields': ('exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster', 'lector', 'description',),
 		}),
-	) + MetaFieldsAdmin.fieldsets
+	) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('title', 'date_event', 'time_event', 'hoster', 'exhibition',)
 	search_fields = ('title', 'description', 'hoster', 'lector',)
@@ -313,13 +324,13 @@ class EventsAdmin(MetaFieldsAdmin, admin.ModelAdmin):
 
 
 
-class WinnersAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+class WinnersAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('user-block',),
 			'fields': ('exhibition', 'nomination', 'exhibitor','portfolio',),
 		}),
-	) + MetaFieldsAdmin.fieldsets
+	) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('exh_year', 'nomination', 'exhibitor','portfolio')
 	list_display_links = list_display
@@ -398,15 +409,15 @@ class PortfolioAttributesAdmin(admin.ModelAdmin):
 
 
 
-class PortfolioAdmin(MetaFieldsAdmin, admin.ModelAdmin):
+class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	form = PortfolioForm
-	#fields = MetaFieldsAdmin.meta_fields
+	#fields = MetaSeoFieldsAdmin.meta_fields
 	fieldsets = (
 		(None, {
 			'classes': ('portfolio-block',),
 			'fields': ('owner', 'exhibition', 'nominations', 'title', 'description', 'attributes',),
 		}),
-	) + MetaFieldsAdmin.fieldsets
+	) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('owner', 'slug', '__str__', 'exhibition', 'nominations_list', 'attributes_list')
 	list_display_links = ('owner', 'slug', '__str__')
@@ -461,7 +472,7 @@ class PortfolioAdmin(MetaFieldsAdmin, admin.ModelAdmin):
 			uploaded_images = []
 			size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
 			for im in image_list:
-				image = path.join('uploads/', obj.owner.slug, obj.exhibition.slug, obj.slug, im.name)
+				image = path.join(settings.FILES_UPLOAD_FOLDER, obj.owner.slug, obj.exhibition.slug, obj.slug, im.name)
 				thumb = get_thumbnail(image, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
 				uploaded_images.append(thumb)
 
@@ -546,7 +557,7 @@ class GalleryAdmin(AdminImageMixin, admin.ModelAdmin):
 
 
 @admin.register(Exhibitions)
-class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaFieldsAdmin, admin.ModelAdmin):
+class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	form = ExhibitionsForm
 	list_display = ('banner_thumb', 'title', 'date_start', 'date_end', )
 	list_display_links = ('banner_thumb', 'title',)
@@ -587,7 +598,7 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaFieldsAdmin, admin.Model
 		}),
 		(None, {
 			'classes': ('meta-tab', '',),
-			'fields' : MetaFieldsAdmin.meta_fields
+			'fields' : MetaSeoFieldsAdmin.meta_fields
 		}),
 	)
 

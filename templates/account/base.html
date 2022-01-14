@@ -21,7 +21,7 @@ E-mail: <b>{{user.email}}</b>
 [<a class="mx-1" href="{% url 'account_logout' %}">{% trans 'Sign Out' %}</a>]
 [<a class="mx-1" href="{% url 'account_email' %}">Сменить e-mail</a>]
 {% if not user.is_staff %}
-[<a class="mx-1" href="{% url 'deactivate-user' %}">Удалить аккаунт</a>]
+[<a class="mx-1" href="{% url 'exhibition:deactivate-user' %}">Удалить аккаунт</a>]
 {% endif %}
 </p>
 

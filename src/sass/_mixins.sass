@@ -1,3 +1,5 @@
+@use "sass:math"
+
 // Source mixin
 @mixin make-container($padding-x: 0)
 	width: 100%
@@ -140,7 +142,7 @@ $parallax-ios         : true !default
 			-webkit-overflow-scrolling: touch
 		// Preserve 3D
 		&, *
-		transform-style: preserve-3d
+			transform-style: preserve-3d
 
 @mixin parallax($distance: 0, $perspective: $parallax-perspective)
 	transform: translateZ($distance * $perspective * 1px) scale(abs($distance - 1))
@@ -176,7 +178,7 @@ $parallax-ios         : true !default
 // Миксин для создания масштабируемыхэлементов(обычно изображения/картинки заднего фона),
 // чтобы поддерживать соотношение. Пример: @include responsive-ratio(16,9)
 @mixin responsive-ratio($x:1, $y:1, $h:0, $pseudo:false,$pos:relative)
-	$padding: unquote(( $y / $x )*100+'%')
+	$padding: unquote(math.div($y, $x)*100+'%')
 	@if $pseudo
 		position: $pos
 		&::before
@@ -235,8 +237,7 @@ $parallax-ios         : true !default
 	// but doesn't convert dppx=>dpi.
 	// There's no such thing as unprefixed min-device-pixel-ratio since it's nonstandard.
 	// Compatibility info: https://caniuse.com/#feat=css-media-resolution
-	@media only screen and (min-resolution: 192dpi), // IE9-11 don't support dppx
-	only screen and (min-resolution: 2dppx) // Standardized
+	@media only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx)
 		background-image: url($file-2x)
 		background-size: $width-1x $height-1x
 

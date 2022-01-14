@@ -1,3 +1,4 @@
+@use "sass:math"
 
 //persons-list.html
 //participant-detail.html
@@ -6,11 +7,6 @@
 	.person-excerpt
 		margin-bottom: 3rem
 
-.persons-container
-	margin: -$container-margin-lg/2
-	justify-content: space-evenly
-	+media-breakpoint-down(sm)
-		margin: 0 -$container-margin
 
 .person-details-block
 	.logo
@@ -18,7 +14,7 @@
 		margin-left: 0
 
 	.person-description
-		font-size: 1.2
+		font-size: 1.2em
 		letter-spacing: 1.5px
 
 
@@ -28,24 +24,31 @@
 	//padding: .5em
 	mix-blend-mode: normal
 
-.person-wrapper
-	position: relative
-	max-width: $person-logo-max_w
-	padding: $container-margin
+
+.grid-container
+	margin: math.div(-$container-margin-lg, 2)
+	//justify-content: space-between
 	+media-breakpoint-down(sm)
+		margin: 0 -$container-margin
+
+	.grid-cell
+		position: relative
+		max-width: $person-logo-max_w
 		padding: $container-margin
+		+media-breakpoint-down(sm)
+			padding: $container-margin
 
-	.person-title
-		//font-size: 1.2em
-		text-align: center
-		margin: .3em
+		.person-title
+			//font-size: 1.2em
+			text-align: center
+			margin: .3em
 
-	&:hover
-		background-color: darken(#fff, 10%)
-		transition: all 200ms linear
-		.person-logo,
-		.partner-logo
-			mix-blend-mode: darken
+		&:hover
+			border: 3px $main-color solid
+			//background-color: darken(#fff, 10%)
+			transition: all 200ms linear
+			.ratio
+				mix-blend-mode: darken
 
 .jury .person-logo
 	filter: grayscale(1)
@@ -55,7 +58,9 @@
 .persons__list
 	margin: 3vh $container-margin-lg
 	flex: 100%
+	text-align: center
 	+media-breakpoint-down(sm)
-	margin: 3vh 0
+		margin: 3vh 0
+		text-align: left
 
 

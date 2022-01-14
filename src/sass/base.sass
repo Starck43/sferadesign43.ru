@@ -51,6 +51,9 @@ h3, h4
 	font-size: calc(1.1em + .2vw)
 	font-weight: 500
 
+h4
+	font-size: calc(1em + .2vw)
+
 a
 	color: $link-color
 	text-decoration: none
@@ -110,8 +113,8 @@ img:not([src]):not([srcset])
 img[data-sizes="auto"]
 	display: block
 
-.lazyloading
-.lazyload,
+.lazyloading,
+.lazyload
 	opacity: 0
 	~figcaption
 		@supports (backdrop-filter: blur(0))
@@ -382,7 +385,6 @@ svg.icon
 	.content
 		flex: 1
 		max-width: $content-width_max
-		z-index: 2
 		+media-breakpoint-up(xxl)
 			width: 100% - $col-width-xxl*2
 

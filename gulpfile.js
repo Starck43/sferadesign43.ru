@@ -5,7 +5,7 @@
  */
 
 var gulp 		 = require('gulp'),
-	sass 		 = require('gulp-sass'),   // Подключаем SASS
+	sass 		 = require('gulp-sass')(require('sass')),   // Подключаем SASS
 	browserSync  = require('browser-sync'), // Подключаем Browser Sync
 	concat       = require('gulp-concat'), // Подключаем gulp-concat (для слияния файлов)
 	uglify       = require('gulp-uglify-es').default, // Подключаем плагин для сжатия JS
@@ -18,11 +18,7 @@ var gulp 		 = require('gulp'),
 	cleanCSS     = require('gulp-clean-css'), // Подключаем пакет для минификации CSS с объединением одинаковых медиа запросов
 	sourcemaps   = require('gulp-sourcemaps'), // Подключаем пакет sourcemaps для нахождения исходных стилей и скриптов в режиме dev-tool браузера
 	rename       = require('gulp-rename'), // Подключаем библиотеку для переименования файлов
-	imagemin     = require('gulp-imagemin'), // Подключаем библиотеку для работы с изображениями
 	//imgCompress  = require('imagemin-jpeg-recompress'), // Подключаем библиотеку для работы с изображениями
-	mozjpeg 	 = require('imagemin-mozjpeg'),
-	imageResize  = require('gulp-image-resize'),
-	pngquant 	 = require('imagemin-pngquant'), // Подключаем библиотеку для работы с png
 	autoprefixer = require('gulp-autoprefixer');// Подключаем библиотеку для автоматического добавления префиксов
 
 var path = {
@@ -36,7 +32,7 @@ var site = {
 }
 
 
-gulp.task('styles', function() { // таск 'styles' обработает все файлы *.sass, вложенные в любые подпапки
+gulp.task('styles', async function() { // таск 'styles' обработает все файлы *.sass, вложенные в любые подпапки
 	return gulp.src(path.src+'sass/*.+(sass|scss)')
 	//.pipe(sourcemaps.init()) //инициализируем soucemap
 	.pipe(sass({ outputStyle: 'expanded' })) //  Опция { outputStyle: 'expanded' } развертывает все унификации
@@ -50,7 +46,9 @@ gulp.task('styles', function() { // таск 'styles' обработает вс�
 	})) // Создаем префиксы
 	.pipe(combineCSS()) //Объединяем медиа запросы
 	.pipe(postcss([ cssImport ])) // Импортируем стили, прописанные через команду @import в начале файла
-	//.pipe(sourcemaps.write()) //пропишем sourcemap
+	.pipe(sourcemaps.init())
+	.pipe(sass().on('error', sass.logError))
+	.pipe(sourcemaps.write()) //пропишем sourcemap
 	//.pipe(concat('main.min.css')) // Объединяем все найденные файлы в один
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 	//.pipe(cleanCSS({level:2})) // Сжимаем CSS файл
@@ -106,7 +104,6 @@ gulp.task('img', function() {
 			//interlace: true, // Set to true to create interlaced images (also known as "progressive" JPEG)
 			//ImageMagick: true,
 		}))
-		*/
 		.pipe(imagemin([
 			mozjpeg({quality: 80}),
 			pngquant({quality: '65-80'}),
@@ -121,6 +118,7 @@ gulp.task('img', function() {
 			})
 		]))
 		.pipe(gulp.dest(path.media+'img')); // Выгружаем в папку dest::/img
+		*/
 });
 
 
@@ -136,24 +134,22 @@ gulp.task('browser-sync', function() { // Создаем таск browser-sync
 		//server: { baseDir: path.html },  // Нельзя подключать одновремено с proxy
 		host: site.http,
 		proxy: site.http,
-		tunnel: true, tunnel: 'sd43', // Demonstration page: http://projectname.localtunnel.me
+		tunnel: false, tunnel: 'sd43', // Demonstration page: http://projectname.localtunnel.me
 		notify: false, // Отключаем уведомления
-		online: true, // false - work offline without internet connection
+		online: false, // false - work offline without internet connection
 		open: false, // open browser on start
 	});
 });
 
-gulp.task('watch', function() { //таск слежения изменений в sass,css,html,php,js.
+gulp.task('watch', async function() { //таск слежения изменений в sass,css,html,php,js.
 	gulp.watch([path.src+'sass/**/*.sass', path.src+'css/*.css'], gulp.parallel('styles')); // Наблюдение за sass файлами в папке sass
-	//gulp.watch([path.src+'css/*.css', '!'+path.src+'css/main.css'], gulp.parallel('vendors-styles')); // Наблюдение за вендорными css файлами в папке _src
 	gulp.watch([path.src+'js/**/*.js'], gulp.parallel('scripts')); // Наблюдение за JS файлами
-	//gulp.watch([path.src+'js/_vendors.js', path.src+'js/**/*.js', '!'+path.src+'js/custom*.js', path.src+'plugins/**/*.js'], gulp.parallel('vendors-scripts')); // Наблюдение за сторонней библиотекой JS файлов
 	gulp.watch([path.html+'**/*.html'], gulp.parallel('html')); // Наблюдение за HTML файлами в корне проекта
 });
 
 
 // Deploy - выгрузка готового сайта на хостинг
-gulp.task('deploy', function() {
+gulp.task('deploy', async function() {
 	return gulp.src(path.static+'')
 	.pipe(rsync({
 		root: path.static,

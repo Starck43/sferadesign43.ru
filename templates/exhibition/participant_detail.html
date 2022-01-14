@@ -33,7 +33,13 @@
 {% endblock site_header %}
 
 
-{% block page_title %}{{ object.name }}{% endblock page_title %}
+{% block page_title %}
+	{{ object.name }}
+
+	{% if user.is_staff %}
+		<a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+	{% endif %}
+{% endblock page_title %}
 
 {% block content %}
 
@@ -77,14 +83,12 @@
 
 
 		{% if model_name == 'exhibitors' %}
-
 			{% cache cache_timeout participant_detail object.id %}
-
-			{% if winners_list %}
+			{% if awards_list %}
 			<section class="participant-awards my-5">
 				<h2>Победы в номинациях</h2>
 				<ol class="winners-list my-2">
-					{% for item in winners_list %}
+					{% for item in awards_list %}
 					<li>
 						<a href="{% url 'exhibition:winner-detail-url' item.exh_year item.slug %}">
 							{{ item.title }}, {{ item.exh_year }}

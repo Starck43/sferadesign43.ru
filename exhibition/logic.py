@@ -48,18 +48,17 @@ class MediaFileStorage(FileSystemStorage):
 
 	def save(self, name, content, max_length=None):
 		if not self.exists(name):
-			#print('storage: new file '+name)
 			return super().save(name, content, max_length)
 		else:
-			#print('storage: exist file '+name)
 			# prevent saving file on disk
 			return name
 
 
 
-def UploadFilename(instance, filename):
-	# file will be uploaded to MEDIA_ROOT/uploads/<author>/<porfolio>/<filename>
-	return 'uploads/{0}/{1}/{2}/{3}'.format(
+""" portfolio files will be uploaded to MEDIA_ROOT/uploads/<author>/<porfolio>/<filename> """
+def PortfolioUploadTo(instance, filename):
+	return '{0}{1}/{2}/{3}/{4}'.format(
+		settings.FILES_UPLOAD_FOLDER,
 		instance.portfolio.owner.slug.lower(),
 		instance.portfolio.exhibition.slug,
 		instance.portfolio.slug,
@@ -67,6 +66,7 @@ def UploadFilename(instance, filename):
 	)
 
 
+""" gallery files will be uploaded to MEDIA_ROOT/gallery/<exh_year>/<filename> """
 def GalleryUploadTo(instance, filename):
 	return 'gallery/{0}/{1}'.format(instance.exhibition.slug.lower(), filename)
 
@@ -98,10 +98,8 @@ def ImageResize(obj):
 						for chunk in file.chunks():
 							f.write(chunk)
 					return None
-			else:
-				return obj
-
-			return file
+				return file
+			return obj
 		except IOError:
 			return HttpResponse('Ошибка открытия файла %s!' % fn)
 	else:
@@ -141,7 +139,8 @@ def SendEmail(subject, template, email_ricipients=settings.EMAIL_RICIPIENTS):
 
 	return True
 
-""" Acync email sending """
+
+""" Async email sending class """
 class EmailThread(Thread):
 	def __init__(self, subject, template, email_ricipients):
 		self.subject = subject
@@ -170,7 +169,6 @@ def SetUserGroup(request, user):
 	try:
 		group = Group.objects.get(name=group_name)
 		user.groups.add(group)
-		#print(group_name)
 		user.save()
 	except Group.DoesNotExist:
 		pass
@@ -180,10 +178,10 @@ def SetUserGroup(request, user):
 
 """ Reset cache """
 def delete_cached_fragment(fragment_name, *args):
-	#print(args)
 	key = make_template_fragment_key(fragment_name, args or None)
 	cache.delete(key)
 	return key
+
 
 """ Encoding/decoding emoji in string data """
 def unicode_emoji(data, direction='encode'):
@@ -206,11 +204,9 @@ def unicode_emoji(data, direction='encode'):
 		return ''
 
 
-
 def update_google_sitemap():
 	try:
-		ping_google() #сообщим Google о изменениях в sitemap.xml
+		ping_google()
 	except Exception:
 		pass
-
 

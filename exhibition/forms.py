@@ -94,10 +94,10 @@ class CustomClearableFileInput(ClearableFileInput):
 	template_name = 'admin/exhibition/widgets/file_input.html'
 
 
-class MetaFieldsForm(forms.ModelForm):
-	meta_title = forms.CharField(label='Мета Заголовок')
-	meta_description = forms.CharField(label='Мета описание')
-	meta_keywords = forms.CharField(label='Ключевые фразы', widget=forms.TextInput(attrs={'placeholder': 'ключевые теги через запятую'}))
+class MetaSeoFieldsForm(forms.ModelForm):
+	meta_title = forms.CharField(label='Мета Заголовок', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}))
+	meta_description = forms.CharField(label='Мета описание', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}))
+	meta_keywords = forms.CharField(label='Ключевые фразы', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;', 'placeholder': 'введите ключевые слова через запятую'}))
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -109,7 +109,7 @@ class MetaFieldsForm(forms.ModelForm):
 
 
 
-class ExhibitionsForm(MetaFieldsForm, forms.ModelForm):
+class ExhibitionsForm(MetaSeoFieldsForm, forms.ModelForm):
 	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
 
 	class Meta:
@@ -128,7 +128,7 @@ class ExhibitionsForm(MetaFieldsForm, forms.ModelForm):
 
 
 
-class PortfolioForm(MetaFieldsForm, forms.ModelForm):
+class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
 
 	class Meta:

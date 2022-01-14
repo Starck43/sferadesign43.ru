@@ -116,14 +116,13 @@ var is_mobile = false;
 		{% endif %}
 
 
-		{% if nominations_list %}
-
 		<div id="nominations" class="nominations-block">
+			{% if win_nominations %}
 			<h2 class="nominations-title exh-title">
-				{% if nominations_list.count > 1 %}Победители в номинациях{% else %}Номинации{% endif %}
+				Победители в номинациях
 			</h2>
 			<ol>
-				{% for item in nominations_list %}
+				{% for item in win_nominations %}
 				<li><a class="nomination-link" href="{% url 'exhibition:winner-detail-url' exh_year item.slug %}">
 					<h3 class="exh-title subtitle">{{ item.title }}</h3>
 					{% if item.exhibitor_name %}</a><a class="exhibitor-link" href="{% url 'exhibition:exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}
@@ -131,9 +130,17 @@ var is_mobile = false;
 				</a></li>
 				{% endfor %}
 			</ol>
+			{% else %}
+			<h2 class="nominations-title exh-title">
+				Номинации
+			</h2>
+			<ol>
+				{% for item in object.nominations.all %}
+					<li><h3 class="exh-title subtitle">{{ item.title }}</h3></li>
+				{% endfor %}
+			</ol>
+			{% endif %}
 		</div>
-
-		{% endif %}
 
 
 		{% if object.exhibitors.count %}
@@ -180,9 +187,9 @@ var is_mobile = false;
 			{% if exh_year == last_exh %}
 
 			<h2 class="partners-title exh-title">{{ object.partners.first|verbose_name_plural }}</h2>
-			<div class="partners-container row">
+			<div class="grid-container row">
 				{% for item in object.partners.all %}
-				<a class="person-wrapper col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3" href="{{ item.get_absolute_url }}">
+				<a class="grid-cell col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3" href="{{ item.get_absolute_url }}">
 					<div class="partner-logo ratio ratio-1x1">
 						{% if item.logo %}
 						{% thumbnail item.logo "150x150" as xs %}

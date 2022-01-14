@@ -16,7 +16,7 @@ from django.db.models.signals import post_init, post_save
 from django.dispatch import receiver
 
 from crm import models
-from .logic import get_image_html, ImageResize, UploadFilename, GalleryUploadTo, MediaFileStorage, update_google_sitemap
+from .logic import get_image_html, ImageResize, PortfolioUploadTo, GalleryUploadTo, MediaFileStorage, update_google_sitemap
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -26,14 +26,14 @@ from uuslug import uuslug
 from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField, GroupedForeignKey
 
 
-logo_folder = 'logos/'
-banner_folder = 'banners/'
+LOGO_FOLDER = 'logos/'
+BANNER_FOLDER = 'banners/'
 
 
 """Abstract model for Exhibitors, Organizer, Jury, Partners"""
 class Person(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name = 'Пользователь')
-	logo = models.ImageField('Логотип', upload_to=logo_folder, storage=MediaFileStorage(), null=True, blank=True)
+	logo = models.ImageField('Логотип', upload_to=LOGO_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
 	#avatar = models.ImageField('Аватар', upload_to=avatar_folder, storage=MediaFileStorage(), null=True, blank=True)
 	name = models.CharField('Имя контакта', max_length=100)
 	slug = models.SlugField('Ярлык', max_length=100, unique=True)
@@ -41,7 +41,6 @@ class Person(models.Model):
 	sort = models.IntegerField('Индекс сортировки', null=True, blank=True)
 
 	class Meta:
-		ordering = ['name']
 		abstract = True # Table will not be created
 
 	def __str__(self):
@@ -50,7 +49,6 @@ class Person(models.Model):
 	def save(self, *args, **kwargs):
 		if not self.slug:
 			self.slug = uuslug(self.name.lower(), instance=self)
-		#print('uuslug: '+self.slug)
 		super().save(*args, **kwargs)
 
 	def logo_thumb(self):
@@ -125,10 +123,10 @@ class Exhibitors(Person, Profile):
 				user.save()
 				self.user = user
 
-		if self.slug != self.original_slug:
-			portfolio_folder = path.join(settings.MEDIA_ROOT,'uploads/', self.original_slug)
+		if self.original_slug and self.slug != self.original_slug:
+			portfolio_folder = path.join(settings.MEDIA_ROOT, settings.FILES_UPLOAD_FOLDER, self.original_slug)
 			if path.exists(portfolio_folder):
-				new_portfolio_folder = path.join(settings.MEDIA_ROOT,'uploads/', self.slug)
+				new_portfolio_folder = path.join(settings.MEDIA_ROOT, settings.FILES_UPLOAD_FOLDER, self.slug)
 				# переименуем имя папки с проектами текущего участника
 				rename(portfolio_folder, new_portfolio_folder)
 				# почистим кэшированные файлы и изменим путь к файлам в таблице Image для всех портфолио принадлежащих текущему участнику
@@ -166,6 +164,7 @@ class Organizer(Person, Profile):
 		verbose_name = 'Организатор'
 		verbose_name_plural = 'Организаторы'
 		db_table = 'organizers'
+		ordering = ['sort','name']
 
 
 
@@ -199,6 +198,8 @@ class Partners(Person, Profile):
 		verbose_name = 'Партнер выставки'
 		verbose_name_plural = 'Партнеры выставки'
 		db_table = 'partners'
+		ordering = [Coalesce("sort", F('id') + 500)] #сортировка в приоритете по полю sort, а потом уже по-умолчанию
+
 
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
@@ -214,7 +215,7 @@ class Categories(models.Model):
 	title = models.CharField('Категория', max_length=150)
 	slug = models.SlugField('Ярлык', max_length=150, unique=True)
 	description = models.TextField('Описание категории', blank=True)
-	logo = models.ImageField('Логотип', upload_to=logo_folder, storage=MediaFileStorage(), null=True, blank=True)
+	logo = models.ImageField('Логотип', upload_to=LOGO_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
 	sort = models.IntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
@@ -283,7 +284,7 @@ class Nominations(models.Model):
 class Exhibitions(models.Model):
 	title = models.CharField('Название выставки', max_length=150)
 	slug = models.SlugField('Ярлык', max_length=150, unique=True)
-	banner = models.ImageField('Баннер', upload_to=banner_folder, null=True, blank=True)
+	banner = models.ImageField('Баннер', upload_to=BANNER_FOLDER, null=True, blank=True)
 	description = RichTextUploadingField('Описание выставки', blank=True)
 	date_start = models.DateField('Начало выставки', unique=True)
 	date_end = models.DateField('Окончание выставки', unique=True)
@@ -355,7 +356,7 @@ class Events(models.Model):
 		verbose_name = 'Мероприятие'
 		verbose_name_plural = 'Мероприятия'
 		db_table = 'events'
-		unique_together = ['exhibition', 'time_start', 'time_end']
+		unique_together = ['date_event', 'time_start', 'time_end']
 
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
@@ -453,25 +454,26 @@ class Portfolio(models.Model):
 		super().save(*args, **kwargs)
 
 		# сохраним связанные с портфолио изображения
-		for image in images:
-			upload_filename = path.join('uploads/', self.owner.slug, self.exhibition.slug, self.slug, image.name)
-			file_path = path.join(settings.MEDIA_ROOT,upload_filename)
-			append_image = True
+		if images:
+			for image in images:
+				upload_filename = path.join(settings.FILES_UPLOAD_FOLDER, self.owner.slug, self.exhibition.slug, self.slug, image.name)
+				file_path = path.join(settings.MEDIA_ROOT,upload_filename)
+				append_image = True
 
-			if path.exists(file_path):
-				try:
-					# Portfolio has an image yet
-					exist_image = Image.objects.get(portfolio=self, file=upload_filename)
-					# Проверим размер загруженного повторно файла и изменим оригинал, если он превысит лимит указанный в settings
-					ImageResize(exist_image.file)
-					append_image = False
-				except Image.DoesNotExist:
-					# New image in portfolio
-					image = upload_filename
+				if path.exists(file_path):
+					try:
+						# Portfolio has an image yet
+						exist_image = Image.objects.get(portfolio=self, file=upload_filename)
+						# Проверим размер загруженного повторно файла и изменим оригинал, если он превысит лимит указанный в settings
+						ImageResize(exist_image.file)
+						append_image = False
+					except Image.DoesNotExist:
+						# New image in portfolio
+						image = upload_filename
 
-			if append_image:
-				instance = Image(portfolio=self, file=image)
-				instance.save()
+				if append_image:
+					instance = Image(portfolio=self, file=image)
+					instance.save()
 
 		update_google_sitemap() # обновим карту сайта Google
 
@@ -610,7 +612,7 @@ class Image(models.Model):
 	portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, null=True, related_name='images', verbose_name = 'Портфолио')
 	title = models.CharField('Заголовок', max_length=100, null=True, blank=True)
 	description = models.CharField('Описание', max_length=250, blank=True)
-	file = models.ImageField('Фото', upload_to=UploadFilename, storage=MediaFileStorage())
+	file = models.ImageField('Фото', upload_to=PortfolioUploadTo, storage=MediaFileStorage())
 	sort = models.SmallIntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
@@ -678,15 +680,15 @@ class Image(models.Model):
 class MetaSEO(models.Model):
 	model = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name='Раздел')
 	post_id = models.PositiveIntegerField('Запись в разделе', null=True, blank=True)
-	title = models.CharField('Заголовок страницы', max_length=100, blank=True)
-	description = models.CharField('Мета описание', max_length=100, blank=True, help_text='Описание в поисковой выдаче. Рекомендуется 70-80 символов')
-	keywords = models.CharField('Ключевые слова', max_length=255, blank=True, help_text='Поисковые словосочетания указывать через запятую. Рекомендуется до 20 слов и не более 3-х повторов')
+	title = models.CharField('Заголовок страницы', max_length=100, blank=True, null=True)
+	description = models.CharField('Мета описание', max_length=100, blank=True, null=True, help_text='Описание в поисковой выдаче. Рекомендуется 70-80 символов')
+	keywords = models.CharField('Ключевые слова', max_length=255, blank=True, null=True, help_text='Поисковые словосочетания указывать через запятую. Рекомендуется до 20 слов и не более 3-х повторов')
 
 	# Metadata
 	class Meta:
 		verbose_name = 'SEO описание'
 		verbose_name_plural = 'SEO описания'
-		db_table = 'meta'
+		db_table = 'metaseo'
 		unique_together = ['model', 'post_id']
 
 

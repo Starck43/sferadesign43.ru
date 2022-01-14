@@ -354,6 +354,7 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, PUBLIC_ROOT + 'media/')
 
+FILES_UPLOAD_FOLDER = 'uploads/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

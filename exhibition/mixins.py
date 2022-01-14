@@ -9,7 +9,7 @@ class ExhibitionYearListMixin:
 		context = super().get_context_data(**kwargs)
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower()
-		context['exh_year'] = self.slug
+		context['exh_year'] = self.slug if self.slug != None else 'all'
 		return context
 
 
@@ -24,7 +24,7 @@ class BannersMixin:
 		return context
 
 
-class MetaMixin:
+class MetaSeoMixin:
 	def setup(self, request, *args, **kwargs):
 		super().setup(request, *args, **kwargs)
 		self.object = None

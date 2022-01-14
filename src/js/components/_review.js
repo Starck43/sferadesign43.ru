@@ -1,4 +1,9 @@
 
+	var modalContainer = document.getElementById('editCommentContainer'),
+		statusMsg = modalContainer.querySelector('.message-status'),
+		closeModal = modalContainer.querySelector('button.btn-cancel'),
+		submitModal = modalContainer.querySelector('button[type=submit]');
+
 	var targetLink = null;
 
 	// Рендер шаблона
@@ -66,15 +71,13 @@
 		changeCommentsCounter(+1);
 
 		var replyLink = newNode.querySelector('.reply-link');
-
 		replyLink && replyLink.addEventListener('click', replyCommentEvent, {passive: true});
 	}
 
-	// Нажатие на кнопку Ответить
+	// Обработчик нажатия на кнопку Ответить
 	replyCommentEvent = function (e) {
 		e.preventDefault();
-		var link = this, //a.reply-link
-			replyForm = link.parentNode.lastElementChild;
+		var link = this, replyForm = link.parentNode.lastElementChild;
 
 		// если в блоке комментария последний элемент не форма, то клонируем из review-form
 		if (! replyForm.classList.contains('reply-form')) {
@@ -93,7 +96,7 @@
 			textEl.value = textEl.textContent;
 			textEl.placeholder = 'Ваш ответ...';
 			//textEl.blur();
-			cloneForm.addEventListener('submit', submitCommentEvent); // Повесим событие на сохранение формы
+			cloneForm.addEventListener('submit', submitCommentEvent); // Повесим событие отправки сообщения на сервер
 			textEl.addEventListener('input', textareaResize);
 			replyForm = cloneForm;
 		}
@@ -103,7 +106,7 @@
 	}
 
 
-	// Событие нажатия на кнопку отправки сообщения на сервер (добавление)
+	// Обработчик отправки сообщения на сервер с помощью ajax
 	submitCommentEvent = function (e) {
 		e.preventDefault();
 		var textarea = this.querySelector('textarea');
@@ -118,11 +121,6 @@
 		}
 	}
 
-
-	var modalContainer = document.getElementById('editCommentContainer'),
-		statusMsg = modalContainer.querySelector('.message-status'),
-		closeModal = modalContainer.querySelector('button.btn-cancel'),
-		submitModal = modalContainer.querySelector('button[type=submit]');
 
 	editCommentEvent = function (e) {
 		e.preventDefault();
@@ -145,6 +143,7 @@
 		form.appendChild(formText);
 		formText.blur();
 
+		// вывод модального окна с формой для редактирования сообщения
 		modalHandler(modalContainer, form, title, subTitle);
 
 		formText.addEventListener('input', function (e) {
@@ -167,6 +166,7 @@
 
 	}
 
+	// Обработчик удаления комментария
 	deleteCommentEvent = function (e) {
 		e.preventDefault();
 		targetLink = this;
@@ -177,15 +177,15 @@
 
 		form.classList = 'delete-comment-form';
 		form.name = 'delete';
-		form.action = this.href;
+		form.action = targetLink.href;
 		form.method = 'post';
 		formText = document.createElement('textarea');
 		formText.classList = 'form-control';
 		formText.disabled = true;
-		formText.innerText = this.parentElement.querySelector('.comment-block-text').innerText;
+		formText.innerText = targetLink.parentElement.querySelector('.comment-block-text').innerText;
 		form.appendChild(formText);
 		submitModal.textContent = 'Удалить';
-
+		// вывод модального окна с формой для удаления сообщения
 		modalHandler(modalContainer, form, title, subTitle);
 	}
 

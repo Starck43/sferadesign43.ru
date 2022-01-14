@@ -32,7 +32,7 @@
 		if (alert) alert.close();
 	}
 
-	// Обработчик закрытия окон с сообщениями
+	// Обработчик закрытия всплывающих инфо-окон
 	alertHandler = function (html) {
 		if (alertContainer) {
 			alertContainer.classList.remove('hidden');
@@ -75,6 +75,7 @@
 	}
 
 
+	// Форма модального окна
 	modalHandler = function (modalNode, node=null, headerTitle='', subTitle='') {
 		if (modalNode) {
 			if (headerTitle) {
@@ -91,7 +92,7 @@
 				}
 			}
 
-			var modal = bootstrap.Modal.getInstance(modalContainer);
+			var modal = bootstrap.Modal.getInstance(modalNode);
 			if (!modal) modal = new bootstrap.Modal(modalNode,{});
 			modal.show();
 

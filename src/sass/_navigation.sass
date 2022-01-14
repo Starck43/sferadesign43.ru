@@ -56,33 +56,27 @@
 			&::before
 				content: ''
 				position: absolute
-				left: -3px
-				top: 50%
-				width: 3px
+				left: 0.5rem
+				right: 0.5rem
+				+media-breakpoint-down(lg)
+					left: 0
+					right: 0
+				bottom: 0
 				height: 0
 				background-color: #fff
-				transform: translateY(-50%)
 				//border-bottom: 3px #fff solid
 				transition: all 150ms ease-out
 			&:hover
 				&::before
-					//background-color: blue
-					height: 1em
-					//border-color: #000
+					height: 1px
 
 	+media-breakpoint-down(lg)
-		li.nav-item
-			width: 100%
-			.nav-link
-				padding-left: 0.25rem !important
-				padding-right: 0.25rem !important
-
 		.dropdown-menu
 			background-color: transparent !important
 			&.show
 				display: grid
 				grid-template-columns: repeat(auto-fill, minmax(70px, 1fr) )
-				gap: 2vw
+				gap: 0 .5em
 				li
 					//display: inline-flex
 					//width: 70px
@@ -95,11 +89,14 @@
 
 		.dropdown-menu.navbar-dark
 			li
-				border: solid 2px transparentize(#fff, 0.45)
+				border: solid 1px transparentize(#fff, 0.45)
 				transition: all 150ms ease-out
 				&:focus,
 				&:hover
 					border-color: #fff
+
+.nav-link.dropdown-toggle.hidden~.dropdown-menu
+	display: none
 
 @media (max-width: 575.98px) and (orientation: landscape)
 
@@ -140,6 +137,8 @@ a.nav-link
 .navbar-dark
 	.navbar-nav .nav-link,
 	.dropdown-item
+		font-size: 0.9rem
+		font-weight: 200
 		color: transparentize(#fff, 0.3)
 		&:focus,
 		&:hover
