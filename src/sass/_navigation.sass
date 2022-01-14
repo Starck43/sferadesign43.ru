@@ -17,11 +17,13 @@
 		+media-breakpoint-down(lg)
 			.social-block
 				position: absolute
+				display: flex
+				flex-direction: column
+				justify-content: flex-end
 				width: 40px
-				bottom: 0
-				right: 0.75em
-				transform: translateY(100%)
-				transition: all .7s ease
+				top: 0
+				bottom: 1.5rem
+				transform: translateY(-100%)
 				opacity: 0
 
 	&.expanded
@@ -31,8 +33,10 @@
 				align-items: stretch
 				&.show
 					max-height: 100vh !important
+					padding-bottom: 1.5rem
 				.social-block
-					margin-top: auto
+					//margin-top: auto
+					transition: all 0.6s 0.2s ease-out
 					transform: translateY(0%)
 					opacity: 1
 
@@ -72,6 +76,7 @@
 
 	+media-breakpoint-down(lg)
 		.dropdown-menu
+			font-size: 0.9rem
 			background-color: transparent !important
 			&.show
 				display: grid
@@ -137,7 +142,6 @@ a.nav-link
 .navbar-dark
 	.navbar-nav .nav-link,
 	.dropdown-item
-		font-size: 0.9rem
 		font-weight: 200
 		color: transparentize(#fff, 0.3)
 		&:focus,

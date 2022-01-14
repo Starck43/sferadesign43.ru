@@ -8,11 +8,15 @@
 
 {% block site_header %}
 	<svg class="brand-text"><use xlink:href="#main-title"></use></svg>
-	<a href="#" class="sidebar-show-link d-lg-none"><svg class="icon arrow-icon left"><use xlink:href="#arrow-icon"></use></svg>выбрать год</a>
 {% endblock site_header %}
 
-{% block page_title %}{{ page_title }} {% if exh_year != 'all' %}{{ exh_year }}{% else %}за все годы{% endif %}{% endblock page_title %}
+{% block page_title %}
+	{{ page_title }} {% if exh_year != 'all' %}{{ exh_year }}{% else %}за все годы{% endif %}
+{% endblock page_title %}
 
+{% block link %}
+	<a href="#" class="sidebar-show-link d-lg-none"><svg class="icon bi bi-filter-right left"><use xlink:href="#filter-icon"></use></svg>выбрать год</a>
+{% endblock link %}
 
 {% block sidebar %}{% include "sidebar.html" %}{% endblock sidebar %}
 

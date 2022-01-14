@@ -87,26 +87,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		}, {passive: true});
 	});
 
-	// обработчик раскрытия всего содержимого при нажатии на кнопку "Читать далее" при наличии блока описания
-	const excerptBlock = document.querySelector('.description');
-	if (excerptBlock) {
-		var excerptBlock_h = excerptBlock.scrollHeight;
-		if (excerptBlock_h/300 > 1.2) {
-			//excerptBlock.style.height = (excerptBlock_h+30) + 'px';
-			let div = document.createElement('a');
-			div.className = "read-more-link";
-			//div.innerHTML = "Read more";
-			excerptBlock.append(div);
-			excerptBlock.classList.add('brief');
-		}
-
-		excerptBlock.lastElementChild && excerptBlock.lastElementChild.addEventListener('click', (e) => {
-			//var parentBlock = e.target.parentNode;
-			excerptBlock.classList.toggle('brief');
-			excerptBlock_h = excerptBlock.scrollHeight + 30;
-			excerptBlock.style.height = ((excerptBlock.classList.contains('brief')) ? 300 : excerptBlock_h) + 'px';
-		});
-	}
 
 	// Сворачивание мобильного меню по нажатию вне области его контейнера
 	burger.addEventListener('click', function (e) {
@@ -114,11 +94,13 @@ document.addEventListener("DOMContentLoaded", function() {
 		var navbarNavDropdown =  document.querySelector('.navbar-collapse');
 
 		if (container && (this.getAttribute('aria-expanded') == "true" || this.ariaExpanded == "true")) {
+			document.body.classList.add('modal-open');
 			this.parentNode.parentNode.classList.add('expanded');
 			navbarNavDropdown.style.maxHeight = navbarNavDropdown.scrollHeight + 'px';
 			container.addEventListener('click', containerListener, false);
 		}
 		if (container && (this.getAttribute('aria-expanded') == "false" || this.ariaExpanded == "false")) {
+			document.body.classList.remove('modal-open');
 			this.parentNode.parentNode.classList.remove('expanded');
 			navbarNavDropdown.style.maxHeight = 0;
 			container.removeEventListener('click', containerListener, false);
@@ -155,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		searchInput.focus();
 		e.target.classList.remove('show');
 	});
-
+	// Обработчик нажатия на строку поиска в меню
 	searchInput.addEventListener('input', (e) => {
 		var input = this.activeElement;
 		if (input.textLength > 0 && ! clearInput.classList.contains('show')) {
@@ -175,7 +157,18 @@ document.addEventListener("DOMContentLoaded", function() {
 		toggleNavItems(exhibitionsLink);
 		if (window.innerWidth >= 992) {
 			burger.classList.contains('collapsed') && burger.classList.remove('collapsed');
+			if (burger.getAttribute('aria-expanded') == 'true' && document.body.classList.contains('modal-open')) {
+				document.body.classList.remove('modal-open');
+			}
+			document.body.classList.remove('modal-open');
 			burger.nextElementSibling.style.maxHeight = '';
+		} else {
+			if (burger.getAttribute('aria-expanded') == 'false' && document.body.classList.contains('modal-open')) {
+				document.body.classList.remove('modal-open');
+			} else
+			if (burger.getAttribute('aria-expanded') == 'true' && !document.body.classList.contains('modal-open')) {
+				document.body.classList.add('modal-open');
+			}
 		}
 	});
 
@@ -183,6 +176,29 @@ document.addEventListener("DOMContentLoaded", function() {
 		e = e || window.event;
 		(e.keyCode == 27) && searchContainer.classList.remove('active');
 	};
+
+
+	// обработчик раскрытия всего содержимого при нажатии на кнопку "Читать далее" при наличии блока описания
+	const excerptBlock = document.querySelector('.description');
+	if (excerptBlock) {
+		var excerptBlock_h = excerptBlock.scrollHeight;
+		if (excerptBlock_h/300 > 1.2) {
+			//excerptBlock.style.height = (excerptBlock_h+30) + 'px';
+			let div = document.createElement('a');
+			div.className = "read-more-link";
+			//div.innerHTML = "Read more";
+			excerptBlock.append(div);
+			excerptBlock.classList.add('brief');
+		}
+
+		excerptBlock.lastElementChild && excerptBlock.lastElementChild.addEventListener('click', (e) => {
+			//var parentBlock = e.target.parentNode;
+			excerptBlock.classList.toggle('brief');
+			excerptBlock_h = excerptBlock.scrollHeight + 30;
+			excerptBlock.style.height = ((excerptBlock.classList.contains('brief')) ? 300 : excerptBlock_h) + 'px';
+		});
+	}
+
 
 	var siteFooter = document.querySelector('#site-footer');
 	var toTopLink = document.querySelector('#back2top');

@@ -17,10 +17,12 @@
 @import account
 
 html
-	font-size: 16px
+	font-size: 15px
 	+media-breakpoint-up(sm)
-		font-size: 17px
+		font-size: 16px
 	+media-breakpoint-up(lg)
+		font-size: 17px
+	+media-breakpoint-up(xl)
 		font-size: 18px
 
 body
@@ -443,11 +445,20 @@ svg.icon
 			flex: 1 1 auto
 
 
+.participants, .projects
+	header
+		display: flex
+		align-items: center
+		+media-breakpoint-down(sm)
+			flex-direction: column
+		h1
+			flex: 100%
+
 .participants, .exhibitions, .nominations, .project
 	h1
 		min-height: 0vw
 		//margin-bottom: 3vw
-		font-size: calc(1.5rem + 1vw)
+		//font-size: calc(1.5rem + 1vw)
 
 
 .exhibition, .nominations
@@ -591,6 +602,7 @@ svg.icon
 		height: 1rem
 		margin-left: 5px
 		fill: deepskyblue
+		vertical-align: middle
 
 #site-footer
 	margin-top: auto

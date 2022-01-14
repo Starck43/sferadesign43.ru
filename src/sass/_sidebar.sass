@@ -10,7 +10,6 @@
 		position: fixed
 		top: 0
 		bottom: 0
-		background-color: #fff
 		transform: translateX(0%)
 		transition: transform 300ms ease
 		overflow-y: auto
@@ -18,6 +17,7 @@
 		z-index: 1
 		+media-breakpoint-down(lg)
 			width: 75%
+			background-color: #fff
 			z-index: 3
 
 		+media-breakpoint-up(lg)
@@ -26,6 +26,7 @@
 			left: 0
 			bottom: unset
 			transform: unset
+			background-color: transparent
 
 	&.left-side
 		right: 100%
@@ -34,7 +35,11 @@
 
 	&-inner
 		width: 100%
+		height: 100%
 		padding: $container-margin-sm
+		ul
+			height: 100%
+			justify-content: space-evenly
 
 	.banner-link
 		display: block
@@ -48,7 +53,7 @@
 			width: 100%
 			padding-left: $container-margin-lg
 		&.left-side
-			margin-right: math.div($container-margin-lg, 2)
+			padding-right: math.div($container-margin-lg, 2)
 
 	+media-breakpoint-up(xl)
 		max-width: $col-width-xl
@@ -92,28 +97,14 @@
 
 
 .sidebar-show-link
-	position: absolute
-	top: $container-margin
-	right: $container-margin
-	text-transform: lowercase
-	+media-breakpoint-up(sm)
-		top: $container-margin-sm
-		right: $container-margin-sm
-	+media-breakpoint-up(lg)
-		right: $container-margin-lg
-
-.brand-text ~.sidebar-show-link
-	position: relative
-	left: 0
-	top: 2vw
-	//font-size: 0.8em
-	//font-weight: bold
+	display: inline-flex
+	justify-content: flex-end
+	font-size: 0.9em
 	flex: 100%
 	svg
-		height: 1.2em
-		width: 1.2em
+		height: 20px
 		stroke: $main-color
-		stroke-width: 3
+		stroke-width: 0.3px
 
 .nav
 	li

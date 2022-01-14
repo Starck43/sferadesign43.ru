@@ -37,7 +37,7 @@
 
 	// Добавим кнопку закрытия сайдбара, если есть вложенные элементы
 	if (sidebar.firstElementChild) {
-		var btn_html = '<button type="button" class="sidebar-close btn-close d-lg-none" data-bs-dismiss="alert" aria-label="Закрыть"></button>';
+		var btn_html = '<button type="button" class="sidebar-close btn-close btn-lg d-lg-none" data-bs-dismiss="alert" aria-label="Закрыть"></button>';
 		sidebar.insertAdjacentHTML("afterbegin",btn_html);
 
 		// нажатие на кнопку закрытия сайдбара

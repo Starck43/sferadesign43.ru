@@ -78,6 +78,9 @@
 		<symbol id="login-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
 			<path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="12" r="10"/>
 		</symbol>
+		<symbol id="filter-icon" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+			<path d="M14 10.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0 0 1h11a.5.5 0 0 0 .5-.5z"/>
+		</symbol>
 		<symbol id="edit-icon" viewBox="0 0 384 384">
 			<polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"/>
 			<path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"/>
@@ -118,7 +121,10 @@
 
 
 	<div class="container loading">
-		<header id="page-title" class="flex-content loading"><h1>{% block page_title %}{% endblock page_title %}</h1></header>
+		<header id="page-title" class="flex-content loading">
+			<h1>{% block page_title %}{% endblock page_title %}</h1>
+			{% block link %}{% endblock link %}
+		</header>
 
 		<aside class="sidebar sidebar-primary left-side">
 			{% block sidebar %}{% endblock sidebar %}
