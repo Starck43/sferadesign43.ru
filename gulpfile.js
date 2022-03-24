@@ -1,12 +1,12 @@
 /*
  * Gulpfile.js
- * Version: 1.0.0
+ * Version: 2.0.0
  * Author: S.Shabalin
  */
 
 var gulp 		 = require('gulp'),
 	sass 		 = require('gulp-sass')(require('sass')),   // Подключаем SASS
-	browserSync  = require('browser-sync'), // Подключаем Browser Sync
+	browserSync  = require('browser-sync').create(), // Подключаем Browser Sync
 	concat       = require('gulp-concat'), // Подключаем gulp-concat (для слияния файлов)
 	uglify       = require('gulp-uglify-es').default, // Подключаем плагин для сжатия JS
 	ttf2woff2 	 = require('gulp-ttf2woff2'),
@@ -27,18 +27,14 @@ var path = {
 		html: 'templates/' // Путь до шаблонов
 	}
 var site = {
-		http: 'localhost:9000' // здесь нужно указать адрес рабочего сайта, удаленного или локального
+		http: 'localhost:7000' // здесь нужно указать адрес рабочего сайта, удаленного или локального
 }
 
 
-const styles = function() { // таск 'styles' обработает все файлы *.sass, вложенные в любые подпапки
-	return gulp.src(path.src+'sass/*.+(sass|scss)')
+function styles() { // таск 'styles' обработает все файлы *.sass, вложенные в любые подпапки
+	return gulp.src([path.src+'sass/**/*.+(sass|scss)'])
 	//.pipe(sourcemaps.init()) //инициализируем soucemap
 	.pipe(sass({ outputStyle: 'expanded' })) //  Опция { outputStyle: 'expanded' } развертывает все унификации
-	/*
-		файлы с подчеркиванием не участвуют в компиляции, например, _part.sass.
-		Его подключают через @import 'part' в файле *.sass
-	*/
 	.pipe(autoprefixer({
 		grid: true,
 		overrideBrowserslist: ['last 3 versions']
@@ -46,18 +42,19 @@ const styles = function() { // таск 'styles' обработает все ф�
 	.pipe(combineCSS()) //Объединяем медиа запросы
 	.pipe(postcss([ cssImport ])) // Импортируем стили, прописанные через команду @import в начале файла
 	.pipe(sourcemaps.init())
-	.pipe(sass().on('error', sass.logError))
+	.pipe(sass({
+		outputStyle: 'compressed',
+	}).on('error', sass.logError))
 	.pipe(sourcemaps.write()) //пропишем sourcemap
 	//.pipe(concat('main.min.css')) // Объединяем все найденные файлы в один
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
-	//.pipe(cleanCSS({level:2})) // Сжимаем CSS файл
 	.pipe(gulp.dest(path.static+'css')) // Выгружаем результат в папку static::/css
-	.pipe(browserSync.reload({ stream: true })) // Обновляем CSS на странице при изменении
+	.pipe(browserSync.stream()) // Обновляем CSS на странице при изменении
 };
 
 
 // Скрипт компиляции скриптов
-const scripts = function() {
+function scripts() {
 	return gulp.src([path.src+'js/*.js'])
 //	.pipe(sourcemaps.init()) // Инициализируем sourcemap
 	.pipe(rigger()) //подключаем импортирование скриптов
@@ -66,40 +63,40 @@ const scripts = function() {
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 //	.pipe(sourcemaps.write()) // Пропишем карты
 	.pipe(gulp.dest(path.static+'js')) // Выгружаем в папку dest::/js
-	.pipe(browserSync.reload({ stream: true }))  // Обновляем страницу после изменения своего скрипта
+	.pipe(browserSync.stream()) // Обновляем CSS на странице при изменении
 };
 
-const html = function() {
+function html() {
 	return gulp.src([path.html+'**/*.html'])
-		.pipe(browserSync.reload({ stream: true }))
+	.pipe(browserSync.stream()) // Обновляем CSS на странице при изменении
 };
 
 
 // Скрипт сжатия стилей
-const css_compress = async function() {
-	gulp.src(path.static+'css/*.css') // Сжимаем библиотеки
-	.pipe(cleanCSS({level:2})) // Сжимаем CSS файл
+function css_compress() {
+	return gulp.src(path.static+'css/*.css') // Сжимаем библиотеки
+	.pipe(cleanCSS({level:1})) // Сжимаем CSS файл
 	//.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 	.pipe(gulp.dest(path.static+'css'))
 };
 
 // Скрипт сжатия скриптов
-const scripts_compress = async function() {
-	gulp.src(path.static+'js/*.js') // Сжимаем библиотеки
+function scripts_compress() {
+	return gulp.src(path.static+'js/*.js') // Сжимаем библиотеки
 	.pipe(uglify()) // Сжимаем JS файл
 	.pipe(gulp.dest(path.static+'js'))
 };
 
 //  Скрипт конвертации шрифтов TIFF в папке src/fonts в WOFF2 в папку static/fonts
-const ttf_to_woff2 = async function() {
+function ttf_to_woff2() {
 	return gulp.src(path.src+'fonts/*.ttf') // Сжимаем библиотеки
 	.pipe(ttf2woff2())
 	.pipe(gulp.dest(path.static+'fonts/'))
 };
 
 // Скрипт синхронизации контента в браузере
-const browser_sync = function() { // Создаем таск browser-sync
-	browserSync({ // Определяем параметры сервера.
+function browsersync() { // Создаем таск browser-sync
+	browserSync.init({ // Определяем параметры сервера.
 		//server: { baseDir: path.html },  // Нельзя подключать одновремено с proxy
 		host: site.http,
 		proxy: site.http,
@@ -111,7 +108,7 @@ const browser_sync = function() { // Создаем таск browser-sync
 };
 
 // Deploy - выгрузка файлов на хостинг
-const deploy = function() {
+function deploy() {
 	return gulp.src(path.static+'')
 	.pipe(rsync({
 		root: path.static,
@@ -126,22 +123,23 @@ const deploy = function() {
 	}))
 };
 
+
 // Скрипт слежения за изменениями файлов при сохранении.
-const watch = function() { //таск слежения изменений в sass,css,html,php,js.
+function watch() { //таск слежения изменений в sass,css,html,php,js.
 	gulp.watch([path.src +'sass/**/*.sass', path.src+'css/*.css'], styles); // Наблюдение за sass файлами в папке с исходниками sass и css
 	gulp.watch([path.src +'js/**/*.js'], scripts); // Наблюдение за JS файлами
 	gulp.watch([path.html+'**/*.html'], html); // Наблюдение за HTML файлами в папке templates
 };
 
 // Экспорт скриптов для публичного доступа (через командную строку в том числе)
-exports.styles = styles;
-exports.scripts = scripts;
-exports.html = html;
+exports.browsersync = browsersync;
 exports.css_compress = css_compress;
 exports.scripts_compress = scripts_compress;
 exports.ttf_to_woff2 = ttf_to_woff2;
 
+
 //Дефолтный таск для параллельного запуска необходимых процессов при запуске
-exports.default = gulp.parallel(styles, scripts, watch, browser_sync);
-
-
+exports.default = gulp.series(
+	gulp.parallel(styles, scripts),
+	gulp.parallel(browsersync, watch)
+);

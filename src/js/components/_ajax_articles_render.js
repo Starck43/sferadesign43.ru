@@ -34,7 +34,8 @@
 					preloader.classList.add('show');
 				}
 
-				scroll2Top(contentBlock.getBoundingClientRect().top, navbar.clientHeight); // сдвинем контент вверх экрана
+				//smoothScroll(contentBlock.getBoundingClientRect().top, navbar.clientHeight); // сдвинем контент вверх экрана
+				smoothScroll(0, navbar.clientHeight); // сдвинем контент вверх экрана
 
 			} else {
 				// Вставим контент перед прелоадером

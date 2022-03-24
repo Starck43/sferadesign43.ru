@@ -73,6 +73,8 @@
 	{% cache cache_timeout portfolio_list owner project_id is_mobile %}
 
 	<div class="portfolio-container">
+
+		{% if portfolio.exhibition %}
 		<div class="portfolio-meta flex-content">
 			<div class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></div>
 			<div class="portfolio-exhibition">Участие в выставке: <a href="{% url 'exhibition:exhibition-detail-url' portfolio.exhibition.slug %}">{{portfolio.exhibition}}</a></div>
@@ -87,6 +89,7 @@
 			</div>
 			{% endif %}
 		</div>
+		{% endif %}
 
 		{% include "exhibition/images_list.html" %}
 

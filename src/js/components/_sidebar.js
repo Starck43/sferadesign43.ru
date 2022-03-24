@@ -2,13 +2,6 @@
 	 * Sidebar Events
 	 */
 
-	const sidebar = document.querySelector('.sidebar-primary');
-	//const navbar = document.querySelector('nav.navbar');
-
-/*	window.setTimeout( () => {
-		navbar.style.visibility = 'visible';
-	}, 300);*/
-
 	function showSidebar(e) {
 		e.preventDefault();
 		sidebar.style.top = (window.innerWidth < 992) ? navbar.clientHeight + 'px' : '';
@@ -37,7 +30,7 @@
 
 	// Добавим кнопку закрытия сайдбара, если есть вложенные элементы
 	if (sidebar.firstElementChild) {
-		var btn_html = '<button type="button" class="sidebar-close btn-close btn-lg d-lg-none" data-bs-dismiss="alert" aria-label="Закрыть"></button>';
+		var btn_html = '<button type="button" class="sidebar-close btn-close btn-lg d-lg-none" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>';
 		sidebar.insertAdjacentHTML("afterbegin",btn_html);
 
 		// нажатие на кнопку закрытия сайдбара

@@ -13,15 +13,14 @@ from functools import partial
 
 from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
 from sorl.thumbnail.admin import AdminImageMixin
-from sorl.thumbnail import get_thumbnail
 
 # Exhibitors, Jury, Partners, Events, Nominations, Exhibitions, Portfolio, Image
 from crm import models
 from .models import *
 from blog.models import Article
 
-from .forms import ExhibitionsForm, PortfolioForm, CustomClearableFileInput, MetaSeoFieldsForm
-from .logic import delete_cached_fragment, SendEmailAsync
+from .forms import ExhibitionsForm, PortfolioForm, ImageForm, MetaSeoFieldsForm
+from .logic import delete_cached_fragment, PortfolioUploadConfirmation, CustomClearableFileInput
 from rating.admin import RatingInline, ReviewInline
 
 
@@ -73,33 +72,17 @@ class MetaSeoFieldsAdmin:
 		}),
 	)
 
-
-	def get_form(self, request, obj=None, **kwargs):
-		form = super().get_form(request, obj, **kwargs)
-		self.meta_model = ContentType.objects.get(model=self.model.__name__.lower())
-		self.meta = None
-		if obj:
-			try:
-				self.meta = MetaSEO.objects.get(model=self.meta_model, post_id=obj.id)
-			except MetaSEO.DoesNotExist:
-				pass
-		form.meta = self.meta
-		return form
-
+	# def get_form(self, request, obj=None, **kwargs):
+	# 	form = super().get_form(request, obj, **kwargs)
+	# 	return form
 
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
 
-		if change and self.meta:
-			instance = self.meta #MetaSEO.objects.get(model=self.meta_model, post_id=obj.id)
-			instance.title = form.cleaned_data['meta_title']
-			instance.description = form.cleaned_data['meta_description']
-			instance.keywords = form.cleaned_data['meta_keywords']
-			instance.save()
-		else:
+		if obj.pk and not change and form.changed_data:
 			MetaSEO.objects.create(
-				model=self.meta_model,
-				post_id=obj.id,
+				model=form.meta_model,
+				post_id=obj.pk,
 				title=form.cleaned_data['meta_title'],
 				description=form.cleaned_data['meta_description'],
 				keywords=form.cleaned_data['meta_keywords'],
@@ -230,12 +213,12 @@ class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelA
 
 
 class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
-
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'phone',)
 	list_display_links = ('logo_thumb', 'name', 'phone',)
 
 	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
 		delete_cached_fragment('index_page')
 		delete_cached_fragment('persons','partners', 'all')
 
@@ -243,7 +226,6 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAd
 		for exh in exhibitions:
 			delete_cached_fragment('persons','partners', exh.slug)
 			delete_cached_fragment('exhibition_content', exh.slug)
-		super().save_model(request, obj, form, change)
 
 
 
@@ -287,6 +269,9 @@ class NominationsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 		return format_html(obj.description)
 
 	description_html.short_description = 'Описание'
+
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
 
 
 
@@ -343,27 +328,35 @@ class WinnersAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	save_as = True
 	save_on_top = True # adding save button on top bar
 
-	# def formfield_for_foreignkey(self, db_field, request, **kwargs):
-	# 	if db_field.name == "portfolio":
-	# 		query = Portfolio.objects.prefetch_related('nominations_for_exh').all()
 
-	# 	return super().formfield_for_foreignkey(db_field, request, **kwargs)
+	""" Отобразим список участников с указанием сортировки по новому полю """
+	def formfield_for_foreignkey(self, db_field, request, **kwargs):
+		if db_field.name == "exhibitor":
+			kwargs["queryset"] = Exhibitors.objects.order_by('name')
+
+		return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
 
-		delete_cached_fragment('persons', 'winners')
+		delete_cached_fragment('persons', 'winners', 'all')
+		exhibitions = Exhibitions.objects.all()
+		for exh in exhibitions:
+			delete_cached_fragment('persons', 'winners', exh.slug)
+
+		delete_cached_fragment('exhibition_content', obj.exhibition.slug)
 		delete_cached_fragment('participant_detail', obj.portfolio.id)
 
 
 
-
 class ImagesInline(admin.StackedInline):
+	#form = ImageForm
 	model = Image
 	template = 'admin/exhibition/edit_inline/stacked.html'
-	extra = 0 #new blank record count
+	extra = 1 #new blank record count
 	show_change_link = True
-	fields = ('file_thumb', 'file', 'title', 'filename', 'sort',)
+	fields = ('file_thumb', 'file', 'title', 'sort', 'filename', )
 	list_display = ('file_thumb', 'title',)
 	readonly_fields = ('file_thumb', 'filename',)
 	list_editable = ['title','sort']
@@ -373,7 +366,10 @@ class ImagesInline(admin.StackedInline):
 	}
 
 
+
 class ImageAdmin(AdminImageMixin, admin.ModelAdmin):
+	form = ImageForm
+
 	fields = ('portfolio', 'title', 'description', 'file', 'sort')
 	readonly_fields = ('file_thumb',)
 	list_display = ('file_thumb', 'portfolio', 'title', 'author', 'sort',)
@@ -415,15 +411,16 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
 		(None, {
 			'classes': ('portfolio-block',),
-			'fields': ('owner', 'exhibition', 'nominations', 'title', 'description', 'attributes',),
+			'fields': ('owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover', 'files', 'attributes','status',),
 		}),
 	) + MetaSeoFieldsAdmin.fieldsets
 
-	list_display = ('owner', 'slug', '__str__', 'exhibition', 'nominations_list', 'attributes_list')
-	list_display_links = ('owner', 'slug', '__str__')
+	list_display = ('owner', '__str__', 'exhibition', 'nominations_list', 'status')
+	list_display_links = ('owner', '__str__')
 	search_fields = ('title', 'owner__name', 'owner__user__first_name', 'owner__user__last_name', 'exhibition__title', 'nominations__title')
-	list_filter = ('nominations__category', 'nominations', 'owner',)
+	list_filter = ('nominations__category', 'nominations', 'owner', 'status')
 	date_hierarchy = 'exhibition__date_start'
+	ordering = ('-exhibition__date_start','-project_id',)
 
 	list_per_page = 30
 	save_on_top = True # adding save button on top bar
@@ -435,7 +432,7 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 		css = {
              'all': ['/static/bootstrap/css/bootstrap.min.css']
              }
-		js = ['/static/js/jquery.min.js','/static/bootstrap/js/bootstrap.min.js','/static/js/files-upload.min.js']
+		js = ['/static/js/jquery.min.js','/static/bootstrap/js/bootstrap.min.js','/static/js/files-upload.min.js','/static/js/project-upload.min.js']
 
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations.values_list('title', flat=True))
@@ -443,46 +440,29 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	nominations_list.admin_order_field = 'nominations__title'
 
 
-	# def category(self, obj):
-	# 	categories = obj.nominations.filter(category__isnull=False).values_list('category__title', flat=True)
-	# 	if categories:
-	# 		return ', '.join(categories)
-	# 	else:
-	# 		return '<без категории'
-	# category.short_description = 'Категория'
+	# def attributes_list(self, obj):
+	# 	return ', '.join(obj.attributes.values_list('name', flat=True))
+	# attributes_list.short_description = 'Аттрибуты для фильтра'
+	# attributes_list.admin_order_field = 'attributes__group'
 
-	def attributes_list(self, obj):
-		return ', '.join(obj.attributes.values_list('name', flat=True))
-	attributes_list.short_description = 'Аттрибуты для фильтра'
-	attributes_list.admin_order_field = 'attributes__group'
+
+	""" Отобразим список участников с указанием сортировки по новому полю """
+	def formfield_for_foreignkey(self, db_field, request, **kwargs):
+		if db_field.name == "owner":
+			kwargs["queryset"] = Exhibitors.objects.order_by('name')
+
+		return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+	def get_form(self, request, obj=None, **kwargs):
+		form = super().get_form(request, obj=obj, **kwargs)
+		form.request = request
+		return form
 
 
 	def save_model(self, request, obj, form, change):
-		super().save_model(request, obj, form, change)
-
-		image_list = request.FILES.getlist('files', None)
-		obj.save(image_list) # сохраним портфолио и связанные фотографии
-
-		# Отправим сообщение автору портфолио с уведомлением о добавлении фото
-		if image_list and obj.owner.user and obj.owner.user.email: # new portfolio with images
-			protocol = 'https' if request.is_secure() else 'http'
-			host_url = "{0}://{1}".format(protocol, request.get_host())
-
-			# Before email notification we need to get a list of uploaded thumbs [100x100]
-			uploaded_images = []
-			size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
-			for im in image_list:
-				image = path.join(settings.FILES_UPLOAD_FOLDER, obj.owner.slug, obj.exhibition.slug, obj.slug, im.name)
-				thumb = get_thumbnail(image, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
-				uploaded_images.append(thumb)
-
-			subject = 'Добавление фотографий на сайте Сфера Дизайна'
-			template = render_to_string('exhibition/new_project_notification.html', {
-				'project': obj,
-				'host_url': host_url,
-				'uploaded_images': uploaded_images,
-			})
-			SendEmailAsync(subject, template, [obj.owner.user.email])
+		images = request.FILES.getlist('files')
+		obj.save(images=images) # сохраним портфолио и связанные фотографии
 
 		delete_cached_fragment('portfolio_list', obj.owner.slug, obj.project_id, True)
 		delete_cached_fragment('portfolio_list', obj.owner.slug, obj.project_id, False)
@@ -503,25 +483,6 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 
 
 
-	# def delete_file(self, pk, request):
-	# 	obj = get_object_or_404(Image, pk=pk)
-	# 	return obj.delete()
-
-	# def clean_file(self):
-	# 	files = self.cleaned_data['file']
-	# 	print(files)
-	# 	raise ValidationError('File already exists')
-	# 	if path.isfile(file_path):
-	# 		raise ValidationError('File already exists')
-	# 		return self.cleaned_data
-
-	# def formfield_for_manytomany(self, db_field, request, **kwargs):
-	# 	if db_field.name == "nominations":
-	# 		kwargs["queryset"] = Nominations.objects.filter(pk=request.id)
-	# 	return super().formfield_for_manytomany(db_field, request, **kwargs)
-
-
-
 
 class GalleryInlineAdmin(admin.StackedInline):
 	model = Gallery
@@ -533,7 +494,7 @@ class GalleryInlineAdmin(admin.StackedInline):
 	readonly_fields = ('file_thumb', 'filename',)
 	list_editable = ['title']
 	classes = ['gallery-inline-tab',]
-	verbose_name_plural = ""
+	verbose_name_plural = "Загруженные фотографии"
 	list_per_page = 30
 
 	formfield_overrides = {
@@ -613,6 +574,17 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Mo
 		("СЕО", ['meta-tab']),
 	)
 
+
+	""" Отобразим список участников с указанием сортировки по новому полю """
+	def formfield_for_manytomany(self, db_field, request, **kwargs):
+		if db_field.name == "exhibitors":
+			kwargs["queryset"] = Exhibitors.objects.order_by('name')
+		return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+	# def formfield_for_foreignkey(self, db_field, request, **kwargs):
+	# 	return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
 		#сохраним связанные с выставкой фото
@@ -632,7 +604,6 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Mo
 		delete_cached_fragment('exhibition_overlay', obj.slug)
 		if not change:
 			delete_cached_fragment('exhibitions_list')
-
 
 
 
@@ -692,10 +663,6 @@ class MetaAdmin(admin.ModelAdmin):
 
 	# def formfield_for_choice_field(self, db_field, request, **kwargs):
 	# 	return super().formfield_for_choice_field(db_field, request, **kwargs)
-
-	""" Отобразим список авторов статьи только для участников, партнеров, жюри"""
-	# def formfield_for_foreignkey(self, db_field, request, **kwargs):
-	# 	return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 

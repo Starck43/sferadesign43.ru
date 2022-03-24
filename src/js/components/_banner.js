@@ -1,28 +1,33 @@
-/*
-* Вывод баннера на странице exhibition_detail.html
-*/
+	/*
+	* Вывод баннера на странице exhibition_detail.html
+	*/
 
-	var banner = document.querySelector('.banner-container');
-	if (banner) {
-		banner.classList.add('slider-container', 'peppermint', 'peppermint-inactive');
-		banner_slider = Peppermint( banner, {
+	var container = document.querySelector('.banner-container');
+	if (container) {
+		var slidesCount = 0;
+		container.classList.add('slider-container', 'peppermint', 'peppermint-inactive');
+		var bannerSlider = Peppermint( container, {
 			//dots: true,
 			//touchSpeed: 300,
-			speed: window.innerWidth/2,
+			speed: window.innerWidth/1.5,
 			slideshow: true,
-			slideshowInterval: 4000,
+			slideshowInterval: 5000,
 			stopSlideshowAfterInteraction: true,
 			startSlide: 0,
 			disableIfOneSlide: true,
 			slidesContainer: document.querySelector('#banners-block'),
 			onSetup: function(n) {
+				container.classList.remove('peppermint-inactive');
 				if (n > 1 && !is_mobile) {
-					const banner_rightArrow = banner.querySelector('.arrow-right');
-					const banner_leftArrow = banner.querySelector('.arrow-left');
-					banner_rightArrow && banner_rightArrow.addEventListener('click', banner_slider.next, false);
-					banner_leftArrow && banner_leftArrow.addEventListener('click', banner_slider.prev, false);
+					const banner_rightArrow = container.querySelector('.arrow-right');
+					const banner_leftArrow = container.querySelector('.arrow-left');
+					banner_rightArrow && banner_rightArrow.addEventListener('click', bannerSlider.next, false);
+					banner_leftArrow && banner_leftArrow.addEventListener('click', bannerSlider.prev, false);
 				}
 			}
 		});
 
+		window.addEventListener('resize', function(){
+			bannerSlider.recalcWidth();
+		});
 	}

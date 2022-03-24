@@ -27,6 +27,7 @@ from exhibition.sitemap import sitemaps
 urlpatterns = [
 	re_path(r'^admin/', admin.site.urls),
 	path('accounts/', include('allauth.urls')),
+	path('designers/', include('designers.urls')),
 	path('', include('exhibition.urls')),
 	path('', include('rating.urls')),
 	path('', include('blog.urls')),

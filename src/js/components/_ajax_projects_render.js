@@ -28,19 +28,21 @@
 							loading="lazy"\
 							title="'+title+'"\
 							alt="'+(title ? title+'. ' : '')+'Автор проекта: '+author+'">\
-						<figcaption class="img-title centered">\
+						<figcaption class="img-title">\
 							<h2 class="project-title">'+title+'</h2>'+
 							(author ? '<div class="subtitle">'+author+'</div>' : '')+
-							(score ?
-							'<div class="portfolio-rate centered">\
-								<span class="rate-counter">'+score+'</span>\
-								<svg class="rate-star"><use xlink:href="#star-icon"></use></svg>\
-							</div>' : '')+
+							'<div class="meta">'+
 							(win_year ?
-							'<div class="portfolio-award centered">\
+							'<div class="portfolio-award">\
 								<svg class="award"><use xlink:href="#award-icon"></use></svg>\
 								<span>'+win_year+'</span>\
 							</div>' : '')+
+							(score ?
+							'<div class="portfolio-rate">\
+								<span class="rate-counter">'+score+'</span>\
+								<svg class="rate-star"><use xlink:href="#star-icon"></use></svg>\
+							</div>' : '')+
+							'</div>'+
 						'</figcaption>\
 					</figure>\
 				</a>';

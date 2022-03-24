@@ -39,9 +39,6 @@ h1
 	color: $header-color
 	text-transform: lowercase
 	font-size: calc(2rem + 1vw)
-	+media-breakpoint-up(lg)
-		font-size: 3em
-
 	span
 		display: block
 		font-size: .5em
@@ -71,26 +68,31 @@ ul li
 	margin-bottom: 0.5em
 
 *:not(.description)
-	>ol
+	>ol, >li
 		padding-left: 0
 		list-style-type: none
-		//+media-breakpoint-down(xs)
 
 li, img
 	outline: 0
 
-p
+p, article
 	img
 		display: block
 		max-width: 100%
+		height: auto !important
 
 	a
 		font-weight: 500
 
-form:not(.nav-search) >*
-	margin-bottom: 2vh
+form:not(.nav-search)
+	.form-group >label
+		margin-bottom: 0.5rem
+		font-weight: bold
+		text-transform: none
+	>*
+		margin-bottom: 1.5rem
 
-img
+img, .row .logo img
 	width: 100%
 	height: auto
 	text-indent: -9999px
@@ -99,10 +101,8 @@ img
 	overflow: hidden
 	transition: all 300ms ease-in-out
 
-.ratio
-	img
-		object-fit: contain
-
+.ratio img
+	object-fit: contain
 
 .logo img
 	width: auto
@@ -129,7 +129,7 @@ img[data-sizes="auto"]
 			backdrop-filter: blur(0)
 
 .loading, .loaded
-	transition: opacity 500ms ease
+	transition: opacity 500ms ease-in
 
 .loading
 	opacity: 0
@@ -171,6 +171,14 @@ svg.icon
 		&.left
 			transform: rotate(180deg)
 
+.message-status
+	margin-left: 1em
+	&.success
+		color: #0f5132
+	&.warning
+		color: #055160
+	&.error
+		color: #842029
 
 .back-link
 	svg
@@ -203,6 +211,12 @@ svg.icon
 		background-color: $main-color
 		border-color: $main-color
 
+.btn-close
+	opacity: 0.7
+	transition: 150ms all ease
+	&:hover
+		opacity: 1
+		transform: rotate(90deg) scale(120%)
 
 .social-link
 	display: inline-block
@@ -220,10 +234,9 @@ svg.icon
 
 
 #back2top
-	--padding-var: $container-margin
 	position: fixed
-	bottom: var(--padding-var)
-	right: var(--padding-var)
+	bottom: $container-margin
+	right: $container-margin
 	transition: 500ms transform ease-in-out
 	opacity: 1
 	z-index: 10000
@@ -233,17 +246,19 @@ svg.icon
 		opacity: 0
 		z-index: -1
 	+media-breakpoint-up(sm)
-		--padding-var: $container-margin-sm
+		bottom: $container-margin-sm
+		right: $container-margin-sm
 	+media-breakpoint-up(lg)
-		--padding-var: $container-margin-lg
+		bottom: $container-margin-lg
+		right: $container-margin-lg
 
 .top-link
 	padding: 3px
-	background-color: $main-color
 	opacity: 0.6
+	border: 0
 	.arrow-icon
 		padding: .25em
-		stroke: #fff
+		stroke: #000
 		stroke-width: 2
 		&+span
 			display: none
@@ -253,12 +268,7 @@ svg.icon
 	+media-breakpoint-up(lg)
 		padding: 0 .4em
 		font-size: 0.8em
-		background-color: initial
-		&:hover
-			color: #fff !important
-			background-color: $main-color
 		.arrow-icon
-			display: none
 			&+span
 				display: block
 
@@ -379,10 +389,10 @@ svg.icon
 		margin-bottom: $container-margin-lg
 
 	header
-		padding: $container-margin*2 0 0
+		padding: $container-margin*3 0 $container-margin*2
 		flex: 100%
 		+media-breakpoint-up(sm)
-			padding: $container-margin-sm*2 0 0
+			padding: $container-margin-sm*3 0 $container-margin-sm*2
 
 	.content
 		flex: 1
@@ -396,6 +406,7 @@ svg.icon
 		padding: 0 $container-margin-sm
 	+media-breakpoint-up(lg)
 		padding: 0 $container-margin-lg
+
 
 .flex-content
 	margin: $container-margin 0
@@ -448,7 +459,7 @@ svg.icon
 .participants, .projects
 	header
 		display: flex
-		align-items: center
+		align-items: flex-start
 		+media-breakpoint-down(sm)
 			flex-direction: column
 		h1
@@ -479,6 +490,10 @@ svg.icon
 		top: 50%
 		transform: translateY(-50%)
 
+
+.winners-list
+	h4
+		font-weight: 300
 
 .categories-list
 	.grid-cell
@@ -543,11 +558,14 @@ svg.icon
 	+push--auto
 	.form-container
 		max-width: 600px
+		margin: auto
 
 		.form-group
 			margin-bottom: $container-margin-lg
 			+media-breakpoint-down(sm)
 				margin-bottom: $container-margin
+		.send-button
+			border-color: $main-color
 
 #alertContainer
 	position: fixed
@@ -610,3 +628,30 @@ svg.icon
 	border-top: 1px solid $highlight-border-color
 	.copyright
 		text-align: center
+
+.upload-form
+	select, .django-ckeditor-widget
+		width: 100%
+	input[type="text"]
+		min-width: 100%
+
+	.portfolio-image
+		.form-label, .input-group-text, .upload-link .input-group
+			display: none
+		.input-group-text+div
+			border: none
+		input
+			max-width: 100%
+		textarea
+			height: 6rem
+		.image
+			width: auto
+			max-width: 300px
+		.meta
+			flex: 1
+			>div
+				width: 100%
+				line-height: 1.2
+
+
+

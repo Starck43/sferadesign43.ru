@@ -24,7 +24,7 @@
 
 {% block content %}
 
-	{% cache cache_timeout portfolio_list exh_year nomination_slug is_mobile %}
+	{% cache cache_timeout portfolio_list exh_year nomination.slug is_mobile %}
 
 	<div class="portfolio-container">
 
@@ -93,7 +93,7 @@
 {% block extra_container %}
 
 	{% if not is_mobile and portfolio %}
-		{% cache cache_timeout portfolio_slider exh_year nomination_slug %}
+		{% cache cache_timeout portfolio_slider exh_year nomination.slug %}
 		{% include "exhibition/gallery.html" %}
 		{% endcache %}
 	{% endif %}

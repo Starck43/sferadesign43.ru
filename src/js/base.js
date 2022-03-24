@@ -15,6 +15,7 @@ function isInViewport(el, onlyVisible=false, fullInView=false) {
 
 }
 
+// Разворачивание/сворачивание списка с выставками в меню
 function toggleNavItems(link) {
 	link && link.forEach( (e) => {
 		if (window.innerWidth < 992) {
@@ -27,34 +28,41 @@ function toggleNavItems(link) {
 	});
 }
 
-// Вычисление высоты верхнего блока навигации
-function navbarOffset(elem) {
-	// Добавим смещение следущему после меню элементу
-	if (!elem.classList.contains('expanded')) {
-		elem.nextElementSibling.style.marginTop = elem.clientHeight + 'px';
+// Переключение класса для Burger menu
+function toggleBurgerMenu(elem) {
+	if (window.innerWidth >= 992) {
+		if (elem.classList.contains('navbar-expand-lg') && elem.classList.contains('burger-menu')) {
+			elem.classList.remove('burger-menu')
+		}
+	} else {
+		if (elem.classList.contains('navbar-expand-lg') && ! elem.classList.contains('burger-menu')) {
+			elem.classList.add('burger-menu')
+		}
 	}
 }
 
- // Скролинг с позиционированием элемента вверху экрана
-function scroll2Top(pos, offset=0) {
-	window.scrollTo({
-		top: (pos + window.scrollY - offset),
-		behavior: "smooth"
-	});
+// Вычисление высоты верхнего блока навигации
+function navbarOffset(elem) {
+	// Добавим смещение следущему после меню элементу
+	elem.nextElementSibling.style.marginTop = elem.clientHeight + 'px';
 }
 
 
 document.addEventListener("DOMContentLoaded", function() {
-	const burger = document.querySelector('.navbar-toggler');
-	const navbar = document.querySelector('nav.navbar');
+	//= components/_init.js
 
-	navbarOffset(navbar);
+	const navbar = document.querySelector('nav.navbar');
+	const html = document.querySelector('html.sd43');
+	html && navbarOffset(navbar);
+	html && toggleBurgerMenu(navbar);
+
+	const exhibitionsLink = document.querySelectorAll('.exh-nav-item .nav-link');
+	(window.innerWidth >= 992) && toggleNavItems(exhibitionsLink);
 
 	if ('loading' in HTMLImageElement.prototype) {
 		var images = document.querySelectorAll("img");
-		const desktop = document.querySelector('html').classList.contains('desktop');
 		images.forEach(img => {
-			var preserveLazyload = (img.classList.contains('image-img') && desktop);
+			var preserveLazyload = (img.classList.contains('image-img') && document.querySelector("html").classList.contains('desktop'));
 			if (!preserveLazyload) {
 				if (img.dataset.src) 	img.removeAttribute('data-src');
 				if (img.dataset.srcset) img.removeAttribute('data-srcset');
@@ -64,14 +72,8 @@ document.addEventListener("DOMContentLoaded", function() {
 		});
 	}
 
-	const loadingElements = document.body.querySelectorAll('.loading');
-	loadingElements.forEach( function(item) {
 
-		item.classList.remove('loading');
-		item.classList.add('loaded');
-	});
-
-	//обработаем нажатие на '+/-' у заголовка групп фильтрации checkbox для размертывания/свертывания
+	//обработаем нажатие на '+/-' у заголовка групп фильтрации checkbox для развертывания/свертывания
 	const collapsedBlock = document.querySelectorAll('.collapsed')
 	collapsedBlock.forEach( (item) => {
 		item.addEventListener('click', (e) => {
@@ -88,28 +90,6 @@ document.addEventListener("DOMContentLoaded", function() {
 	});
 
 
-	// Сворачивание мобильного меню по нажатию вне области его контейнера
-	burger.addEventListener('click', function (e) {
-		const container = document.querySelector('.container');
-		var navbarNavDropdown =  document.querySelector('.navbar-collapse');
-
-		if (container && (this.getAttribute('aria-expanded') == "true" || this.ariaExpanded == "true")) {
-			document.body.classList.add('modal-open');
-			this.parentNode.parentNode.classList.add('expanded');
-			navbarNavDropdown.style.maxHeight = navbarNavDropdown.scrollHeight + 'px';
-			container.addEventListener('click', containerListener, false);
-		}
-		if (container && (this.getAttribute('aria-expanded') == "false" || this.ariaExpanded == "false")) {
-			document.body.classList.remove('modal-open');
-			this.parentNode.parentNode.classList.remove('expanded');
-			navbarNavDropdown.style.maxHeight = 0;
-			container.removeEventListener('click', containerListener, false);
-		}
-	}, {passive: true});
-
-	var containerListener = function(e) {
-		burger.click();
-	}
 
 	// Обработчик нажатия на кнопу поиска
 	const searchContainer = document.querySelector('#searchContainer');
@@ -148,26 +128,23 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 	});
 
+	const menu = document.querySelector('#navbarNavDropdown');
+	var menuCanvas = (menu) ? new bootstrap.Offcanvas(menu) : null;
 
-	const exhibitionsLink = document.querySelectorAll('.exh-nav-item .nav-link');
-	(window.innerWidth >= 992) && toggleNavItems(exhibitionsLink);
+	const sidebar = document.querySelector('#sidebarPrimary');
+	var sidebarCanvas = (sidebar) ? new bootstrap.Offcanvas(sidebar) : null;
 
+	// закрытие модальных окон при изменении размера окна
 	window.addEventListener('resize', function(){
-		navbarOffset(navbar);
+		html && navbarOffset(navbar);
+		html && toggleBurgerMenu(navbar);
 		toggleNavItems(exhibitionsLink);
 		if (window.innerWidth >= 992) {
-			burger.classList.contains('collapsed') && burger.classList.remove('collapsed');
-			if (burger.getAttribute('aria-expanded') == 'true' && document.body.classList.contains('modal-open')) {
-				document.body.classList.remove('modal-open');
+			if (menuCanvas && menu.classList.contains('show') ) {
+				menuCanvas.hide();
 			}
-			document.body.classList.remove('modal-open');
-			burger.nextElementSibling.style.maxHeight = '';
-		} else {
-			if (burger.getAttribute('aria-expanded') == 'false' && document.body.classList.contains('modal-open')) {
-				document.body.classList.remove('modal-open');
-			} else
-			if (burger.getAttribute('aria-expanded') == 'true' && !document.body.classList.contains('modal-open')) {
-				document.body.classList.add('modal-open');
+			if (sidebarCanvas && sidebar.classList.contains('show')) {
+				sidebarCanvas.hide();
 			}
 		}
 	});
@@ -176,54 +153,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		e = e || window.event;
 		(e.keyCode == 27) && searchContainer.classList.remove('active');
 	};
-
-
-	// обработчик раскрытия всего содержимого при нажатии на кнопку "Читать далее" при наличии блока описания
-	const excerptBlock = document.querySelector('.description');
-	if (excerptBlock) {
-		var excerptBlock_h = excerptBlock.scrollHeight;
-		if (excerptBlock_h/300 > 1.2) {
-			//excerptBlock.style.height = (excerptBlock_h+30) + 'px';
-			let div = document.createElement('a');
-			div.className = "read-more-link";
-			//div.innerHTML = "Read more";
-			excerptBlock.append(div);
-			excerptBlock.classList.add('brief');
-		}
-
-		excerptBlock.lastElementChild && excerptBlock.lastElementChild.addEventListener('click', (e) => {
-			//var parentBlock = e.target.parentNode;
-			excerptBlock.classList.toggle('brief');
-			excerptBlock_h = excerptBlock.scrollHeight + 30;
-			excerptBlock.style.height = ((excerptBlock.classList.contains('brief')) ? 300 : excerptBlock_h) + 'px';
-		});
-	}
-
-
-	var siteFooter = document.querySelector('#site-footer');
-	var toTopLink = document.querySelector('#back2top');
-	document.onscroll = function(e) { // закрытие окна поиска по скролу
-		searchContainer.classList.contains('active') && searchContainer.classList.remove('active');
-		if (toTopLink) {
-			if (window.pageYOffset <= window.innerHeight - navbar.clientHeight) {
-				if (! toTopLink.classList.contains('disable')) {
-					toTopLink.classList.add('disable');
-					toTopLink.style.transform = `translateY(${siteFooter.clientHeight*2}px)`;
-				}
-			} else
-				if (toTopLink.classList.contains('disable')) {
-					toTopLink.classList.remove('disable');
-					toTopLink.style.transform = `translateY(${-siteFooter.clientHeight}px)`;
-				}
-		}
-	};
-
-	toTopLink.addEventListener('click', function (e) {
-		e.preventDefault();
-		scroll2Top(-window.scrollY, navbar.clientHeight); // скролл вверх ло блока навигации
-	});
-
-	//= components/_sidebar.js
 
 
 });

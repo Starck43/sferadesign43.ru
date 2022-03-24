@@ -16,7 +16,7 @@ from django.db.models.signals import post_init, post_save
 from django.dispatch import receiver
 
 from crm import models
-from .logic import get_image_html, ImageResize, PortfolioUploadTo, GalleryUploadTo, MediaFileStorage, update_google_sitemap
+from .logic import get_image_html, ImageResize, PortfolioUploadTo, CoverUploadTo, GalleryUploadTo, MediaFileStorage, limit_file_size, update_google_sitemap
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -59,10 +59,10 @@ class Person(models.Model):
 
 """Abstract model for Exhibitors and Partners"""
 class Profile(models.Model):
-	phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Введите номер в формате: '+999999999'")
+	phone_regex = RegexValidator(regex=r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$', message="Допустимы цифры, знак плюс, символы пробела и круглые скобки")
 	address = models.CharField('Адрес', max_length=100, blank=True)
-	phone = models.CharField('Контактный телефон', validators=[phone_regex], max_length=17, blank=True, default="tel:")
-	email = models.EmailField('E-mail', max_length=75, blank=True, default="mailto:")
+	phone = models.CharField('Контактный телефон', validators=[phone_regex], max_length=18, blank=True)
+	email = models.EmailField('E-mail', max_length=75, blank=True)
 	site = models.URLField('Сайт', max_length=75, blank=True)
 	instagram = models.CharField('Instagram', max_length=75, blank=True, default="https://instagram.com")
 	fb = models.CharField('Facebook', max_length=75, blank=True, default="https://facebook.com")
@@ -82,10 +82,14 @@ class Profile(models.Model):
 				value = value.rsplit('/', 1)[-1]
 				link = field.default+'/'+value.lower()
 
-			if field.name in ['description','vk','fb','instagram']:
+			if value and name in ['phone','email'] :
+				prefix = 'tel' if name == 'phone' else 'mailto'
+				link = prefix+':'+value.lower()
+
+			if name in ['description','vk','fb','instagram']:
 				label = ''
 
-			if field.name == 'site' and value:
+			if name == 'site' and value:
 				value = re.sub(r'^https?:\/\/|\/$', '', value, flags=re.MULTILINE)
 				link = 'https://'+value
 
@@ -317,9 +321,8 @@ class Exhibitions(models.Model):
 		super().save(*args, **kwargs)
 		update_google_sitemap() # обновим карту сайта Google
 
-
-	def clean_slug(self):
-		print(self.slug)
+	# def clean_slug(self):
+	# 	print(self.slug)
 
 
 	def __str__(self):
@@ -356,7 +359,7 @@ class Events(models.Model):
 		verbose_name = 'Мероприятие'
 		verbose_name_plural = 'Мероприятия'
 		db_table = 'events'
-		unique_together = ['date_event', 'time_start', 'time_end']
+		#unique_together = ['date_event', 'time_start', 'time_end']
 
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
@@ -409,22 +412,24 @@ class Portfolio(models.Model):
 	exhibition = ChainedForeignKey(Exhibitions,
 		chained_field="owner",
 		chained_model_field="exhibitors",
-		show_all=False,
-		auto_choose=True,
+		#show_all=True,
+		auto_choose=False,
 		sort=True,
-		on_delete=models.SET_NULL, null=True, verbose_name = 'Выставка')
+		on_delete=models.SET_NULL, null=True, blank=True, verbose_name = 'Выставка', help_text='Выберите год, если проект будет участвовать в конкурсе')
 
-	#nominations = models.ManyToManyField(Nominations, related_name='nominations_for_portfolio', blank=True, verbose_name = 'Номинации')
+	categories = models.ManyToManyField(Categories, related_name='categories_for_portfolio', blank=True, verbose_name = 'Категории', help_text='Отметьте нужные категории соответствующие вашему проекту')
 	nominations = ChainedManyToManyField(Nominations,
 		chained_field="exhibition",
 		chained_model_field="nominations_for_exh",
 		#horizontal=True,
 		auto_choose=True,
-		related_name='nominations_for_portfolio', blank=True, verbose_name='Номинации')
+		related_name='nominations_for_portfolio', blank=True, verbose_name='Номинации', help_text='Отметьте номинации, в которых заявляетесь с Вашим проектом')
 
 	title = models.CharField('Название', max_length=200, blank=True)
 	description = RichTextField('Описание портфолио', blank=True)
+	cover = models.ImageField('Обложка', upload_to=CoverUploadTo, storage=MediaFileStorage(), null=True, blank=True, validators=[limit_file_size], help_text='Размер файла не более %s Мб' % round(settings.FILE_UPLOAD_MAX_MEMORY_SIZE/1024/1024))
 	attributes = models.ManyToManyField(PortfolioAttributes, related_name='attributes_for_portfolio', verbose_name = 'Аттрибуты фильтра', blank=True)
+	status = models.BooleanField('Статус', null=True, blank=True, default=True, help_text='Видимость на сайте')
 
 	# Metadata
 	class Meta:
@@ -442,21 +447,25 @@ class Portfolio(models.Model):
 		super().delete(*args, **kwargs)
 		update_google_sitemap()
 
-	def save(self, images=None, *args, **kwargs):
+	def save(self, *args, **kwargs):
+		images = kwargs.pop('images',None)
+
 		if not self.project_id:
 			# найдем последнюю запись с наибольшим id
 			post = Portfolio.objects.filter(owner=self.owner).only('project_id').order_by('project_id').last()
-			index = 1
-			if post and post.project_id:
-				index += post.project_id
-			self.project_id = index
+			if post:
+				self.project_id = post.project_id + 1
+			else:
+				self.project_id = 1
 
 		super().save(*args, **kwargs)
 
+
 		# сохраним связанные с портфолио изображения
-		if images:
+		if self.pk and images:
 			for image in images:
-				upload_filename = path.join(settings.FILES_UPLOAD_FOLDER, self.owner.slug, self.exhibition.slug, self.slug, image.name)
+				exhibition_slug = self.exhibition.slug if self.exhibition else 'non-exhibition'
+				upload_filename = path.join(settings.FILES_UPLOAD_FOLDER, self.owner.slug, exhibition_slug, self.slug, image.name)
 				file_path = path.join(settings.MEDIA_ROOT,upload_filename)
 				append_image = True
 
@@ -489,7 +498,7 @@ class Portfolio(models.Model):
 		if self.title:
 			return self.title
 		else:
-			return ('project-%s') % self.project_id
+			return ('Проект %s') % self.project_id
 
 	def get_absolute_url(self):
 		return reverse('exhibition:project-detail-url', kwargs={'owner': self.owner.slug, 'project_id': self.project_id })
@@ -525,7 +534,7 @@ class Winners(models.Model):
 
 	# Metadata
 	class Meta:
-		ordering = ['exhibitor__name']
+		ordering = ['-exhibition__slug']
 		verbose_name = 'Победитель выставки'
 		verbose_name_plural = 'Победители'
 		db_table = 'winners'
@@ -557,7 +566,7 @@ class Winners(models.Model):
 class Gallery(models.Model):
 	exhibition = models.ForeignKey(Exhibitions, on_delete=models.CASCADE, related_name='gallery', verbose_name = 'Выставка')
 	title = models.CharField('Заголовок', max_length=100, null=True, blank=True)
-	file = models.ImageField('Фото', upload_to=GalleryUploadTo, storage=MediaFileStorage())
+	file = models.ImageField('Фото', upload_to=GalleryUploadTo)
 
 	# Metadata
 	class Meta:
@@ -612,13 +621,13 @@ class Image(models.Model):
 	portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, null=True, related_name='images', verbose_name = 'Портфолио')
 	title = models.CharField('Заголовок', max_length=100, null=True, blank=True)
 	description = models.CharField('Описание', max_length=250, blank=True)
-	file = models.ImageField('Фото', upload_to=PortfolioUploadTo, storage=MediaFileStorage())
+	file = models.ImageField('Файл', upload_to=PortfolioUploadTo, storage=MediaFileStorage(), validators=[limit_file_size], help_text='Размер файла не более %s Мб' % round(settings.FILE_UPLOAD_MAX_MEMORY_SIZE/1024/1024))
 	sort = models.SmallIntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
 	class Meta:
-		verbose_name = 'Фото участника'
-		verbose_name_plural = 'Фото участников'
+		verbose_name = 'Фото проекта'
+		verbose_name_plural = 'Фото портфолио'
 		ordering = [Coalesce("sort", F('id') + 500)] #сортировка в приоритете по полю sort, а потом уже по-умолчанию
 		db_table = 'images'
 
@@ -655,15 +664,12 @@ class Image(models.Model):
 		# Resizing uploading image
 		# Alternative package - django-resized
 		resized_image = ImageResize(self.file)
-		if resized_image:
+		if resized_image and resized_image != 'error':
 			self.file = resized_image
 
-		# print(resized_image)
-		# print(self.original_file)
-		# print(self.file)
-		#if self.original_file != self.file:
-		super().save(*args, **kwargs)
-		self.original_file = self.file
+		if resized_image != 'error':
+			super().save(*args, **kwargs)
+			self.original_file = self.file
 
 
 	def file_thumb(self):

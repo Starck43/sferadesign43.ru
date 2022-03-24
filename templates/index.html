@@ -18,13 +18,14 @@
 
 	{% cache 86400 index_page %}
 
+	{% if organizers %}
+
 	<div class="exh-description">
 	{% for org in organizers %}
 		{% if org.description %}{{org.description|safe}}{% endif %}
 	{% endfor %}
 	</div>
 
-	{% if organizers %}
 	<section class="organizers-container">
 		<header><h2>{{ organizers.first|verbose_name_plural }}</h2></header>
 		<div class="organizers-list row">
@@ -41,6 +42,7 @@
 			{% endfor %}
 		</div>
 	</section>
+
 	{% endif %}
 
 	{% if exhibitions_list.first.partners.first %}

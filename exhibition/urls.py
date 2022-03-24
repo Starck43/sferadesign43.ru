@@ -14,6 +14,7 @@ urlpatterns = [
 	path('category/<slug>/',views.projects_list.as_view(), name='projects-list-url'),
 	#path('category/<slug>/projects/',views.ajax_projects.as_view(), name='load-projects'), # for ajax
 	path('projects/<owner>/project-<project_id>/', views.project_detail.as_view(), name='project-detail-url'),
+	path('projects/<exh_year>/', views.projects_list_by_year.as_view(), name='projects-list-by-year-url'),
 
 	path('jury/',views.jury_list.as_view(), kwargs={'exh_year': None}, name='jury-list-url'),
 	path('jury/<exh_year>/',views.jury_list.as_view(), name='jury-list-url'),
@@ -44,7 +45,8 @@ urlpatterns = [
 	path('account/', views.account, name='account-url'),
 	path('account/deactivate/',views.deactivate_user, name="deactivate-user"),
 	path('reset_password/', views.send_reset_password_email),
-	path('upload/', views.portfolio_upload, name='portfolio-upload-url'),
+	path('portfolio/new/', views.portfolio_upload, kwargs={'pk': None}, name='portfolio-upload-url'),
+	path('portfolio/edit/<pk>', views.portfolio_upload, name='portfolio-upload-url'),
 	re_path(r'^success/$', views.success_message, name='success-message-url'),
 
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),

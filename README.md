@@ -21,10 +21,12 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 BASE FOLDER APPS (`sd43.ru`):
 `crm` - main app
-`exhibition` - designer's portfolio
-`rating` - rates & reviews
-`blog` - articles
-`ads` - sponsor's banners
+`exhibition` - designers' portfolio
+`rating` - portfolio rates & reviews
+`blog` - designers' articles
+`ads` - sponsors' banners
+`designers` - designers' pages
+
 
 
 ## Django packages:
@@ -35,7 +37,7 @@ BASE FOLDER APPS (`sd43.ru`):
 `python-slugify`
 `django-debug-toolbar`
 `django-static-jquery-ui`
-`django-crispy-forms`
+`django-crispy-forms` - bootstrap styles in forms
 `mysqlclient` - client for mySQL databases
 `django-smart-selects` - auto select field's values on changing value for related table in admin
 `django-tabbed-changeform-admin` - tabs structure in admin forms

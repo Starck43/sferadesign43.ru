@@ -116,11 +116,12 @@
 				<div class="projects-list grid my-2">
 					{% for e in object_list %}
 
-						{% if e.cover %}
+						{% with cover=e.project_cover %}
+						{% if cover %}
 						<a id="project-{{e.id}}" class="grid-cell" href="{{ e.get_absolute_url }}">
 							<figure>
-								{% thumbnail e.cover "320" crop="center" as xs %}
-								{% thumbnail e.cover "576" crop="center" as sm %}
+								{% thumbnail cover "320" crop="center" as xs %}
+								{% thumbnail cover "576" crop="center" as sm %}
 								<img class="project-cover"
 									src="{{ xs.url }}"
 									srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w">
@@ -140,6 +141,7 @@
 							</figure>
 						</a>
 						{% endif %}
+						{% endwith %}
 
 					{% endfor %}
 				</div>

@@ -37,7 +37,10 @@
 {% block page_title %}{% if object_list %}{{ category_title }}{% else %}Категория пустая{% endif %}{% endblock page_title %}
 {% block link %}
 	{% if filter_attributes %}
-		<a href="#" class="sidebar-show-link d-lg-none"><svg class="icon bi bi-filter-right left"><use xlink:href="#filter-icon"></use></svg>фильтры</a>
+		<a href="#sidebarPrimary" class="sidebar-toggler d-lg-none" tabindex="-1" data-bs-toggle="offcanvas" aria-controls="sidebarPrimary">
+			<svg class="icon bi bi-filter-right left"><use xlink:href="#filter-icon"></use></svg>
+			фильтры
+		</a>
 	{% endif %}
 {% endblock link %}
 
@@ -90,11 +93,11 @@
 				{% with e.title as project_title %}
 				<a id="project-{{e.id}}" class="grid-cell" href="{% url 'exhibition:project-detail-url' e.owner__slug e.project_id %}" title="{{ project_title }}">
 					<figure>
-						{% with e.cover as project_cover %}
-						{% if project_cover %}
-							{% thumbnail project_cover "100x100" crop="center" quality=75 as mini %}
-							{% thumbnail project_cover "320" as xs %}
-							{% thumbnail project_cover "576" as sm %}
+						{% with cover=e.project_cover %}
+						{% if cover %}
+							{% thumbnail cover "100x100" crop="center" quality=75 as mini %}
+							{% thumbnail cover "320" as xs %}
+							{% thumbnail cover "576" as sm %}
 							<img class="project-cover lazyload"
 								src="{{ mini.url }}"
 								data-src="{{ sm.url }}"
@@ -109,26 +112,28 @@
 						{% endif %}
 						{% endwith %}
 
-						<figcaption class="img-title centered">
+						<figcaption class="img-title">
 							<h2 class="project-title">{{project_title }}</h2>
 
 							{% if e.owner__name %}
 							<div class="subtitle">{{ e.owner__name }}</div>
 							{% endif %}
 
-							{% if e.average > 0 %}
-							<div class="portfolio-rate centered">
-								<span class="rate-counter">{{e.average|stringformat:".1f"}}</span>
-								<svg class="rate-star"><use xlink:href="#star-icon"></use></svg>
-							</div>
-							{% endif %}
+							<div class="meta">
+								{% if e.win_year %}
+								<div class="portfolio-award">
+									<svg class="award"><use xlink:href="#award-icon"></use></svg>
+									<span>{{e.win_year}}</span>
+								</div>
+								{% endif %}
 
-							{% if e.win_year %}
-							<div class="portfolio-award centered">
-								<svg class="award"><use xlink:href="#award-icon"></use></svg>
-								<span>{{e.win_year}}</span>
+								{% if e.average > 0 %}
+								<div class="portfolio-rate">
+									<span class="rate-counter">{{e.average|stringformat:".1f"}}</span>
+									<svg class="rate-star"><use xlink:href="#star-icon"></use></svg>
+								</div>
+								{% endif %}
 							</div>
-							{% endif %}
 						</figcaption>
 					</figure>
 				</a>

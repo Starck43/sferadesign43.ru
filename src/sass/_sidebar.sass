@@ -3,43 +3,32 @@
 @import mixins
 
 .sidebar
-	position: relative
-	//background-color: $highlight-block-bg
 	max-width: 300px
-	&.sidebar-primary
-		position: fixed
-		top: 0
-		bottom: 0
-		transform: translateX(0%)
-		transition: transform 300ms ease
-		overflow-y: auto
-		//visibility: hidden
-		z-index: 1
-		+media-breakpoint-down(lg)
-			width: 75%
-			background-color: #fff
-			z-index: 3
 
+	&.sidebar-primary
+		width: 75%
+		border: unset
+		+media-breakpoint-down(lg)
+			overflow-y: auto
 		+media-breakpoint-up(lg)
 			position: relative
-			top: 0 !important
-			left: 0
+			height: 100%
 			bottom: unset
-			transform: unset
 			background-color: transparent
-
-	&.left-side
-		right: 100%
-		&.show
-			transform: translateX(100%)
+			transform: unset
+			visibility: visible !important
 
 	&-inner
 		width: 100%
 		height: 100%
-		padding: $container-margin-sm
-		ul
-			height: 100%
-			justify-content: space-evenly
+		padding: calc($container-margin-sm + 4vh) $container-margin-sm
+		+media-breakpoint-up(lg)
+			padding: 0 $container-margin-sm $container-margin-sm 0
+
+		ul.nav
+			li
+				display: table
+				+push--auto
 
 	.banner-link
 		display: block
@@ -65,7 +54,7 @@
 		.sidebar-inner
 			max-width: $col-max_w
 
-	&-close
+	.btn-close
 		position: absolute
 		right: $container-margin-sm
 		top: $container-margin-sm
@@ -78,6 +67,7 @@
 			font-size: calc(1.4em + .2vw)
 
 	form
+		font-size: 0.9rem
 		+media-breakpoint-up(lg)
 			font-size: 0.8em
 			button
@@ -88,31 +78,45 @@
 			border-color: $main-color
 
 		.filters-group
+			padding-left: 3em
 			+media-breakpoint-up(lg)
 				color: $light-text-color
 
 		.filter-attributes-block
 			li
 				margin: 5px 0
+		button
+			color: $main-color
+			border-color: $main-color
+			&:disabled
+				opacity: 0.5
 
 
-.sidebar-show-link
+.articles .sidebar-primary
+	transform: none
+	visibility: visible !important
+	+media-breakpoint-down(lg)
+		z-index: 1000
+		.sidebar-inner
+			padding: $container-margin-sm * 2 $container-margin-sm
+
+
+.participants .sidebar
+	max-width: 180px
+
+
+.sidebar-toggler
 	display: inline-flex
 	justify-content: flex-end
-	font-size: 0.9em
 	flex: 100%
+	margin-top: auto
+	margin-bottom: 0.75em
+	font-size: 0.9em
 	svg
 		height: 20px
 		stroke: $main-color
 		stroke-width: 0.3px
 
-.nav
-	li
-		display: table
-		+push--auto
-
-	+media-breakpoint-down(lg)
-		font-size: 1.2em
 
 .nav-title
 	color: $main-color

@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% if user.is_authenticated %}
@@ -8,37 +7,64 @@
 
 	{% block content %}
 
-		<div>Участник: <b>{{portfolio.owner}}</b></div>
-		<div>Название портфолио: <b>{{portfolio.title}}</b></div>
-		<div>Описание портфолио: <b>{{portfolio.description}}</b></div>
+		<div><b>Владелец:</b> {{portfolio.owner}}</div>
+		<div><b>Название портфолио:</b> {{portfolio.title}}</div>
+		{% if portfolio.description %}
+		<div><b>Описание портфолио:</b><div class="alert alert-light border">{{portfolio.description|safe}}</div></div>
+		{% endif %}
 
 		{% if portfolio.exhibition %}
-		<div>Участие в выставке: <b>{{portfolio.exhibition}}</b></div>
-		{% endif %}
-
-		{% if portfolio.nominations.all %}
-			<div>Заявленные номинации:
-				<b><ul>
-				{% for nom in portfolio.nominations.all %}
-					<li>{{nom.title}}</li>
-				{% endfor %}
-				</ul></b>
-			</div>
-		{% endif %}
-
-		<div>Список загруженных файлов:</div>
-		<b>
-		{% if files %}
-			<ul>
-			{% for f in files %}
-				<li>{{ f.name }}</li>
-			{% endfor %}
-			</ul>
+			<div class="alert alert-primary" role="alert"><b>Заявленная выставка:</b>{{portfolio.exhibition}}</div>
+			{% if portfolio.nominations.count %}
+				<div class="my-3">
+					<b>Номинации:</b>
+					<ul class="list-group alert alert-success">
+					{% for nom in portfolio.nominations.all %}
+					<li class="d-flex align-items-center">
+						<svg class="icon"><use xlink:href="#check-icon"></use></svg>
+						<span>{{nom.title}}</span>
+					</li>
+					{% endfor %}
+					</ul>
+				</div>
+			{% endif %}
 		{% else %}
-			<p>Фото отсутствует!</p>
+			{% if portfolio.categories.count %}
+			<div class="my-3">
+				<b>Выбранные категории:</b>
+				<ul class="list-group alert alert-success">
+				{% for cat in portfolio.categories.all %}
+					<li class="d-flex align-items-center">
+						<svg class="icon"><use xlink:href="#check-icon"></use></svg>
+						<span>{{cat.title}}</span>
+					</li>
+				{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
 		{% endif %}
-		</b>
-		<p>Важно!!! Информация будет модерироваться администратором сайта</p>
-		<a href="{{request.META.HTTP_REFERER}}"><button class="btn btn-outline-primary" type="button">Назад</button></a>
+
+		{% if portfolio.cover  %}<div><b>Обложка:</b> {{portfolio.cover.name}}</div>{% endif %}
+		<div class="my-3">
+			<b>Список загруженных файлов:</b>
+			{% if files %}
+				<ul class="list-group alert alert-light">
+				{% for file in files %}
+					<li class="d-flex align-items-center">
+						<svg class="icon success-icon"><use xlink:href="#check-icon"></use></svg>
+						<span>{{file.name}}</span>
+					</li>
+				{% endfor %}
+				</ol>
+			{% else %}
+				<span class="alert-danger">Пусто!</span>
+			{% endif %}
+		</div>
+		<p class="alert alert-warning">Важно!!! Информация будет модерироваться администратором сайта и появится на сайте позже.</p>
+		<div class="controls-block mt-5">
+			<a href="/account" class="btn btn-primary">В личный кабинет</a>
+			<a href="/portfolio/edit/{{portfolio.id}}" class="btn btn-outline-primary">Изменить</a>
+			<a href="{{request.META.HTTP_REFERER}}" class="btn btn-outline-primary" type="button">Новое</a>
+		</div>
 	{% endblock %}
 {% endif %}

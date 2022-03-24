@@ -9,27 +9,22 @@
 
 
 .person-details-block
+	section:first-child
+		margin-top: 0 !important
+
 	.logo
 		max-width: $person-logo-max_w
 		margin-left: 0
 
-	.person-description
-		font-size: 1.2em
-		letter-spacing: 1.5px
-
 
 .person-logo
 	margin: auto
-	//background-color: #fff
-	//padding: .5em
 	mix-blend-mode: normal
 
 
 .grid-container
 	margin: math.div(-$container-margin-lg, 2)
 	//justify-content: space-between
-	+media-breakpoint-down(sm)
-		margin: 0 -$container-margin
 
 	.grid-cell
 		position: relative

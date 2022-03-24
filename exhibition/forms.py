@@ -1,22 +1,27 @@
 from django import forms
 from django.forms.models import ModelMultipleChoiceField
-from django.forms.widgets import ClearableFileInput
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.html import format_html, escape
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.contenttypes.models import ContentType
 #from django.contrib.admin.widgets import FilteredSelectMultiple
 from uuslug import uuslug
-
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Subquery, Prefetch
 from django.db.models.expressions import F, Value
 
 from .models import Exhibitors, Exhibitions, Winners, Nominations, Portfolio, Image, MetaSEO
-from .logic import SetUserGroup
+from .logic import get_image_html, SetUserGroup
 
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from allauth.account.models import EmailAddress
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field, Fieldset, Div, Row, HTML #, Submit, Button
+from crispy_forms.bootstrap import UneditableField
+from crispy_bootstrap5.bootstrap5 import FloatingField
 
 """ Форма регистрации """
 class AccountSignupForm(SignupForm):
@@ -90,27 +95,54 @@ class DeactivateUserForm(forms.Form):
 	deactivate = forms.BooleanField(label='Удалить?', help_text='Пожалуйста, поставьте галочку, если желаете удалить аккаунт', required=True)
 
 
-class CustomClearableFileInput(ClearableFileInput):
-	template_name = 'admin/exhibition/widgets/file_input.html'
-
 
 class MetaSeoFieldsForm(forms.ModelForm):
-	meta_title = forms.CharField(label='Мета Заголовок', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}))
-	meta_description = forms.CharField(label='Мета описание', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}))
-	meta_keywords = forms.CharField(label='Ключевые фразы', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;', 'placeholder': 'введите ключевые слова через запятую'}))
+	meta_title = forms.CharField(label='Мета заголовок', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}), required=False)
+	meta_description = forms.CharField(label='Мета описание', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}), required=False)
+	meta_keywords = forms.CharField(label='Ключевые фразы', widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;', 'placeholder': 'введите ключевые слова через запятую'}), required=False)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+		model_name = self._meta.model.__name__.lower()
+		self.meta_model = ContentType.objects.get(model=model_name)
+		self.meta = None
+		if self.instance.pk:
+			try:
+				self.meta = MetaSEO.objects.get(model=self.meta_model, post_id=self.instance.id)
+				self.fields['meta_title'].initial = self.meta.title
+				self.fields['meta_description'].initial = self.meta.description
+				self.fields['meta_keywords'].initial = self.meta.keywords
+			except MetaSEO.DoesNotExist:
+				pass
 
-		if self.meta:
-			self.fields['meta_title'].initial = self.meta.title
-			self.fields['meta_description'].initial = self.meta.description
-			self.fields['meta_keywords'].initial = self.meta.keywords
+
+	def save(self, *args, **kwargs):
+		instance = super().save(*args, **kwargs)
+		meta_changed = any(str in ['meta_title', 'meta_keywords', 'meta_description'] for str in self.changed_data)
+		meta_title = self.cleaned_data['meta_title']
+		meta_description = self.cleaned_data['meta_description']
+		meta_keywords = self.cleaned_data['meta_keywords']
+		if meta_changed:
+			if self.meta:
+				self.meta.title = meta_title
+				self.meta.description = meta_description
+				self.meta.keywords = meta_keywords
+				self.meta.save()
+			else:
+				MetaSEO.objects.create(
+					model=self.meta_model,
+					post_id=instance.id,
+					title = meta_title,
+					description = meta_description,
+					keywords = meta_keywords
+				)
+
+		return instance
 
 
 
 class ExhibitionsForm(MetaSeoFieldsForm, forms.ModelForm):
-	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
+	files = forms.ImageField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
 
 	class Meta:
 		model = Exhibitions
@@ -120,40 +152,174 @@ class ExhibitionsForm(MetaSeoFieldsForm, forms.ModelForm):
 		#template_name = 'django/forms/widgets/checkbox_select.html'
 
 		widgets = {
-			"exhibitors" : forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
-			"partners" : forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
-			"jury" : forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
-			"nominations" : forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+			"exhibitors" : forms.CheckboxSelectMultiple(attrs={'class': ''}),
+			"partners" : forms.CheckboxSelectMultiple(attrs={'class': ''}),
+			"jury" : forms.CheckboxSelectMultiple(attrs={'class': ''}),
+			"nominations" : forms.CheckboxSelectMultiple(attrs={'class': ''}),
 		}
 
 
 
 class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
-	files = forms.FileField(label='Фото', widget=forms.ClearableFileInput(attrs={'multiple': True}),required=False)
+	files = forms.FileField(label='Фото проекта',
+		widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'multiple': True}),
+		required=False,
+		help_text='Общий размер загружаемых фото не должен превышать %s Мб' % round(settings.MAX_UPLOAD_FILES_SIZE/1024/1024)
+	)
 
 	class Meta:
 		model = Portfolio
-		fields = '__all__'
-		exclude = ('project_id',)
+		fields = ('owner', 'exhibition', 'categories', 'nominations', 'attributes', 'title', 'description', 'cover', 'files', 'status', )
+
+		STATUS_CHOICES = (
+			(False, "Скрыт"),
+			(True, "Доступен (по умолчанию)"),
+		)
 
 		widgets = {
-			#"nominations" : FilteredSelectMultiple('Номинация', attrs={'class': 'form-check-input'}, is_stacked=False),
+			'cover': forms.ClearableFileInput(attrs={'class': 'form-control', 'multiple': False}),
+			'categories':  forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
+			'nominations': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
+			'attributes':  forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
+			'status': forms.Select(choices = STATUS_CHOICES),
 		}
 
+
 	def __init__(self, *args, **kwargs):
-		self.css_class = "form-control"
-		self.user = kwargs.pop('user',None)
-		# if user.is_staff:
-		# 	self.fields['owner'].widget = forms.TextInput()
+		self.exhibitor = kwargs.pop('owner',None)
+		request = kwargs.pop('request',None)
+		if request:
+			self.request = request
 
 		super().__init__(*args, **kwargs)
+		self.css_class = 'form-control'
+
+		if self.exhibitor != None:
+			#self.fields['files'].initial = files
+			if self.exhibitor == 'staff':
+				self.fields['exhibition'].queryset = Exhibitions.objects.all()
+			else:
+				self.fields['categories'].widget.attrs.update({'class': 'hidden'})
+				self.fields['owner'].initial = self.exhibitor
+				self.fields['owner'].widget = forms.HiddenInput()
+				self.fields['status'].widget = forms.HiddenInput()
+
+				self.helper.layout[0].append(HTML('<div>Участиник выставки:<br><h2>'+self.exhibitor.name+'</h2></div>'))
+
+				self.fields['exhibition'].queryset = Exhibitions.objects.prefetch_related('exhibitors').filter(exhibitors=self.exhibitor)
+
+
+	@property
+	def helper(self):
+		helper = FormHelper()
+		helper.form_tag = False
+		helper.layout = Layout(
+			FloatingField('owner'),
+			FloatingField('exhibition'),
+			Field('categories', wrapper_class='field-categories'),
+			Field('nominations',wrapper_class='field-nominations'),
+			Field('attributes', wrapper_class='field-attributes'),
+			FloatingField('title'),
+			'description',
+			FloatingField('status'),
+			'cover',
+			'files',
+			Div(
+				HTML('<div class="card-header">СЕО описание для поисковых систем</div>'),
+				Div(
+					FloatingField('meta_title'),
+					FloatingField('meta_description'),
+					FloatingField('meta_keywords'),
+					css_class= 'card-body'
+				),
+				css_class="card mt-3 mb-5",
+			)
+		)
+		return helper
+
+
+	def clean(self):
+		cleaned_data = super().clean()
+
+		if self.exhibitor != None:
+			if self.cleaned_data['exhibition']:
+				self.cleaned_data['categories'] = []
+			else:
+				self.cleaned_data['nominations'] = []
+				self.cleaned_data['attributes'] = []
+
+		return cleaned_data
+
+
+	def clean_files(self):
+		data = self.cleaned_data['files']
+		content_length = int(self.request.META['CONTENT_LENGTH'])
+		if content_length > settings.MAX_UPLOAD_FILES_SIZE:
+			raise ValidationError('[%s Мб] Превышен общий размер загружаемых файлов!' % int(content_length/1024/1024))
+		return data
+
+	# def save(self, *args, **kwargs):
+	# 	instance = super().save(*args, **kwargs)
+	# 	if self.exhibitor:
+	# 		instance.categories.set(None)
+
+	# 	return instance
+
+
+
+class ImageForm(forms.ModelForm):
+
+	class Meta:
+		model = Image
+		fields = '__all__'
+		exclude = ('portfolio',)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['description'].widget = forms.Textarea()
+
+
+
+class ImageFormHelper(FormHelper):
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		#self.form_method = 'post'
+		self.form_tag = False
+		self.include_media = False
+		self.disable_csrf = True
+		self.layout = Layout(
+			Div(
+				HTML('<div class="card-header">Фото {{forloop.counter}}</div>'),
+				Row(
+					Field(
+						'file',
+						template='crispy_forms/image.html'
+					),
+					Div(
+						Field('file', wrapper_class='upload-link'),
+						FloatingField('title'),
+						FloatingField('description'),
+						FloatingField('sort'),
+						Field('DELETE', wrapper_class='form-check form-check-inline'),
+						css_class="meta"
+					),
+					css_class="card-body flex-column flex-md-row",
+				),
+				css_class="portfolio-image card mb-5"
+			)
+		)
+		#self.render_required_fields = True
 
 
 
 class FeedbackForm(forms.Form):
-	name = forms.CharField(label='Имя', required=True, widget=forms.TextInput(attrs={'placeholder': 'Имя'}))
-	from_email = forms.EmailField(label='E-mail', required=False, widget=forms.TextInput(attrs={'placeholder': 'E-mail'}))
+	name = forms.CharField(label='Имя', required=True, widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
+	#from_phone = forms.EmailField(label='Телефон', required=False, widget=forms.TextInput(attrs={'placeholder': 'Ваш номер для связи'}))
+	from_email = forms.EmailField(label='E-mail', required=True, widget=forms.TextInput(attrs={'placeholder': 'Ваш почтовый ящик'}))
 	message = forms.CharField(label='Сообщение', required=True, widget=forms.Textarea(attrs={'placeholder': 'Сообщение'}))
+
 
 
 """ Mixin: Переопределение отображения списка пользователей в UsersListForm """
@@ -169,6 +335,7 @@ class UserMultipleModelChoiceField(ModelMultipleChoiceField):
 
 		return format_html('<b>{0}</b> [{1}] </span><span>{2}</span><span>{3}</span>', obj.name, obj.user_email, obj.last_exh or '', format_html(email_status))
 		#return format_html('<b>{0}</b> [{1}] </span><span>{2}</span>', obj['name'], obj['user_email'], obj['last_exh'] or '')
+
 
 
 """ Вывод списка пользователей в рассылке сброса паролей"""

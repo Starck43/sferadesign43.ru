@@ -3,9 +3,10 @@
 {% load i18n %}
 
 <!DOCTYPE html>
-<html lang="ru" class="{{ html_classes|to_string }}{% if is_mobile %} mobile{% else %} desktop{% endif %}">
+<html lang="ru" class="sd43 {{ html_classes|to_string }}{% if is_mobile %} mobile{% else %} desktop{% endif %}">
 <head>
 	<meta charset="UTF-8">
+
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
 	<meta name="description" content="{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
 	<meta name="keywords" content="{% block meta_keywords %}{% if meta.keywords %}{{ meta.keywords }}{% else %}{{ default_meta.keywords }}{% endif %}{% endblock %}">
@@ -19,6 +20,7 @@
 	<meta property="og:description" content="{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
 
 	<link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
+	<link rel="preload" href="{{site_url}}{% get_media_prefix %}sd-logo-2.png" as="image" >
 	<link rel="preload" href="{% static 'fonts/corbel.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/corbelb.woff2' %}" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="{% static 'fonts/calibri.woff2' %}" as="font" type="font/woff2" crossorigin>
@@ -81,6 +83,9 @@
 		<symbol id="filter-icon" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
 			<path d="M14 10.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0 0 1h11a.5.5 0 0 0 .5-.5z"/>
 		</symbol>
+		<symbol id="check-icon" width="100%" height="100%" fill="currentColor" viewBox="0 0 16 16">
+			<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+		</symbol>
 		<symbol id="edit-icon" viewBox="0 0 384 384">
 			<polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"/>
 			<path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"/>
@@ -94,7 +99,7 @@
 		<symbol id="logo-instagram" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
 			<rect x="0" y="0" rx="5" ry="5" width="24" height="24" stroke-width="0"/>
 			<circle cx="19" cy="5" r="2" stroke-width="1.5"/>
-			<circle cx="12" cy="12" r="5" stroke-width="2"/>
+			<circle cx="12" cy="12" r="5" stroke-width="2" fill="transparent"/>
 		</symbol>
 		<symbol id="logo-vk" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
 			<path d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"/>
@@ -106,7 +111,11 @@
 	</svg>
 
 
-	{% block navigation %}{% include "navbar.html" %}{% endblock navigation %}
+	{% block navigation %}
+	<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
+		{% include "navbar.html" %}
+	</nav>
+	{% endblock navigation %}
 
 
 	<div id="site-header">
@@ -126,7 +135,8 @@
 			{% block link %}{% endblock link %}
 		</header>
 
-		<aside class="sidebar sidebar-primary left-side">
+		<aside id="sidebarPrimary" class="sidebar sidebar-primary left-side offcanvas offcanvas-start">
+			<button type="button" class="btn-close btn-lg d-lg-none" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
 			{% block sidebar %}{% endblock sidebar %}
 		</aside>
 
@@ -153,7 +163,7 @@
 			<small>{% blocktranslate %}2008-{{ current_year }} © Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
 		</div>
 		<div id="back2top" class="disable">
-			<button class="btn top-link">
+			<button class="top-link">
 				<svg class="icon arrow-icon up"><use xlink:href="#arrow-icon"></use></svg>
 				<span>вверх</span>
 			</button>

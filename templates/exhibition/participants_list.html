@@ -12,11 +12,7 @@
 	<ol>
 		{% for person in object_list %}
 		<li>
-			{% if absolute_url == 'winners' %}
-			<a href="{% url 'exhibition:exhibitor-detail-url' person.exhibitor__slug %}"><h3>{{ person.exhibitor__name }}</h3></a>
-			{% else %}
 			<a href="{{ person.get_absolute_url }}"><h3>{{ person }}</h3></a>
-			{% endif %}
 		</li>
 		{% empty %}
 			<h3>пока не определены!</h3>

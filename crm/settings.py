@@ -31,9 +31,9 @@ env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', False)
+DEBUG = True #env.bool('DEBUG', False)
 
-ALLOWED_HOSTS = env('ALLOWED_HOSTS', list, [])
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', list, ['localhost'])
 
 
 # Application definition
@@ -55,12 +55,14 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'sorl.thumbnail',
     'crispy_forms',
+    'crispy_bootstrap5',
     'smart_selects',
     'watson',
     'exhibition',
     'rating',
     'blog',
     'ads',
+    'designers',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -262,9 +264,9 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler"
  ]
 
-
-FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5*1024*1024
 FILE_UPLOAD_PERMISSIONS = 0o775
+MAX_UPLOAD_FILES_SIZE = 20*FILE_UPLOAD_MAX_MEMORY_SIZE
 
 # It uses in exhibition.views.projects_list as parameter for queryset
 PORTFOLIO_COUNT_PER_PAGE = 4
@@ -288,8 +290,8 @@ DJANGORESIZED_DEFAULT_QUALITY = 85
 DJANGORESIZED_DEFAULT_SIZE = [1500, 1024]
 DJANGORESIZED_DEFAULT_KEEP_META = False
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 CKEDITOR_UPLOAD_PATH = 'attachments/'
 CKEDITOR_IMAGE_BACKEND = 'pillow'

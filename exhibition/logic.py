@@ -1,26 +1,29 @@
 import re
 import unicodedata
 
-from django.conf import settings
 from threading import Thread
-from PIL import Image as Im
+from PIL import ImageFile, Image as Im
 from io import BytesIO
 from os import path, remove
 from sys import getsizeof
 
 from django.http import HttpResponse
+from django.conf import settings
 from django.core.mail import EmailMessage, BadHeaderError
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.utils.html import format_html
-
-from sorl.thumbnail import get_thumbnail
-
+from django.forms.widgets import ClearableFileInput
 from django.contrib.auth.models import Group #,User
 
+from sorl.thumbnail import get_thumbnail
+from uuslug import slugify
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 DEFAULT_SIZE = getattr(settings, 'DJANGORESIZED_DEFAULT_SIZE', [1500, 1024])
 DEFAULT_QUALITY = getattr(settings, 'DJANGORESIZED_DEFAULT_QUALITY', 85)
@@ -46,6 +49,12 @@ class MediaFileStorage(FileSystemStorage):
 	# 		#remove(os.path.join(settings.MEDIA_ROOT, name))
 	# 	return name
 
+	def get_valid_name(self, name):
+		filename, ext = path.splitext(name)
+		name = slugify(filename)+ext
+		return super().get_valid_name(name)
+
+
 	def save(self, name, content, max_length=None):
 		if not self.exists(name):
 			return super().save(name, content, max_length)
@@ -55,13 +64,35 @@ class MediaFileStorage(FileSystemStorage):
 
 
 
-""" portfolio files will be uploaded to MEDIA_ROOT/uploads/<author>/<porfolio>/<filename> """
+""" Designer files will be uploaded to MEDIA_ROOT/uploads/<author>/<filename> """
+def DesignerUploadTo(instance, filename):
+	return '{0}{1}/{2}'.format(
+		settings.FILES_UPLOAD_FOLDER,
+		instance.owner.slug.lower(),
+		filename
+	)
+
+
+""" portfolio files will be uploaded to MEDIA_ROOT/uploads/<author>/<exhibition>/<porfolio>/<filename> """
 def PortfolioUploadTo(instance, filename):
+	exhibition_slug = instance.portfolio.exhibition.slug if instance.portfolio.exhibition else 'non-exhibition'
 	return '{0}{1}/{2}/{3}/{4}'.format(
 		settings.FILES_UPLOAD_FOLDER,
 		instance.portfolio.owner.slug.lower(),
-		instance.portfolio.exhibition.slug,
+		exhibition_slug,
 		instance.portfolio.slug,
+		filename
+	)
+
+
+""" portfolio cover will be uploaded to MEDIA_ROOT/uploads/<author>/<exhibition>/<porfolio>/<filename> """
+def CoverUploadTo(instance, filename):
+	exhibition_slug = instance.exhibition.slug if instance.exhibition else 'non-exhibition'
+	return '{0}{1}/{2}/{3}/{4}'.format(
+		settings.FILES_UPLOAD_FOLDER,
+		instance.owner.slug.lower(),
+		exhibition_slug,
+		instance.slug,
 		filename
 	)
 
@@ -78,7 +109,7 @@ def ImageResize(obj):
 		try :
 			fn = obj.path if path.exists(obj.path) else obj
 			image = Im.open(fn)
-
+			#image.load()
 			if image.mode != 'RGB':
 				image = image.convert('RGB')
 
@@ -101,22 +132,26 @@ def ImageResize(obj):
 				return file
 			return obj
 		except IOError:
-			return HttpResponse('Ошибка открытия файла %s!' % fn)
+			print('Ошибка открытия файла %s!' % fn)
+			raise ValidationError('Ошибка открытия файла %s!' % fn)
+			#return 'error'
 	else:
 		# Nothing to compress
 		return None
 
 
-""" Return True if the request comes from a mobile device """
-def IsMobile(request):
-	import re
 
-	MOBILE_AGENT_RE=re.compile(r".*(iphone|mobile|androidtouch)",re.IGNORECASE)
+""" Image file size validator """
+def limit_file_size(file):
+	limit = settings.FILE_UPLOAD_MAX_MEMORY_SIZE
+	if path.exists(file.path) and file.size > limit:
+		raise ValidationError('Размер файла превышает лимит %s Мб. Рекомендуемый размер фото 1500x1024 пикс.' % (limit/(1024*1024)))
 
-	if MOBILE_AGENT_RE.match(request.META['HTTP_USER_AGENT']):
-		return True
-	else:
-		return False
+
+
+class CustomClearableFileInput(ClearableFileInput):
+	template_name = 'admin/exhibition/widgets/file_input.html'
+
 
 
 """ Sending email """
@@ -153,8 +188,31 @@ class EmailThread(Thread):
 
 
 """ Sending email to recipients """
-def SendEmailAsync(subject, template, email_ricipients):
+def SendEmailAsync(subject, template, email_ricipients=settings.EMAIL_RICIPIENTS):
 	EmailThread(subject, template, email_ricipients).start()
+
+
+""" Отправим сообщение автору портфолио с уведомлением о добавлении фото """
+def PortfolioUploadConfirmation(images, request, obj):
+	if images and obj.owner.user and obj.owner.user.email: # new portfolio with images
+		protocol = 'https' if request.is_secure() else 'http'
+		host_url = "{0}://{1}".format(protocol, request.get_host())
+
+		# Before email notification we need to get a list of uploaded thumbs [100x100]
+		uploaded_images = []
+		size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
+		for im in images:
+			image = path.join(settings.FILES_UPLOAD_FOLDER, obj.owner.slug, obj.exhibition.slug, obj.slug, im.name)
+			thumb = get_thumbnail(image, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
+			uploaded_images.append(thumb)
+
+		subject = 'Добавление фотографий на сайте Сфера Дизайна'
+		template = render_to_string('exhibition/new_project_notification.html', {
+			'project': obj,
+			'host_url': host_url,
+			'uploaded_images': uploaded_images,
+		})
+		SendEmailAsync(subject, template, [obj.owner.user.email])
 
 
 """ Set User group on SignupForm via account/social account"""
@@ -174,6 +232,19 @@ def SetUserGroup(request, user):
 		pass
 
 	return user
+
+
+""" Return True if the request comes from a mobile device """
+def IsMobile(request):
+	import re
+
+	MOBILE_AGENT_RE=re.compile(r".*(iphone|mobile|androidtouch)",re.IGNORECASE)
+
+	if MOBILE_AGENT_RE.match(request.META['HTTP_USER_AGENT']):
+		return True
+	else:
+		return False
+
 
 
 """ Reset cache """

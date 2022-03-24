@@ -10,8 +10,10 @@
 	width: 100%
 	@supports (display:grid)
 		display: grid
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr) )
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr) )
 		gap: 2vw
+		+media-breakpoint-down(sm)
+			grid-template-columns: repeat(auto-fill, minmax(160px, 1fr) )
 
 	.grid-cell
 		position: relative
@@ -37,7 +39,7 @@
 			&~.img-title
 				>*:not(:first-child)
 					margin-bottom: 5%
-					font-size: 1rem
+					font-size: 0.8rem
 					font-weight: normal
 
 		>*
@@ -45,10 +47,12 @@
 			justify-self: center
 			box-sizing: border-box
 
-		.img-title
+		figcaption
 			+push--absolute
 			margin: 0
 			padding: 0.5em
+			display: flex
+			align-items: center
 			flex-direction: column
 			font-weight: bold
 			text-shadow: 0 0 1px $text-color
@@ -56,19 +60,30 @@
 			border: 0 $main-color solid
 			transition: all 150ms linear
 			&:hover
-				border-width: $border-thickness
+				//border-width: $border-thickness
 				padding: calc(0.5em - #{$border-thickness})
 				+blur-background(10, $overlay-color, 0.7)
+			.meta
+				display: flex
+				width: 100%
+				margin-top: auto
+				span
+					color: #fff
 
 		.project-title
+			margin-top: 5%
 			margin-bottom: .25rem
-			font-size: 1.3rem
+			font-size: 1.2rem
 
 
 .centered
 	display: flex
 	align-items: center
 	justify-content: center
+
+.column-centered
+	display: flex
+	flex-direction: column
 
 .collapsed,
 .expanded
@@ -115,10 +130,7 @@
 
 
 .portfolio-rate
-	//height: 4em
-	//width: 4em
-	padding: 5px
-	border: 2px solid
+	margin-left: auto
 	.rate-star
 		position: relative
 		height: 21px
@@ -128,7 +140,7 @@
 		stroke: #fff
 
 .portfolio-award
-	flex-direction: column
+	margin-right: auto
 	svg.award
 		width: 24px
 		height: 24px
@@ -143,4 +155,7 @@ svg.award
 	margin-bottom: 9px
 	fill: orange
 	stroke: orange
+
+.success-icon
+	color: $success-color
 

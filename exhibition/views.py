@@ -10,22 +10,26 @@ from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.template.loader	import render_to_string
+
 from django.dispatch import receiver
 from django.utils.timezone import now
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.files.storage import FileSystemStorage
+from django.core.files.uploadhandler import FileUploadHandler
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 #from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 #from django.views.generic import View
 from django.views import View
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg
+from django.forms import inlineformset_factory
+from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg, CharField, Case, When
 from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
-from django.core.files.storage import FileSystemStorage
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models.signals import pre_save
 
 from allauth.account.views import PasswordResetView
 from allauth.account.models import EmailAddress
@@ -43,11 +47,11 @@ from .models import *
 from rating.models import Rating, Reviews
 from blog.models import Article
 
-from .forms import PortfolioForm, FeedbackForm, UsersListForm, DeactivateUserForm
+from .forms import PortfolioForm, ImageForm, ImageFormHelper, FeedbackForm, UsersListForm, DeactivateUserForm
 from rating.forms import RatingForm
-from .logic import SendEmail, SetUserGroup
+from .logic import SendEmail, SendEmailAsync, SetUserGroup
 from .mixins import ExhibitionYearListMixin,  BannersMixin, MetaSeoMixin
-
+from designers.models import Designer, Achievement, Customer
 from collections import defaultdict
 
 
@@ -67,29 +71,6 @@ def index(request):
 	}
 	return render(request, 'index.html', context)
 
-
-""" Send email on Contacts page """
-def contacts(request):
-	if request.method == 'GET':
-		form = FeedbackForm()
-	elif request.method == 'POST':
-		# если метод POST, проверим форму и отправим письмо
-		form = FeedbackForm(request.POST)
-		if form.is_valid():
-			template = render_to_string('contacts/confirm_email.html', {
-				'name':form.cleaned_data['name'],
-				'email':form.cleaned_data['from_email'],
-				'message':form.cleaned_data['message'],
-			})
-
-			if SendEmail('Отправлено новое сообщение с сайта sd43.ru!', template):
-				return redirect('/success/')
-
-	context = {
-		'html_classes': ['contacts'],
-		'form': form,
-	}
-	return render(request, 'contacts.html', context)
 
 
 """ Exhibitors view """
@@ -181,29 +162,6 @@ class events_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 
 
 
-""" Winners view """
-class winners_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
-	model = Winners
-	template_name = 'exhibition/participants_list.html'
-
-	def get_queryset(self):
-		self.slug = self.kwargs['exh_year']
-
-		if self.slug:
-			posts = self.model.objects.filter(exhibition__slug=self.slug).values('exhibitor__name', 'exhibitor__slug')
-		else:
-			posts = self.model.objects.values('exhibitor__name', 'exhibitor__slug').distinct() #.annotate(exhibitors_count=Count('exhibitor_id'))
-
-		return posts
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['html_classes'] = ['participants','winners']
-
-		return context
-
-
-
 """ Exhibitons view """
 class exhibitions_list(MetaSeoMixin, BannersMixin, ListView):
 	model = Exhibitions
@@ -212,6 +170,38 @@ class exhibitions_list(MetaSeoMixin, BannersMixin, ListView):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['exhibitions',]
 		context['page_title'] = self.model._meta.verbose_name_plural
+
+		return context
+
+
+
+""" Winners view """
+class winners_list(MetaSeoMixin, ExhibitionYearListMixin, ListView):
+	model = Winners
+	template_name = 'exhibition/winners_list.html'
+
+	def get_queryset(self):
+		self.slug = self.kwargs['exh_year']
+
+		query = self.model.objects.select_related('nomination','exhibitor','exhibition', 'portfolio').annotate(
+			exh_year=F('exhibition__slug'),
+			nomination_title=F('nomination__title'),
+			exhibitor_name=F('exhibitor__name'),
+			exhibitor_slug=F('exhibitor__slug'),
+			project_id=F('portfolio__project_id'),
+		).values('exh_year', 'nomination_title', 'exhibitor_name', 'exhibitor_slug', 'project_id').order_by('exhibitor_name', '-exh_year')
+
+		if self.slug:
+			posts = query.filter(exhibition__slug=self.slug)
+		else:
+			posts = query.all()
+
+		return posts
+
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['html_classes'] = ['participants','winners']
 
 		return context
 
@@ -265,16 +255,18 @@ class projects_list(MetaSeoMixin, BannersMixin, ListView):
 			nomination__category__slug=self.slug
 		).values('exhibition__slug')[:1]) # Подзапрос для получения статуса победителя
 
-		posts = Portfolio.objects.filter(
-			query &
-			Q(project_id__isnull=False)
+		posts = Portfolio.objects.filter(Q(exhibition__isnull=False) & Q(project_id__isnull=False) & query
 		).distinct().prefetch_related('rated_portfolio').annotate(
 			last_exh_year=F('exhibition__slug'),
 			#cat_title=F('nominations__category__title'),
 			average=Avg('rated_portfolio__star'),
 			win_year=subqry2,
-			cover=subqry
-		).values('id','title','last_exh_year','win_year','average','owner__name','owner__slug','project_id','cover'
+			project_cover=Case(
+				When(Q(cover__exact='') | Q(cover__isnull=True), then=subqry),
+				default='cover',
+				output_field=CharField()
+			)
+		).values('id','title','last_exh_year','win_year','average','owner__name','owner__slug','project_id','project_cover'
 		).order_by('-last_exh_year','-win_year', '-average')[start_page:end_page] # +1 сделано для выявления наличия следующей страницы
 
 		self.is_next_page = False if len(posts) < self.PAGE_SIZE else True
@@ -323,10 +315,10 @@ class projects_list(MetaSeoMixin, BannersMixin, ListView):
 			queryset = self.get_queryset()
 
 			for i,q in enumerate(queryset):
-				if q['cover']:
-					thumb_mini = get_thumbnail(q['cover'], ADMIN_DEFAULT_SIZE, crop='center', quality=ADMIN_DEFAULT_QUALITY)
-					thumb_320 = get_thumbnail(q['cover'], '320', quality=DEFAULT_QUALITY)
-					thumb_576 = get_thumbnail(q['cover'], '576', quality=DEFAULT_QUALITY)
+				if q['project_cover']:
+					thumb_mini = get_thumbnail(q['project_cover'], ADMIN_DEFAULT_SIZE, crop='center', quality=ADMIN_DEFAULT_QUALITY)
+					thumb_320 = get_thumbnail(q['project_cover'], '320', quality=DEFAULT_QUALITY)
+					thumb_576 = get_thumbnail(q['project_cover'], '576', quality=DEFAULT_QUALITY)
 					queryset[i].update({'thumb_mini':str(thumb_mini)})
 					queryset[i].update({'thumb_xs'	:str(thumb_320)})
 					queryset[i].update({'thumb_sm'	:str(thumb_576)})
@@ -347,6 +339,32 @@ class projects_list(MetaSeoMixin, BannersMixin, ListView):
 			return super().get(request, **kwargs)
 
 
+""" Projects by year view """
+class projects_list_by_year(ListView):
+	model = Portfolio
+	template_name = 'exhibition/projects_by_year.html'
+
+	def get_queryset(self):
+		self.slug = self.kwargs['exh_year']
+
+		subqry = Subquery(Image.objects.filter(portfolio=OuterRef('pk')).values('file')[:1]) # Подзапрос для получения первого фото в портфолио
+
+		posts = self.model.objects.filter(Q(exhibition__slug=self.slug) & Q(project_id__isnull=False)
+		).distinct().prefetch_related('rated_portfolio').annotate(
+			project_cover=Case(
+				When(Q(cover__exact='') | Q(cover__isnull=True), then=subqry),
+				default='cover',
+				output_field=CharField()
+			)
+		).values('id','title','owner__name','owner__slug','project_id','project_cover').order_by('owner__slug')
+
+		return posts
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['year'] = self.slug
+		return context
+
 
 """ Exhibitors detail """
 class exhibitor_detail(MetaSeoMixin, DetailView):
@@ -356,10 +374,14 @@ class exhibitor_detail(MetaSeoMixin, DetailView):
 	def get_context_data(self, **kwargs):
 		slug = self.kwargs['slug']
 
-		portfolio = Portfolio.objects.filter(owner__slug=slug).annotate(
+		portfolio = Portfolio.objects.filter(owner__slug=slug, exhibition__isnull=False).annotate(
 			exh_year=F('exhibition__slug'),
 			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')[:1]),
-			cover=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])
+			project_cover=Case(
+				When(Q(cover__exact='') | Q(cover__isnull=True), then=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])),
+				default='cover',
+				output_field=CharField()
+			)
 		).order_by('-exh_year')
 
 		awards = Nominations.objects.prefetch_related('nomination_for_winner').filter(
@@ -481,11 +503,13 @@ class winner_project_detail(MetaSeoMixin, BannersMixin, DetailView):
 		qs = self.model.objects.filter(exhibition__slug=self.exh_year,nomination__slug=self.nom_slug)
 		if qs:
 			self.exhibitors = None
-			self.nomination = qs.nomination
+			self.nomination = qs[0].nomination
 			return qs[0]
 		else:
+			# найдем участников, заявленных на выставке
 			self.exhibitors = Exhibitors.objects.prefetch_related('exhibitors_for_exh').filter(exhibitors_for_exh__slug=self.exh_year).only('name', 'slug')
-			self.nomination = Nominations.objects.only('title', 'description').get(slug=self.nom_slug)
+			# получим номинацию
+			self.nomination = Nominations.objects.get(slug=self.nom_slug).only('title', 'description')
 			return None
 
 
@@ -513,7 +537,6 @@ class winner_project_detail(MetaSeoMixin, BannersMixin, DetailView):
 		context['nomination'] = self.nomination
 		context['parent_link'] = '/exhibition/%s/' % self.exh_year
 		context['exh_year'] = self.exh_year
-		context['nomination_slug'] = self.nom_slug
 
 		rate = 0
 		if portfolio:
@@ -587,6 +610,31 @@ class project_detail(MetaSeoMixin, DetailView):
 
 
 
+""" Отправка сообщения с формы обратной связи """
+def contacts(request):
+	if request.method == 'GET':
+		form = FeedbackForm()
+	elif request.method == 'POST':
+		# если метод POST, проверим форму и отправим письмо
+		form = FeedbackForm(request.POST)
+		if form.is_valid():
+			template = render_to_string('contacts/confirm_email.html', {
+				'name':form.cleaned_data['name'],
+				'email':form.cleaned_data['from_email'],
+				'message':form.cleaned_data['message'],
+			})
+
+			if SendEmail('Получено новое сообщение с сайта sd43.ru!', template):
+				return redirect('/success/')
+
+	context = {
+		'html_classes': ['contacts'],
+		'form': form,
+	}
+	return render(request, 'contacts.html', context)
+
+
+
 """ Watson model's search """
 class search_site(SearchMixin, ListView):
 	template_name = 'search_results.html'
@@ -601,34 +649,161 @@ class search_site(SearchMixin, ListView):
 		return context
 
 
+
+class ProgressBarUploadHandler(FileUploadHandler):
+	def receive_data_chunk(self, raw_data, start):
+		print(start)
+		return raw_data
+
+	def file_complete(self, file_size):
+		print(file_size)
+
+
+
+
+
+""" Выгрузка нового портфолио """
+@csrf_exempt
 @login_required
-def portfolio_upload(request):
-	exhibitor = None
-	try:
-		exhibitor = Exhibitors.objects.get(user=request.user)
-	except Exhibitors.DoesNotExist:
-		pass
+def portfolio_upload(request, **kwargs):
+	request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
+	#upload_file_view(request)
+	pk = kwargs.pop('pk',None)
+	if pk:
+		portfolio = Portfolio.objects.get(id=pk)
+	else:
+		portfolio = None #Portfolio()
+
+	if not request.user.is_staff:
+		owner = Exhibitors.objects.get(user=request.user)
+	else:
+		owner = 'staff'
+	#owner = Exhibitors.objects.get(user=4)
+
+	form = PortfolioForm(owner=owner, instance=portfolio)
+	InlineFormSet = inlineformset_factory(Portfolio, Image, form=ImageForm, extra=0, can_delete=True)
+	formset = InlineFormSet(instance=portfolio)
+	formset_helper = ImageFormHelper()
 
 	if request.method == 'POST':
-		form = PortfolioForm(request.POST, request.FILES)
+
+		form = PortfolioForm(request.POST, request.FILES, request=request, instance=portfolio)
 
 		if form.is_valid():
-			obj = form.save(commit=False)
-			# Deny access for exhibitors to choose their name in list
-			if not request.user.is_staff:
-				obj.owner = exhibitor
+			formset = InlineFormSet(request.POST, request.FILES, instance=portfolio)
+			portfolio = form.save(commit=False)
 
-			obj.save(request.FILES.getlist('files'))
+			if formset.is_valid():
+				images = request.FILES.getlist('files')
+				if not request.user.is_staff:
+					portfolio.status = False
+				portfolio.save(images=images)
+				form.save_m2m()
+				formset.save()
 
-			return render(request, 'success_upload.html', { 'portfolio': obj, 'files': request.FILES.getlist('files') })
-	else:
-		if not request.user.is_staff:
-			form = PortfolioForm(user=request.user, initial={'owner': exhibitor})
-			form.fields['owner'].widget = forms.TextInput()
-		else:
-			form = PortfolioForm(user=request.user)
+				context = {
+					'user': '%s %s' % (request.user.first_name, request.user.last_name),
+					'portfolio': portfolio,
+					'files': images,
+					'changed_fields': [],
+					'new' : True
+				}
+				if pk:
+					context['changed_fields'] = form.changed_data
+					context['new'] = False
 
-	return render(request, 'upload.html', { 'form': form, 'exhibitor': exhibitor })
+				#template = render_to_string('account/portfolio_upload_confirm.html', context)
+				#SendEmailAsync('%s портфолио на сайте sd43.ru!' % ('Внесены изменения в' if pk else 'Добавлено новое'), template)
+
+				if not pk:
+					# MetaSEO.objects.create(
+					# 	model=form.meta_model,
+					# 	post_id=portfolio.id,
+					# 	title=form.cleaned_data['meta_title'],
+					# 	description=form.cleaned_data['meta_description'],
+					# 	keywords=form.cleaned_data['meta_keywords'],
+					# )
+					return render(request, 'success_upload.html', { 'portfolio': portfolio, 'files': images })
+
+				return redirect('/account')
+			else:
+				print(formset.errors)
+
+	return render(request, 'upload.html', { 'form': form, "formset": formset, 'portfolio_id': pk, 'formset_helper': formset_helper })
+
+
+# @receiver(pre_save, sender=Portfolio)
+# def on_change(sender, instance, **kwargs):
+# 	if instance.pk:
+# 		pass
+
+
+
+""" Личный кабинет зарегистрированных пользователей """
+@login_required
+def account(request):
+	try:
+		#exhibitor = Exhibitors.objects.get(user=4)
+		exhibitor = Exhibitors.objects.get(user=request.user)
+	except Exhibitors.DoesNotExist:
+		exhibitor = None
+
+	designer = None
+	exh_portfolio = None
+	add_portfolio = None
+	victories = None
+	achievements = None
+	customers = None
+	if exhibitor:
+		exh_portfolio = Portfolio.objects.filter(owner=exhibitor, exhibition__isnull=False).annotate(
+			exh_year=F('exhibition__slug'),
+			project_cover=Case(
+				When(Q(cover__exact='') | Q(cover__isnull=True), then=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])),
+				default='cover',
+				output_field=CharField()
+			)
+		).order_by('-exh_year')
+
+		try:
+			#designer = Designer.objects.get(owner__user=4)
+			designer = Designer.objects.get(owner=exhibitor)
+
+			add_portfolio = designer.add_portfolio.all().annotate(
+				project_cover=Case(
+					When(Q(cover__exact='') | Q(cover__isnull=True), then=Subquery(Image.objects.filter(portfolio_id=OuterRef('pk')).values('file')[:1])),
+					default='cover',
+					output_field=CharField()
+				)
+			).order_by('title')
+
+			victories = Nominations.objects.prefetch_related('nomination_for_winner').filter(
+				nomination_for_winner__exhibitor=exhibitor).annotate(
+				exh_year=F('nomination_for_winner__exhibition__slug')
+			).values('title', 'slug', 'exh_year').order_by('-exh_year')
+
+			achievements = designer.achievements.all().order_by('group')
+			#customers = designer.customers.all()
+
+		except Designer.DoesNotExist:
+			pass
+
+
+	articles = Article.objects.filter(owner=request.user).only('title').order_by('title')
+	rates = Rating.objects.filter(user=request.user)
+	reviews = Reviews.objects.filter(user=request.user)
+
+	return render(request, 'account/base.html', {
+		'exhibitor': exhibitor,
+		'designer': designer,
+		'exh_portfolio': exh_portfolio,
+		'add_portfolio': add_portfolio,
+		'achievements': achievements,
+		'victories': victories,
+		'articles': articles,
+		'rates': rates,
+		'reviews': reviews
+	})
+
 
 
 """ Sending reset password emails to exhibitors """
@@ -656,31 +831,6 @@ def send_reset_password_email(request):
 	return render(request, 'account/send_password_reset_email.html', { 'form': form })
 
 
-""" Подслушаем событие регистрации нового пользователя и отправим письмо администратору """
-# dispatch_uid: some.unique.string.id.for.allauth.user_signed_up
-@receiver(user_signed_up, dispatch_uid="2020")
-def user_signed_up_(request, user, **kwargs):
-	user = SetUserGroup(request, user)
-	template = render_to_string('account/admin_email_confirm.html', {
-		'name': '%s %s (%s)' % (user.first_name, user.last_name, user.username),
-		'email': user.email,
-		'group': list(user.groups.all().values_list('name', flat=True)),
-	})
-	SendEmail('Регистрация нового пользователя на сайте sd43.ru!',template)
-
-""" Личный кабинет зарегистрированных пользователей """
-@login_required
-def account(request):
-	# try:
-	# 	profile = Exhibitors.objects.get(user=request.user)
-	# except Exhibitors.DoesNotExist:
-	# 	profile = None
-
-	profile = None
-	rates = Rating.objects.filter(user=request.user)
-	reviews = Reviews.objects.filter(user=request.user)
-
-	return render(request, 'account/base.html', { 'profile': profile, 'rates': rates, 'reviews': reviews })
 
 
 """ Удаление аккаунта пользователя """
@@ -721,4 +871,19 @@ def deactivate_user(request):
 			return HttpResponseRedirect(reverse_lazy('account_logout'))
 
 	return render(request, 'account/deactivation.html', {'form': form})
+
+
+
+""" Подслушаем событие регистрации нового пользователя и отправим письмо администратору """
+# dispatch_uid: some.unique.string.id.for.allauth.user_signed_up
+@receiver(user_signed_up, dispatch_uid="new_user")
+def user_signed_up_(request, user, **kwargs):
+	user = SetUserGroup(request, user)
+	template = render_to_string('account/admin_email_confirm.html', {
+		'name': '%s %s (%s)' % (user.first_name, user.last_name, user.username),
+		'email': user.email,
+		'group': list(user.groups.all().values_list('name', flat=True)),
+	})
+	SendEmailAsync('Регистрация нового пользователя на сайте sd43.ru!',template)
+
 

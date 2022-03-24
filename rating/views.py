@@ -18,7 +18,7 @@ from exhibition.logic import delete_cached_fragment, SendEmailAsync
 from .forms import RatingForm, ReviewForm
 
 
-"""Добавление рейтинга фильму"""
+"""Добавление рейтинга проекту"""
 @method_decorator(csrf_exempt, name='dispatch')
 class add_rating(View):
 	def get_client_ip(self, request):

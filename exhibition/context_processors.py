@@ -16,7 +16,7 @@ def common_context(request):
 	}
 
 	scheme = request.is_secure() and "https" or "http"
-	site_url = '%s://%s' % (scheme, settings.ALLOWED_HOSTS[0])
+	site_url = '%s://%s' % (scheme, request.META['HTTP_HOST'])
 
 	context = {
 		'is_mobile'			: IsMobile(request),
