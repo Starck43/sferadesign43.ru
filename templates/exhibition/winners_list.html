@@ -1,0 +1,36 @@
+{% extends 'exhibition/persons_list.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load cache %}
+{% load thumbnail %}
+
+
+
+{% block content %}
+
+	{% cache 2592000 persons absolute_url exh_year %}
+	<ol class="winners-list">
+		{% regroup object_list by exhibitor_name as exhibitors %}
+
+		{% for person in exhibitors %}
+		<li>
+			<h3>{{ person.grouper }}</h3>
+			<ul class="mb-4">
+			{% for nom in person.list %}
+				<li>
+					<a class="nomination-link" href="{% url 'exhibition:project-detail-url' nom.exhibitor_slug nom.project_id %}">
+					<h4>{{ nom.nomination_title }}, <span>{{ nom.exh_year }}</span></h4>
+					</a>
+				</li>
+			{% endfor %}
+			</ul>
+		</li>
+		{% empty %}
+			<h3>пока не определены!</h3>
+		{% endfor %}
+	</ol>
+	{% endcache %}
+
+{% endblock content %}
+
+

@@ -1,0 +1,449 @@
+
+html
+	font-size: 15px
+	+media-breakpoint-up(sm)
+		font-size: 16px
+	+media-breakpoint-up(lg)
+		font-size: 17px
+	+media-breakpoint-up(xl)
+		font-size: 18px
+
+body
+	display: flex
+	flex-direction: column
+	min-height: 100vh
+	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
+
+
+h1
+	color: $header-color
+	text-transform: lowercase
+	font-size: calc(2rem + 1vw)
+	span
+		display: block
+		font-size: .5em
+		font-style: italic
+		color: $text-color
+
+h3, h4
+	min-height: 0vw
+	font-size: calc(1.1em + .2vw)
+	font-weight: 500
+
+h4
+	font-size: calc(1em + .2vw)
+
+a
+	color: $link-color
+	text-decoration: none
+	outline: none
+	cursor: pointer
+
+	&.active
+		font-weight: 500
+	&:hover
+		color: lighten($link-color, 20%)
+
+ul li
+	margin-bottom: 0.5em
+
+*:not(.description)
+	>ol, >li
+		padding-left: 0
+		list-style-type: none
+
+li, img
+	outline: 0
+
+p, article
+	img
+		display: block
+		max-width: 100%
+		height: auto !important
+
+	a
+		font-weight: 500
+
+form:not(.nav-search)
+	.form-group >label
+		margin-bottom: 0.5rem
+		font-weight: bold
+		text-transform: none
+	>*
+		margin-bottom: 1.5rem
+
+img, .row .logo img
+	width: 100%
+	height: auto
+	text-indent: -9999px
+	text-indent: 100%
+	white-space: nowrap
+	overflow: hidden
+	transition: all 300ms ease-in-out
+
+.ratio img
+	object-fit: contain
+
+.logo img
+	width: auto
+	height: 100%
+
+// Avoid empty images to appear as broken
+img:not([src]):not([srcset])
+	visibility: hidden
+
+img[data-sizes="auto"]
+	display: block
+
+.lazyloading,
+.lazyload
+	opacity: 0
+	~figcaption
+		@supports (backdrop-filter: blur(0))
+			backdrop-filter: blur(3px)
+
+.lazyloaded
+	opacity: 1
+	~figcaption
+		@supports (backdrop-filter: blur(0))
+			backdrop-filter: blur(0)
+
+.loading, .loaded
+	transition: opacity 500ms ease-in
+
+.loading
+	opacity: 0
+
+.loaded
+	opacity: 1 !important
+
+
+.centered
+	display: flex
+	align-items: center
+	justify-content: center
+
+.column-centered
+	display: flex
+	flex-direction: column
+
+
+.hidden
+	display: none !important
+
+.visible
+	visibility: visible !important
+	z-index: 10000 !important
+	opacity: 1 !important
+
+.collapsing
+	transition: all 300ms ease-in-out
+
+.modal-open
+	position: static
+	overflow: hidden
+	-webkit-overflow-scrolling: auto
+
+.no-select
+	user-select: none
+	-webkit-tap-highlight-color: transparentize(black, 1)
+	-webkit-touch-callout: none
+
+
+svg.icon
+	width: 30px
+	height: 30px
+	&.arrow-icon
+		&.up
+			transform: rotate(-90deg)
+		&.down
+			transform: rotate(90deg)
+		&.left
+			transform: rotate(180deg)
+
+.message-status
+	margin-left: 1em
+	&.success
+		color: #0f5132
+	&.warning
+		color: #055160
+	&.error
+		color: #842029
+
+.back-link
+	svg
+		stroke: black
+		stroke-width: 3
+		width: 22px
+		height: 22px
+		transform: rotate(180deg)
+	+media-breakpoint-down(sm)
+		top: $container-margin*2
+		right: $container-margin*2
+
+.btn
+	color: $main-color
+	background-color: #fff
+	border-color: $main-color
+	&:hover
+		box-shadow: 0 0 1px 1px white inset, 0 0 1px 1px $main-color inset
+
+.btn-primary, .btn-primary:hover
+	color: #fff
+	background-color: $main-color
+
+.btn-primary
+	&:hover
+		box-shadow: 0 0 1px 1px white inset
+	&:disabled,
+	&.disabled
+		color: transparentize(white, 0.65)
+		background-color: $main-color
+		border-color: $main-color
+
+.btn-close
+	opacity: 0.7
+	transition: 150ms all ease
+	&:hover
+		opacity: 1
+		transform: rotate(90deg) scale(120%)
+
+.social-link
+	display: inline-block
+	svg
+		fill: $main-color
+		//border-radius: 5px
+		//background-color: $main-color
+		&.vk
+			//background-color: #4D76A1
+		&.fb
+			//background-color: #1976D2
+		&.instagram
+			//background-color: #ff543e
+			stroke: white
+
+
+#back2top
+	position: fixed
+	bottom: $container-margin
+	right: $container-margin
+	transition: 500ms transform ease-in-out
+	opacity: 1
+	z-index: 10000
+	&.disable
+		transition: 500ms all ease-in-out
+		visibility: hidden
+		opacity: 0
+		z-index: -1
+	+media-breakpoint-up(sm)
+		bottom: $container-margin-sm
+		right: $container-margin-sm
+	+media-breakpoint-up(lg)
+		bottom: $container-margin-lg
+		right: $container-margin-lg
+
+.top-link
+	padding: 3px
+	opacity: 0.6
+	border: 0
+	.arrow-icon
+		padding: .25em
+		stroke: #000
+		stroke-width: 2
+		&+span
+			display: none
+	&:hover
+		opacity: 1
+
+	+media-breakpoint-up(lg)
+		padding: 0 .4em
+		font-size: 0.8em
+		.arrow-icon
+			&+span
+				display: block
+
+#main-title
+	overflow: visible
+	text
+		fill: $main-color
+		stroke: $main-color
+		stroke-width: 6px
+		font-size: 122px
+		text-transform: uppercase
+		font-weight: 300
+		letter-spacing: 1px
+
+#site-header
+	position: relative
+	display: flex
+	flex-wrap: wrap
+	align-items: center
+	padding-top: 1.5vh !important
+
+	.back-link
+		position: absolute
+		top: 2.5vw
+		right: 2.5vw
+		display: flex
+		align-items: center
+
+
+.container
+	position: relative
+	display: flex
+	flex-wrap: wrap
+	width: 100%
+	max-width: $container-max_w
+	margin-top: 0
+	flex-direction: column
+	+media-breakpoint-up(md)
+		flex-direction: unset
+	+media-breakpoint-up(lg)
+		margin-bottom: $container-margin-lg
+
+	header
+		padding: $container-margin*3 0 $container-margin*2
+		flex: 100%
+		+media-breakpoint-up(sm)
+			padding: $container-margin-sm*3 0 $container-margin-sm*2
+
+	.content
+		flex: 1
+		max-width: $content-width_max
+		+media-breakpoint-up(xxl)
+			width: 100% - $col-width-xxl*2
+
+.container, #site-header
+	padding: 0 $container-margin
+	+media-breakpoint-up(sm)
+		padding: 0 $container-margin-sm
+	+media-breakpoint-up(lg)
+		padding: 0 $container-margin-lg
+
+
+.flex-content
+	margin: $container-margin 0
+	+media-breakpoint-up(lg)
+		margin-left: $col-width-lg
+		margin-right: $col-width-lg
+	+media-breakpoint-up(xl)
+		margin-left: $col-width-xl
+		margin-right: $col-width-xl
+	+media-breakpoint-up(xxl)
+		margin-left: $col-width-xxl
+		margin-right: $col-width-xxl
+
+
+.description
+	position: relative
+	transition: 500ms all ease
+	a.read-more-link
+		position: absolute
+		display: block
+		width: 100%
+		//height: 40px
+		bottom: 0
+		text-align: center
+		cursor: pointer
+		&:before
+			content: 'Свернуть'
+
+	&.brief
+		height: 300px
+		overflow: hidden
+		a.read-more-link
+			padding-top: 80px
+			background: linear-gradient(to top, #FFF 30%, rgba(255,255,255,0.6) 80%, rgba(255,255,255,0.1) 100%)
+			&:before
+				content: 'Читать далее'
+
+
+
+#alertContainer
+	position: fixed
+	left: 0
+	top: 0
+	height: 100vh
+	width: 100vw
+	background-color: transparent
+	transition: background-color 150ms linear
+	z-index: 2
+	.btn-close
+		margin-left: auto
+		padding: 0
+
+	.alert-body h3
+		border-bottom: 1px solid transparentize($text-color, 0.75)
+		margin-bottom: 2vw
+
+	>.alert
+		display: flex
+		flex-direction: column
+		padding: 1em
+		min-width: 300px
+		max-width: 90%
+		width: 100%
+		color: $text-color
+		background-color: #fff
+		border: solid $border-thickness $highlight-border-color
+		box-shadow: 0 0 1rem transparentize($main-color, 0.7)
+		transform: translateY(-50px)
+		opacity: 0
+		+media-breakpoint-up(sm)
+			width: 75%
+			padding: 2vw
+			font-size: 1.2em
+		+media-breakpoint-up(md)
+			width: 50%
+
+		&.show
+			opacity: 1
+			transform: none
+		&.fade
+			transition: all 0.15s linear
+
+.modal-open #alertContainer
+	background-color: transparentize(black, 0.5)
+
+
+.admin-edit-link
+	svg
+		width: 1rem
+		height: 1rem
+		margin-left: 5px
+		fill: deepskyblue
+		vertical-align: middle
+
+#site-footer
+	margin-top: auto
+	padding: 2vh
+	border-top: 1px solid $highlight-border-color
+	.copyright
+		text-align: center
+
+.upload-form
+	select, .django-ckeditor-widget
+		width: 100%
+	input[type="text"]
+		min-width: 100%
+
+	.portfolio-image
+		.form-label, .input-group-text, .upload-link .input-group
+			display: none
+		.input-group-text+div
+			border: none
+		input
+			max-width: 100%
+		textarea
+			height: 6rem
+		.image
+			width: auto
+			max-width: 300px
+		.meta
+			flex: 1
+			>div
+				width: 100%
+				line-height: 1.2
+
+
+

@@ -1,0 +1,79 @@
+{% load custom_tags %}
+
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8">
+		<title>Сообщение с сайта!!!</title>
+	</head>
+	<body>
+		{% if new %}
+		<h1>Новое портфолио</h1>
+		<p>На сайте sd43.ru пользователь {{ user }} выгрузил новое портфолио.</p>
+		{% else %}
+		<h1>Обновленное портфолио</h1>
+		<p>На сайте sd43.ru пользователь {{ user }} изменил свое портфолио.</p>
+		{% endif %}
+
+		<div>Владелец портфолио: <b>{{portfolio.owner}}</b></div>
+		<div>Название портфолио: <b>{{portfolio.title}}</b>{% if 'title' in changed_fields %}<i> (Изменено)</i>{% endif %}</div>
+		<div>Описание портфолио: {{portfolio.description|safe}}</div>
+		<div>Текущий статус: <b>{% if portfolio.status %}Доступен на сайте{% else %}На модерации{% endif %}</b></div>
+		<br>
+		{% if portfolio.exhibition %}
+			<div>Заявленная выставка: <b>{{portfolio.exhibition}}</b>{% if 'exhibition' in changed_fields %}<i> (Изменено)</i>{% endif %}</div>
+			{% if portfolio.nominations.count %}
+				<br>
+				<div>
+					<b>Номинации:</b>{% if 'nominations' in changed_fields %}<i> (Изменено)</i>{% endif %}
+					<ul class="list-group list-group-flush">
+					{% for nom in portfolio.nominations.all %}
+						<li class="list-group-item">{{nom.title}}</li>
+					{% endfor %}
+					</ul>
+				</div>
+			{% endif %}
+			{% if portfolio.attributes.count %}
+				<br>
+				<div>
+					<b>Атрибуты фильтра:</b>{% if 'attributes' in changed_fields %}<i> (Изменено)</i>{% endif %}
+					<ul class="list-group list-group-flush">
+					{% for attr in portfolio.attributes.all %}
+						<li class="list-group-item">{{attr.name}}</li>
+					{% endfor %}
+					</ul>
+				</div>
+			{% endif %}
+		{% else %}
+			{% if portfolio.categories.count %}
+			<br>
+			<div>
+				<b>Категории:</b>{% if 'categories' in changed_fields %}<i> (Изменено)</i>{% endif %}
+				<ul class="list-group list-group-flush">
+				{% for cat in portfolio.categories.all %}
+					<li class="list-group-item">{{cat.title}}</li>
+				{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
+		{% endif %}
+		{% if portfolio.cover  %}
+		<br>
+		<div>Обложка: <b>{{portfolio.cover.name}}</b>{% if 'cover' in changed_fields %}<i> (Изменено)</i>{% endif %}</div>
+		{% endif %}
+		{% if files %}
+		<br>
+		<div>
+			<div>Список загруженных фото: {% if not new %}<i> (Добавлено)</i>{% endif %}</div>
+			<ol class="list-group list-group-numbered">
+			{% for f in files %}
+				<li class="list-group-item">{{ f.name }}</li>
+			{% endfor %}
+			</ol>
+		</div>
+		{% else %}
+			<b>Фото не загружены!</b>
+		{% endif %}
+	</body>
+</html>
+
+

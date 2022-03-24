@@ -1,0 +1,16 @@
+{% load crispy_forms_field %}
+{% load custom_tags %}
+
+{% if field|is_file %}
+<div class="image mb-3">
+    {% if field.value|file_exists %}
+    <a href="{{field.value}}">
+        {% with field.value as thumb %}{% include "exhibition/thumb.html" %}{% endwith %}
+        <div><b>{{field.label}}</b>: {{field.value.name|filename}}</div>
+        <button type="button" class="btn btn-outline-dark mt-2">ссылка на файл</button>
+    </a>
+    {% else %}
+        <div class="alert alert-danger">Файл поврежден!</div>
+    {% endif %}
+</div>
+{% endif %}

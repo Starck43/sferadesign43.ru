@@ -1,0 +1,269 @@
+{% extends 'designers/base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load cache %}
+{% load thumbnail %}
+
+
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.title}}{% endif %}{% endblock %}
+
+{% block meta_og_type %}profile{% endblock %}
+{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}{{object.title}}{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.title}}{% endif %}{% endblock %}
+{% block meta_og_image %}{{site_url}}{% get_media_prefix %}{{ object.logo }}{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block script %}
+	<script type="text/javascript" src="{% static 'js/designer-page.min.js' %}" defer></script>
+{% endblock script %}
+
+{% block title %}{{ block.super }} {{separator}} Главная страница{% endblock %}
+
+
+{% block svg_icons %}
+
+{{ block.super }}
+<symbol id="award-icon" width="100%" height="100%" fill="orange" viewBox="0 0 16 16">
+	<path d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864 8 0z"/>
+	<path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1 4 11.794z"/>
+</symbol>
+
+{% endblock svg_icons %}
+
+
+{% block navigation %}
+<nav class="navbar navbar-dark bg-transparent fixed-top burger-menu">
+	{% include "designers/navbar.html" %}
+</nav>
+{% endblock navigation %}
+
+
+{% block header %}
+
+	{% if object.background %}
+		<div class="cover" style="background-image: url({{ object.background.url }});">
+			<div class="scroll-down centered">
+				<svg class="icon arrow-icon arrow-down"><use xlink:href="#arrow-icon"></use></svg>
+				Двигайтесь вниз
+			</div>
+		</div>
+	{% endif %}
+
+	{% block brand_block %}{{ block.super }}{% endblock brand_block %}
+
+	<div class="navigation centered">
+		{% if portfolio_list %}
+			<a href="#designerPortfolio"><button class="btn category-link" type="button">Выставочные работы</button></a>
+			<a href="portfolio"><button class="btn category-link" type="button">Портфолио</button></a>
+		{% endif %}
+		{% if exh_victories_list or competitions or publications %}
+			<a href="#designerAchievements"><button class="btn category-link" type="button">Достижения</button></a>
+		{% endif %}
+
+		{% if object.customer_set.count %}
+			<a href="#designerCustomers"><button class="btn category-link" type="button">Клиенты</button></a>
+		{% endif %}
+
+		<a href="#designerContacts"><button class="btn category-link" type="button">Контакты</button></a>
+	</div>
+
+{% endblock header %}
+
+
+{% block content %}
+
+	{% if object.avatar or about %}
+	<section id="designerAbout" class="about-block container">
+
+		{% if object.avatar %}
+			<div class="designer-logo">
+			{% thumbnail object.avatar "450x600" as avatar %}
+				<img src="{{ avatar.url }}">
+			{% empty %}
+				<img src="{% get_media_prefix %}no-image.png">
+			{% endthumbnail %}
+			</div>
+		{% endif %}
+
+		{% if about %}
+		<div class="about-content">
+			<header>
+				<h2>О себе</h2>
+			</header>
+			<div class="about text-weight">{{ about|safe }}</div>
+		</div>
+		{% endif %}
+
+	</section>
+	{% endif %}
+
+
+	{% if portfolio_list %}
+	<section id="designerPortfolio" class="portfolio-block dark-bg">
+
+		<header>
+			<h2>Выставочные проекты</h2>
+			<p>Реализованные дизайн-проекты, принявшие участие на выставке-конкурсе Сфера Дизайна в разные годы</p>
+		</header>
+
+		<div class="slider-container peppermint peppermint-inactive">
+
+			<div class="portfolio-slides d-flex">
+				{% for e in portfolio_list %}
+
+					{% with cover=e.project_cover %}
+					{% if cover %}
+					<figure class="slide-wrapper">
+						<a id="project-{{e.id}}" class="gallery-photo ratio ratio-16x9" href="{{ e.get_absolute_url }}">
+							{% thumbnail cover "320" crop="center" as xs %}
+							{% thumbnail cover "576" crop="center" as sm %}
+							{% thumbnail cover "992" crop="center" as md %}
+							<img class="project-cover slide-img lazyload"
+								src="{{ xs.url }}"
+								srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w">
+							{% endthumbnail %}
+							{% endthumbnail %}
+							{% endthumbnail %}
+						</a>
+						<figcaption>
+							{% if e.title  %}
+							<h4 class="title">{{ e.title }}</h4>
+							{% endif %}
+
+							{% if e.win_year %}
+							<div class="portfolio-award" title="Победитель в выставке Сфера дизайна {{e.win_year}}">
+								<svg class="award"><use xlink:href="#award-icon"></use></svg>
+							</div>
+							{% endif %}
+
+							<div class="meta exh-meta text-weight">Сфера Дизайна {{ e.exh_year }}</div>
+						</figcaption>
+					</figure>
+					{% endif %}
+					{% endwith %}
+
+				{% endfor %}
+			</div>
+			<div class="controls-block no-select">
+				{% if portfolio_list.count > 1 %}
+				<svg class="arrow-left arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+				<svg class="arrow-right arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
+				{% endif %}
+			</div>
+		</div>
+		<a class="all-portfolio-link mt-5" href="portfolio"><button class="btn btn-link" type="button">Смотреть все проекты</button></a>
+	</section>
+	{% endif %}
+
+
+	{% if object.partners.count %}
+	<section id="designerPartners" class="partners-block container">
+		<header>
+			<h2>Сотрудничество</h2>
+		</header>
+		<div class="partners-content centered">
+		{% for partner in object.partners.all %}
+			{% if partner.logo %}
+				<div class="partner-logo">
+				{% thumbnail partner.logo "150x150" as logo %}
+					<img src="{{ logo.url }}">
+				{% empty %}
+					<img src="{% get_media_prefix %}no-image.png">
+				{% endthumbnail %}
+				</div>
+			{% else %}
+				<h3>{{partner.name}}</h3>
+			{% endif %}
+		{% endfor %}
+		</div>
+	</section>
+	{% endif %}
+
+
+	{% if exh_victories_list or competitions or publications %}
+	<section id="designerAchievements" class="achievements-block">
+		<div class="container">
+			<header>
+				<h2>Достижения</h2>
+			</header>
+			{% if exh_victories_list %}
+			<div class="exh-victories-content">
+				<h3>Победы на выставке Сфера Дизайна</h3>
+				<ul class="victories-list my-2">
+					{% for nomination in exh_victories_list %}
+					<li>
+						<a class="text-weight" href="{% url 'exhibition:winner-detail-url' nomination.exh_year nomination.slug %}">
+							{{ nomination.title }}, {{ nomination.exh_year }}
+						</a>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
+
+			{% with event=competitions %}
+			{% if event %}
+			<div class="competitions-content">
+				<h3>Другие конкурсы</h3>
+				{% include "designers/achievements-list.html" %}
+			</div>
+			{% endif %}
+			{% endwith %}
+
+			{% with event=publications %}
+			{% if event %}
+			<div class="publications-content">
+				<h3>Публикации</h3>
+				{% include "designers/achievements-list.html" %}
+			</div>
+			{% endif %}
+			{% endwith %}
+		</div>
+	</section>
+	{% endif %}
+
+
+	{% if object.customer_set.count %}
+	<section id="designerCustomers" class="customers-block">
+		<div class="container">
+			<header>
+				<h2>Клиенты</h2>
+			</header>
+			<div class="customers-content row g-4">
+			{% for person in object.customer_set.all %}
+				{% if person.link %}
+				<a class="col" href="{{person.link}}">
+				{% else %}
+				<div class="col">
+				{% endif %}
+				<div class="customer">
+					{% if person.logo %}
+					{% thumbnail person.logo "100x100" as logo %}
+						<img class="logo" src="{{ logo.url }}">
+					{% empty %}
+						<img class="logo" src="{% get_media_prefix %}no-image.png">
+					{% endthumbnail %}
+					{% else %}
+						<div class="logo"></div>
+					{% endif %}
+					<div class="info text-weight">
+						<h4>{{person.name}}</h4>
+						{% if person.excerpt %}<p>{{person.excerpt}}</p>{% endif %}
+					</div>
+				</div>
+				{% if person.link %}
+				</a>
+				{% else %}
+				</div>
+				{% endif %}
+			{% endfor %}
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+{% endblock content %}
+
+{% block extra_container %}{% endblock extra_container %}

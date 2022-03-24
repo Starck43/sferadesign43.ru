@@ -1,0 +1,34 @@
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Сообщение с сайта</title>
+</head>
+<style>
+	body {
+		margin: 1em;
+		font-family: Helvetica, Arial;
+	}
+
+	.message-field{
+		line-height: 1.25;
+		font-size: 15px;
+	}
+	pre{
+		padding: 1em;
+		width:auto;
+		border: 3px solid coral;
+	}
+</style>
+<body>
+	<h2>Сообщение с сайта {{subdomain}}.sd43.ru</h2>
+
+	<p>Вам пришло письмо, отправленное через форму обратной связи на вашем сайте.</p>
+	<br>
+	<div class="message-field">Имя автора письма: <b>{{name}}</b></div>
+	<div class="message-field">E-mail для обратной связи: <b>{{email}}</b></div>
+	<pre>{{message}}</pre>
+	<p>Чтобы ответить автору письма нажмите на <a href="mailto:{{email}}">эту ссылку</a></p>
+	<br>
+	<i>Пожалуйста, не отвечайте на письмо через почтовую программу, так как оно отправлено почтовым роботом!</i>
+</body>
+</html>

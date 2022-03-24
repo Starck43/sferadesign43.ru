@@ -1,0 +1,19 @@
+	<ul class="victories-list my-2">
+		{% for e in event %}
+		<li>
+			{% if e.link %}
+			<a class="customer" href="{{e.link}}">{% else %}<div class="customer text-weight">
+			{% endif %}
+				{{e.title}}
+			{% if e.link %}
+			</a>{% else %}</div>
+			{% endif %}
+			{% if e.description %}
+			<p>{{e.description}}</p>
+			{% endif %}
+			{% if e.date %}
+			<span>{{e.date}}</span>
+			{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
