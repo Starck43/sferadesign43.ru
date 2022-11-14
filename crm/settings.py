@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     #'allauth.socialaccount.providers.instagram',
-    'allauth.socialaccount.providers.facebook',
+    #'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.odnoklassniki',
     'allauth.socialaccount.providers.vk',
     'allauth.socialaccount.providers.google',
@@ -129,13 +129,13 @@ WSGI_APPLICATION = 'crm.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
     'default': env.db()
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
 }
 
 #DATABASES['default']['OPTIONS'] = {'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",'charset': 'utf8mb4',}
+
+CACHES = {
+    'default': env.cache('REDIS_URL')
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -157,10 +157,6 @@ AUTH_PASSWORD_VALIDATORS = [
     #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     # },
 ]
-
-CACHES = {
-    'default': env.cache('MEMCACHE_URL'), # {'BACKEND': 'django.core.cache.backends.dummy.DummyCache',}
-}
 
 
 AUTHENTICATION_BACKENDS = (
@@ -194,27 +190,27 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         }
     },
-    'facebook': {
-        'APP': {
-            'client_id': '2910399535951628',
-            'secret': 'c10c8aaf1eb05dba81eeb8c9070e0a88',
-        },
-        #'METHOD': 'js_sdk', # default is oauth2 method
-        #'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
-        'SCOPE': ['email', 'public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'INIT_PARAMS': {'cookie': True},
-        'FIELDS': [
-            'id',
-            'first_name',
-            'last_name',
-            'name',
-        ],
-        'EXCHANGE_TOKEN': True,
-        'LOCALE_FUNC': lambda request: 'ru_RU',
-        'VERIFIED_EMAIL': False,
-        'VERSION': 'v9.0',
-    },
+    # 'facebook': {
+    #     'APP': {
+    #         'client_id': '2910399535951628',
+    #         'secret': 'c10c8aaf1eb05dba81eeb8c9070e0a88',
+    #     },
+    #     #'METHOD': 'js_sdk', # default is oauth2 method
+    #     #'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
+    #     'SCOPE': ['email', 'public_profile'],
+    #     'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+    #     'INIT_PARAMS': {'cookie': True},
+    #     'FIELDS': [
+    #         'id',
+    #         'first_name',
+    #         'last_name',
+    #         'name',
+    #     ],
+    #     'EXCHANGE_TOKEN': True,
+    #     'LOCALE_FUNC': lambda request: 'ru_RU',
+    #     'VERIFIED_EMAIL': False,
+    #     'VERSION': 'v9.0',
+    # },
     'vk': {
         'APP': {
             'client_id': '7725491',
@@ -275,6 +271,12 @@ PORTFOLIO_COUNT_PER_PAGE = 4
 ARTICLES_COUNT_PER_PAGE = 2
 
 # sorl-thumbnail settings
+
+THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
+THUMBNAIL_REDIS_PASSWORD = env('REDIS_PASSWORD')
+THUMBNAIL_REDIS_DB = env('REDIS_DB')
+THUMBNAIL_REDIS_HOST = env('REDIS_HOST')
+THUMBNAIL_REDIS_PORT = env('REDIS_PORT')
 
 THUMBNAIL_QUALITY = 80
 THUMBNAIL_UPSCALE = False

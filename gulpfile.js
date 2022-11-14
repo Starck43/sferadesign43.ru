@@ -41,11 +41,11 @@ function styles() { // таск 'styles' обработает все файлы 
 	})) // Создаем префиксы
 	.pipe(combineCSS()) //Объединяем медиа запросы
 	.pipe(postcss([ cssImport ])) // Импортируем стили, прописанные через команду @import в начале файла
-	.pipe(sourcemaps.init())
+	//.pipe(sourcemaps.init())
 	.pipe(sass({
 		outputStyle: 'compressed',
 	}).on('error', sass.logError))
-	.pipe(sourcemaps.write()) //пропишем sourcemap
+	//.pipe(sourcemaps.write()) //пропишем sourcemap
 	//.pipe(concat('main.min.css')) // Объединяем все найденные файлы в один
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 	.pipe(gulp.dest(path.static+'css')) // Выгружаем результат в папку static::/css
@@ -133,6 +133,7 @@ function watch() { //таск слежения изменений в sass,css,ht
 
 // Экспорт скриптов для публичного доступа (через командную строку в том числе)
 exports.browsersync = browsersync;
+exports.styles = styles;
 exports.css_compress = css_compress;
 exports.scripts_compress = scripts_compress;
 exports.ttf_to_woff2 = ttf_to_woff2;

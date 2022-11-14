@@ -42,10 +42,8 @@ class MetaSeoMixin:
 			# если список объектов
 			query.add(Q(post_id__isnull=True), Q.AND)
 
-		try:
-			meta = MetaSEO.objects.get(query)
-		except MetaSEO.DoesNotExist:
-			meta = None
 
-		context['meta'] = meta
+		meta = MetaSEO.objects.filter(query)
+
+		context['meta'] = meta[0] if meta else None
 		return context

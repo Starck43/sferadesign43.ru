@@ -527,7 +527,7 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Mo
 	#list_select_related = ('events',)
 	# prepopulated_fields = {"slug": ('date_start',)} # adding name to slug field but not only DateFields
 	save_on_top = True # adding save button on top bar
-	list_per_page = 30
+	list_per_page = 10
 	view_on_site = True
 
 	inlines = [EventsInlineAdmin, GalleryInlineAdmin,]
@@ -538,23 +538,23 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Mo
 			'fields' : ('title', 'slug', 'banner', 'description', 'date_start', 'date_end', 'location',)
 		}),
 		(None, {
-			'classes': ('exhibitors-tab','hidden-label',),
+			'classes': ('exhibitors-tab',),
 			'fields' : ('exhibitors',)
 		}),
 		(None, {
-			'classes': ('nominations-tab','hidden-label',),
+			'classes': ('nominations-tab',),
 			'fields' : ('nominations',)
 		}),
 		(None, {
-			'classes': ('jury-tab','hidden-label',),
+			'classes': ('jury-tab',),
 			'fields' : ('jury',)
 		}),
 		(None, {
-			'classes': ('partners-tab','hidden-label',),
+			'classes': ('partners-tab',),
 			'fields' : ('partners',)
 		}),
 		(None, {
-			'classes': ('files-upload-tab', 'hidden-label',),
+			'classes': ('files-upload-tab',),
 			'fields' : ('files',)
 		}),
 		(None, {
@@ -597,6 +597,7 @@ class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Mo
 			instance.save()
 
 
+		delete_cached_fragment('navbar')
 		delete_cached_fragment('exhibition_banner', obj.slug)
 		delete_cached_fragment('exhibition_content', obj.slug)
 		delete_cached_fragment('exhibition_events', obj.slug)

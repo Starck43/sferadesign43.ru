@@ -7,6 +7,8 @@
 <html lang="ru" class="{{ html_classes|to_string }}{% if is_mobile %} mobile{% else %} desktop{% endif %}">
 <head>
 	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
 	<meta name="description" content="{% block meta_description %}{{ meta.description }}{% endblock %}">
 	<meta name="keywords" content="{% block meta_keywords %}{{ meta.keywords }}{% endblock %}">
@@ -16,10 +18,16 @@
 	<meta property="og:site_name" content="{{ object.owner.title }}">
 	<meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
 	<meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
-	<meta property="og:image" content="{% block meta_og_image %}{{site_url}}{% get_media_prefix %}{{ object.owner.logo }}{% endblock %}">
+	<meta property="og:image" content="{% if object.owner.logo %}{{ object.owner.logo.url }}{% endif %}">
+	<meta property="og:image:secure_url" content="{% if object.owner.logo %}{{ object.owner.logo.url }}{% endif %}">
 	<meta property="og:description" content="{% block meta_og_description %}{{ meta.description }}{% endblock %}">
 
 	<link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
+
+
+	<link rel="canonical" href="{{ site_url }}"/>
+	<link rel="shortcut icon" href="{% static 'favicons/favicon.ico' %}"/>
+	<link rel="icon" type="image/x-icon" href="{% static 'favicons/favicon.ico' %}">
 
 	<link rel="apple-touch-icon" sizes="180x180" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/{{ object.slug }}/favicons/favicon-32x32.png">
@@ -29,13 +37,17 @@
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="theme-color" content="#ffffff">
 
+	{% if object.owner.logo %}
+		<link rel="preload" as="image" href="{{ object.owner.logo.url }}">
+	{% endif %}
+
 	<!-- CSS only -->
 	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 	<link href="{% md5url 'css/designer/designer.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
 	{% block styles %}{% endblock %}
 
-	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<!-- Yandex & Google Analytics block -->
 
 	<title>{% block title %}{{ object.owner.name }}{% endblock %}</title>
 </head>
@@ -121,7 +133,7 @@
 
 					{% if object.owner.logo %}
 					<div class="brand-logo logo">
-						<a href="/">
+						<a href="{{object.get_absolute_url}}">
 							<img src="{{ object.owner.logo.url }}">
 						</a>
 					</div>
@@ -140,66 +152,65 @@
 
 		<div id="content" class="content">
 			{% block content %}{% endblock content %}
-
-			<section id="designerContacts" class="contacts-block dark-bg">
-				<div class="container">
-					<header>
-						<h2>Контакты</h2>
-					</header>
-
-					<div class="contacts-content d-flex justify-content justify-content-between">
-						<div class="main-info">
-						{% for name, label, value, link in object.owner %}
-							{% if label and value and name != "email" or name == "email" and object.show_email == True %}
-							<span class="{{name}}">
-								{% if link %}<a href="{{link}}" target="_blank">{% endif %}
-								<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>
-								{{ value }}
-								{% if link %}</a>{% endif %}
-							</span>
-							{% endif %}
-						{% endfor %}
-						</div>
-
-						<div class="socials">
-						{% spaceless %}
-						{% for name, label, value, link in object.owner %}
-							{% if not label and link %}
-							<a class="social-link" href="{{ link }}" target="_blank"><svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg></a>
-							{% endif %}
-						{% endfor %}
-						{% endspaceless %}
-						</div>
-
-						<div class="get-in-touch column-centered">
-							{% if object.owner.email or object.owner.user.email %}
-							<button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
-								<svg class="icon message-icon"><use xlink:href="#logo-envelope"></use></svg>Отправить сообщение
-							</button>
-							{% endif %}
-
-							{% for name, label, value, link in object %}
-								{% if link and name == 'whatsapp' or link and name == 'telegram' %}
-								<a href="{{ link }}" class="btn btn-link {{name}}">
-									<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>Написать в {{label}}
-								</a>
-								{% endif %}
-							{% endfor %}
-
-						</div>
-					</div>
-				</div>
-			</section>
-
 		</div>
 
 	</div>
 
 
 	<div id="site-footer">
+		<div id="designerContacts" class="contacts-block dark-bg">
+			<div class="container">
+				<header>
+					<h2>Контакты</h2>
+				</header>
+
+				<div class="contacts-content d-flex justify-content justify-content-between">
+					<div class="main-info">
+					{% for name, label, value, link in object.owner %}
+						{% if label and value and name != "email" or name == "email" and object.show_email == True %}
+						<span class="{{name}}">
+							{% if link %}<a href="{{link}}" target="_blank">{% endif %}
+							<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>
+							{{ value }}
+							{% if link %}</a>{% endif %}
+						</span>
+						{% endif %}
+					{% endfor %}
+					</div>
+
+					<div class="socials">
+					{% spaceless %}
+					{% for name, label, value, link in object.owner %}
+						{% if not label and link %}
+						<a class="social-link" href="{{ link }}" target="_blank"><svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg></a>
+						{% endif %}
+					{% endfor %}
+					{% endspaceless %}
+					</div>
+
+					<div class="get-in-touch column-centered">
+						{% if object.owner.email or object.owner.user.email %}
+						<button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
+							<svg class="icon message-icon"><use xlink:href="#logo-envelope"></use></svg>Отправить сообщение
+						</button>
+						{% endif %}
+
+						{% for name, label, value, link in object %}
+							{% if link and name == 'whatsapp' or link and name == 'telegram' %}
+							<a href="{{ link }}" class="btn btn-link {{name}}">
+								<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>Написать в {{label}}
+							</a>
+							{% endif %}
+						{% endfor %}
+
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div id="copyright" class="centered">
 			{% now "Y" as current_year %}
-			<small>{% blocktranslate %}2008-{{ current_year }} © Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
+			<small>{% blocktranslate %}{{ current_year }} © Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
 		</div>
 		<div id="back2top" class="disable">
 			<button class="top-link">
@@ -250,12 +261,37 @@
 	<script>
 		(async () => {
 			if ('loading' in HTMLImageElement.prototype) {
-				const images = document.querySelectorAll("img.lazyload");
+				var observerSupport = true;
+
+				if (!'IntersectionObserver' in window || !'IntersectionObserverEntry' in window || !'intersectionRatio' in window.IntersectionObserverEntry.prototype) {
+					observerSupport = false;
+				}
+				else {
+					var observer = new IntersectionObserver(entries => {
+						entries.forEach(entry => {
+							let ratio = entry.intersectionRatio
+							if (ratio > 0.0) {
+								img = entry.target;
+								if ( img.classList.contains('lazyload') ) {
+									img.classList.add('lazyloaded')
+									img.classList.remove('lazyload')
+								}
+							}
+						})
+					})
+				}
+
+				var images = document.querySelectorAll("img.lazyload");
 				images.forEach(img => {
+					if (observerSupport) {
+						observer.observe(img);
+					} else {
+						img.classList.remove('lazyload');
+					}
+
 					if (img.dataset.src) 	img.src = img.dataset.src;
 					if (img.dataset.srcset) img.srcset = img.dataset.srcset;
-					if (! img.hasAttribute('loading')) img.setAttribute('loading','lazy');
-				});
+				})
 
 			} else {
 				const lazySizesLib = await import("{% static 'js/lazysizes.min.js' %}");

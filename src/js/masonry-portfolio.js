@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	//= components/_sendMessage.js
 
 	lazyloadInit();
+	const header = document.getElementById('header')
+	const content = document.getElementById('content')
+	content.style.minHeight = `calc(100vh - ${header.clientHeight}px)`
 
 	var container = document.querySelector('.portfolio-container');
 	var grid;

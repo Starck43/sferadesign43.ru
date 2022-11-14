@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	form && form.addEventListener('submit', function(e){
 		var html = '0%';
 		modalHandler(html);
-		ajax();
+		ajax(e);
 	})
 
 
@@ -54,40 +54,50 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 	}
 
-	function ajax() {
-		var files=document.querySelector('input[name=files]').files;
-		if (files) {
-			//get data less than 1M
-			var data = new FormData();
-			for(var i=0;i<files.length;i++)
-			{
-				data.append("file"+i+":",files[i]);
-			}
-			console.log(data);
-		}
+	function ajax(e) {
+		e.preventDefault();
+		var data = new FormData(form.get(0));
+		console.log(data);
 
 		//ajax upload
 		var xhr=new XMLHttpRequest();
 		console.log(xhr);
-		xhr.onreadystatechange = function(){
-			if(xhr.readyState==4){
-				if(xhr.status==200){
-					console.log(xhr.responseText);
-				}
-			}
-		}
 
-		var progress; //=document.querySelector(".progress-bar");
+		xhr.addEventListener('load', function (e) {
+			if(xhr.status == 0 || xhr.status >= 400){
+				return this.error(xhr);
+			}
+
+			this.render_progress(100);
+
+			var url;
+			var content_type = xhr.getResponseHeader('Content-Type');
+
+			// make it possible to return the redirect URL in
+			// a JSON response
+			if (content_type.indexOf('application/json') !== -1) {
+				var response = $.parseJSON(xhr.responseText);
+				url = response.location;
+			}
+			else {
+				url = this.options.redirect_url;
+			}
+			window.location.href = url;
+		});
+
 		//The upload progress callback
 		xhr.upload.addEventListener('progress', function (e) {
-
 			//The length measurement returns a Boolean value, 100% is false, otherwise true
-			if(e.lengthComputable)
-			{
-				progress=(e.loaded/e.total)*100;
+			if(e.lengthComputable){
+				var progress=(e.loaded/e.total)*100;
 				console.log(progress);
 			}
 		});
+
+		console.log(window.location.href);
+		xhr.open(form.attr('method'), window.location.href);
+		xhr.setRequestHeader('X-REQUESTED-WITH', 'XMLHttpRequest');
+		xhr.send(data);
 
 	}
 

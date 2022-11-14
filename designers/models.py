@@ -42,7 +42,7 @@ class Designer(models.Model):
 	partners = models.ManyToManyField(Partners, verbose_name = 'Партнеры', blank=True, help_text='Партнеры выставки, с которыми есть сотрудничество')
 	whatsapp = models.CharField('WhatsApp', max_length=75, blank=True, default="wa.me", help_text='Укажите номер телефона только цифрами')
 	telegram = models.CharField('Telegram', max_length=75, blank=True, default="t.me", help_text='Укажите имя пользователя username')
-	show_email = models.BooleanField('Показать почтовый адрес в контактах?', max_length=75, blank=True, default=True)
+	show_email = models.BooleanField('Показать почтовый адрес в контактах?', blank=True, default=True)
 
 	status = models.SmallIntegerField('Статус',choices=STATUS, default=1)
 	pub_date_start = models.DateField('Начало публикации', null=True, blank=True)
