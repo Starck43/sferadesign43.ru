@@ -27,7 +27,7 @@ class AchievementAdmin(admin.ModelAdmin):
 	list_display_links = ('designer', 'title', 'date', 'group')
 
 
-class CustomerInline(admin.StackedInline):
+class CustomerInline(admin.TabularInline):
 	model = Customer
 	#template = 'admin/exhibition/edit_inline/stacked.html'
 	extra = 0
@@ -37,7 +37,7 @@ class CustomerInline(admin.StackedInline):
 	#list_editable = ['name']
 	classes = ['customers-inline-tab']
 
-class AchievementInline(admin.StackedInline):
+class AchievementInline(admin.TabularInline):
 	model = Achievement
 	#template = 'admin/exhibition/edit_inline/stacked.html'
 	extra = 0
@@ -73,19 +73,19 @@ class DesignerAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Model
 			'fields' : ('owner', 'slug', 'avatar', 'title', 'about', 'background', 'whatsapp','telegram','show_email', 'status', 'pub_date_start', 'pub_date_end', 'comment',)
 		}),
 		(None, {
-			'classes': ('exh_portfolio-tab','hidden-label',),
+			'classes': ('exh_portfolio-tab',),
 			'fields' : ('exh_portfolio',)
 		}),
 		(None, {
-			'classes': ('add_portfolio-tab','hidden-label',),
+			'classes': ('add_portfolio-tab',),
 			'fields' : ('add_portfolio',)
 		}),
 		(None, {
-			'classes': ('partners-tab','hidden-label',),
+			'classes': ('partners-tab',),
 			'fields' : ('partners',)
 		}),
 		(None, {
-			'classes': ('meta-tab', '',),
+			'classes': ('meta-tab',),
 			'fields' : MetaSeoFieldsAdmin.meta_fields
 		}),
 	)
