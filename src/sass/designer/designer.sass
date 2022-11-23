@@ -1,108 +1,41 @@
-@import "../../../node_modules/bootstrap/scss/functions"
-@import "../../../node_modules/bootstrap/scss/variables"
-@import "../../../node_modules/bootstrap/scss/mixins"
-
-
-// Default variable overrides
-$grid-breakpoints: (xs: 320,sm: 576px,md: 768px,lg: 992px,xl: 1200px,xxl: 1400px)
-$container-max_w: 1800px
-$content-width_max: 1000px
-$col-max_w: 300px
-$content-margin: 250px
-
-$container-margin: 0.75rem
-$container-margin-sm: 1rem
-$container-margin-lg: 2vw
-$col-width-xxl: 20%  //1400+
-$col-width-xl: 220px //1200+
-$col-width-lg: 180px //992+
-$col-width-md: 0 //991-
-
-$font-family-header: "Arial"
-$font-family-text: "Arial"
-$body-bg: #fff
-$body-color: #55504a
-$main-color: coral
-$header-color: $main-color
-$text-color: #333
-$menu-bg: coral
-$menu-text-color: #fff
-$top-title-color: $body-color
-$base-title-color: lighten($body-color, 20%)
-$section-dark-bg: lighten($body-color, 30%)
-$section-light-bg: lighten($body-color, 65%)
-$border-color: $main-color
-$border-light-color: $white
-$border-dark-color: darken($section-light-bg, 10%)
-$border-thickness: 3px
-$highlight-border-color: #ddd
-$primary-button-color: $white
-$cover-overlay-bg: transparentize(#fff, 0.7)
-$overlay-color: #000
-$icon-color: $body-color
-
-//@import vars
+@import vars
 @import ../mixins
 @import ../reset
 @import main
 @import navigation
 @import ../controls
-//@import preloader
+@import ../preloader
 //
-@import "../../../node_modules/bootstrap/scss/root"
+// @import "../../../node_modules/bootstrap/scss/root"
 
 
-.text-weight
-	font-weight: 200
-	letter-spacing: 1px
-h1
-	margin-left: 3rem
-	margin-bottom: 0
-	color: $top-title-color
-	font-weight: 200
-	font-size: calc(0.2rem + 2.5vw)
-	text-transform: initial
-	+media-breakpoint-down(md)
-		font-size: calc(0.2rem + 2.2vw)
-h2
-	margin-bottom: 0
-	flex: 100%
-	color: $base-title-color
-	font-size: calc(2rem + 1vw)
-	font-weight: 300
-	letter-spacing: 2px
-	text-align: center
-	text-transform: uppercase
-h3
-	margin-bottom: 1.5rem
-	color: $main-color
-	font-size: calc(1.6rem + 0.4vw)
-	+media-breakpoint-down(md)
-		font-size: calc(1.2rem + 1vw)
-	font-weight: 300
-	letter-spacing: 2px
-	text-transform: lowercase
 
-h4, p
-	@extend .text-weight
+#site-header
+	position: relative
+	display: flex
+	flex-wrap: wrap
+	align-items: center
+	padding-top: 1.5vh !important
 
-.dark-bg
-	background-color: $section-dark-bg
-	h2, p
-		color: lighten($section-dark-bg, 40%)
-
+	.back-link
+		position: absolute
+		top: 2.5vw
+		right: 2.5vw
+		display: flex
+		align-items: center
 
 #header
 	.back-link
+		display: block
 		flex: 1
 		margin-right: 3vw
 		margin-bottom: 2vw
 		text-align: right
 		text-transform: uppercase
 		font-size: 0.75em
-		color: $base-title-color
+		color: var(--bs-body-color)
 		svg
-			stroke: $main-color
+			stroke: var(--main-color)
 
 	.cover
 		width: 100%
@@ -124,16 +57,16 @@ h4, p
 				align-items: flex-end
 				justify-content: space-evenly
 				.btn
-					+blur-background(12,white,0.5)
 					width: 100%
 					margin: 1vh 0
 					padding: 2vh 2vw
 					font-size: 1.4rem
+					background-color: transparent
 					border: none
-					letter-spacing: 3px
+					letter-spacing: 1px
 					&:hover
-						background-color: white !important
-						color: $main-color
+						background-color: var(--bs-white) !important
+						color: var(--main-color) !important
 
 				+media-breakpoint-down(md)
 					right: 50%
@@ -178,7 +111,7 @@ h4, p
 			z-index: 1
 			cursor: pointer
 			&:hover
-				color: #fff !important
+				color: var(--main-color) !important
 			@keyframes scroll-down-animation
 				0%
 					transform: translate(-50%, 0)
@@ -217,6 +150,7 @@ h4, p
 			flex-direction: column
 			min-height: 6rem
 			margin-top: 2vw
+			padding-right: 0
 			.brand-logo
 				width: 40%
 				max-width: 280px
@@ -227,56 +161,65 @@ h4, p
 				text-align: left
 				flex: 100%
 
-	.navigation
-		position: relative
-		.category-link
-			padding: 1vh 0.5rem
-			font-size: 0.75rem
-			color: $main-color
-			background-color: transparent
-			border: 3px solid transparent
-			border-left: 0
-			border-right: 0
-			user-select: none
-			transition: 300ms all ease-in-out
-			&:hover
-				color: black
-				border-color: $border-color
-			+media-breakpoint-down(md)
-				font-size: 0.75em
-				text-transform: lowercase
-				letter-spacing: normal
-		&::before
-			content: ''
-			+push--absolute(1px,0,1px,0)
-			border-top: 1px solid $border-dark-color
-			border-bottom: 1px solid $border-dark-color
-			z-index: -1
 
+.navigation
+	position: relative
+	&::before
+		content: ""
+		position: absolute
+		+push--absolute(1px, 0, 1px, 0)
+		border: 1px solid var(--body-color)
+		opacity: 0.8
+		border-left: 0
+		border-right: 0
+		z-index: -1
 
-.portfolio
-	.navigation
-		.button-group
-			display: flex
-		.category-link
-			text-transform: uppercase
-			&.is-checked
-				border-color: $border-color !important
-				color: black !important
-
-
-
-.designer-page
-	a
-		display: block
-		color: $body-color
+	.nav-link
+		padding: 0.75em 2vw
+		font-size: 0.8rem
+		border-left: 0
+		border-right: 0
+		text-transform: uppercase
 		&:hover
-			color: $main-color !important
+			color: var(--link-hover-color) !important
 
-	svg.burger-icon
-		width: 2rem
-		height: 2rem
+		+media-breakpoint-down(sm)
+			font-size: 0.75em
+			text-transform: lowercase
+			letter-spacing: normal
 
+	.button-group
+		flex-wrap: wrap
+		width: 100%
+		overflow: hidden
+	.category-link
+		flex: 0 1 auto
+		min-width: 100px
+		height: 100%
+		font-size: 0.65rem
+		&.is-checked
+			color: var(--bs-body-color)
+			font-weight: 500
+
+	.nav-link:not(.category-link):hover
+		border-color: var(--highlight-border-color) !important
+
+.portfolio-container.loaded
+	.loader
+		display: none !important
+
+.designer-page.portfolio
+	.navbar-toggler
+		top: 2vw
+		right: 2vw
+		padding: 1vw
+		+media-breakpoint-down(sm)
+			svg.icon
+				width: 30px
+				height: 30px
+
+
+.designer-page:not(.portfolio)
 	.container
 		display: block
 		max-width: 1200px
@@ -284,14 +227,8 @@ h4, p
 		header
 			padding: 0 0 4vh
 
-	.container-fluid
-		--bs-gutter-x: 0
-
 	section
 		padding: 8vh 4vw
-		&:first-child
-			margin-top: 4vh
-			margin-bottom: 4vh
 
 		>div
 			width: 100%
@@ -301,17 +238,19 @@ h4, p
 			display: flex
 			+push--auto
 
-	.btn
-		color: $primary-button-color
-		padding: 0.75rem 1.5rem
-		text-transform: uppercase
-		//font-weight: 100
-		letter-spacing: 2px
-		border-radius: 0
-		border: solid $border-light-color $border-thickness
-		&:hover
-			color: $main-color
-			background-color: $border-light-color !important
+
+	.navigation
+		margin: 2rem 0
+		.nav-link
+			border: var(--border-thickness) solid transparent
+			border-left: 0
+			border-right: 0
+			&:hover
+				border-color: var(--link-hover-color) !important
+
+		+media-breakpoint-down(sm)
+			display: none
+
 
 	.about-block
 		flex-direction: unset
@@ -333,24 +272,29 @@ h4, p
 			padding-bottom: 8vh
 
 		.about-content
-			border-left: 5px solid $border-color
+			border-left: 5px solid var(--border-color)
 			margin-left: 3rem
 			margin-top: 0
 			padding-left: 1rem
 			flex: 1
 
 	.portfolio-block
-		padding-left: 0
-		padding-right: 0
+		padding-left: 1rem
+		padding-right: 1rem
+		color: var(--light-color)
+		background-color: var(--dark-color)
+		border-bottom: var(--border-thickness) solid var(--body-color)
 		overflow: hidden
-
 		header
-			margin: 0 auto 2rem
 			display: table
+			margin: 0 auto 2rem
+			h2
+				color: var(--light-color)
 			&~*
 				margin: auto
 			p
-				padding: 0 1em
+				font-weight: 500
+				padding: 1rem
 
 		.slider-container
 			position: relative
@@ -374,6 +318,11 @@ h4, p
 			&.peppermint-active
 				visibility: visible
 
+			.peppermint-dots
+				border-color: var(--light-color)
+				&.peppermint-active
+					background-color: var(--light-color)
+
 			figure
 				position: relative
 				display: flex
@@ -381,9 +330,13 @@ h4, p
 				width: 100%
 				max-width: 900px
 				margin: 0 1rem
-				box-shadow: 0 0 40px -20px black
+				background-color: var(--bs-white)
 				.ratio img
 					object-fit: cover
+
+			figcaption .meta
+				color: var(--light-color)
+
 
 		.controls-block
 			+push--absolute(0,-30%,0,-30%)
@@ -394,226 +347,185 @@ h4, p
 				width: 3rem
 				height: 3rem
 				padding: 0.5rem
-				stroke: #fff
-				stroke-width: 3
+				stroke: var(--nav-link-color)
+				stroke-width: var(--border-thickness)
 				&:hover
-					background-color: $main-color
+					background-color: var(--main-color)
 
 		.all-portfolio-link
 			display: table
-			.btn
-				background-color: transparent
+			color: var(--light-color)
+			border-color: var(--light-color)
+
 
 	.partners-block
+		background-color: var(--section-partners-bg)
+		header h2
+			color: var(--section-partners-color)
+		h3
+			color: var(--section-partners-color)
+			opacity: 0.7
+
 		.partners-content
-			display: flex
 			flex-wrap: wrap
-			justify-content: space-evenly
-			margin: auto
+			margin: 4vh auto 0
 			//border-radius: 1rem 1rem
 			.partner-logo
-				flex: 1 1 25%
-				max-width: 100px
-				margin: 1rem
+				flex: 0 0 100px
+				width: 100px
+				height: 100px
+				background-color: var(--section-partners-bg)
+				img
+					object-fit: contain
 
 	.achievements-block
-		background-color: $section-light-bg
+		background-color: var(--section-achievements-bg)
+		color: var(--section-achievements-color)
+
+		header h2
+			color: var(--section-achievements-color)
+
+		h3
+			opacity: 0.7
+
 		.container >div
 			padding: 4vw
-			border: 3px solid $border-dark-color
+			//border: var(--border-thickness) solid var(--section-achievements-color)
 			margin-bottom: 4vh
 			&:last-child
 				margin-bottom: 0
 		ul li
-			//color: $main-color
-			text-transform: lowercase
-			font-size: calc(1em + 0.2vw)
+			@extend h4
+			opacity: 0.7
+			//text-transform: lowercase
 			list-style-type: square
 			span
+				opacity: 0.7
 				font-size: 0.8em
 				//@extend .text-weight
 				font-weight: 300
 
 	.customers-block
+		background-color: var(--section-customers-bg)
+
 		header
 			margin-bottom: 2vh
+			h2
+				color: var(--section-customers-color)
+
 		.col
 			flex: 1 0 auto
 			width: 100%
 			margin: 0 0 2vh
 			+media-breakpoint-up(lg)
 				width: 50%
+
 		.customer
 			display: flex
 			align-items: center
 			padding: 2%
-			//background-color: $section-light-bg
-			//box-shadow: 0 0 43px -10px lighten($section-dark-bg, 20%)
+			//background-color: var(--light-color)
 			.logo
-				flex: 0 1 75px
-				max-width: 75px
-				margin-right: 1vw
+				flex: 1 0 75px
+				max-width: 100px
+				margin-right: 1.5rem
+				+media-breakpoint-down(sm)
+					max-width: 75px
 			.info
-				//border-left: 3px solid $border-color
-				padding-left: 0.75rem
+				color: var(--section-customers-color) !important
+				//border-left: 3px solid var(--border-color)
 				flex: 1
+
 				>p
 					padding-bottom: 0
+
 				span
 					font-style: italic
+
 				.btn
-					padding: 0.4rem 1rem
+					padding: 0.5em 1em
 					text-transform: initial
-					background-color: transparent
-					color: $main-color
+					color: var(--section-customers-color) !important
 
-	.contacts-block, #site-footer
-		background-color: $section-dark-bg
 
-	.contacts-block
-		padding: 4vh 0
-		.contacts-content
-			>div:first-child, >div:last-child
-				flex: 0 1 40%
-				max-width: 360px
-				font-weight: 300
+#site-footer
+	margin-top: auto
+	border-top: var(--border-thickness) solid var(--body-color)
+	background-color: var(--dark-color)
+
+#copyright
+	padding: 0.25rem
+	color: var(--light-color)
+	background-color: var(--dark-color)
+	text-align: center
+
+
+.contacts-block
+	padding: 4vh 0
+	color: var(--section-contacts-color)
+	background-color: var(--section-contacts-bg)
+	header h2
+		color: var(--section-contacts-color)
+
+	.contacts-content
+		width: 100%
+		>div:first-child, >div:last-child
+			flex: 0 1 40%
+			max-width: 280px
+
+		a, a:hover
+			color: var(--section-contacts-color) !important
+
+		svg.icon
+			fill: var(--section-contacts-color)
+
+		.main-info span
+			display: block
+			margin-bottom: 0.5em
+			svg.phone-icon
+				height: 18px
+
+		.socials
+			margin: 1rem auto auto
+			.social-link
+				display: inline-block
+				margin: 0 0.5em
+
+		.get-in-touch
+			svg.icon
+				margin-right: 8px
+
+			.btn
+				text-align: left
+				white-space: nowrap
+				color: var(--section-contacts-color)
 
 			a
-				color: #fff
-				text-decoration: underline
-				//font-weight: 300
-				svg.icon
-					&:hover
-						fill: $main-color
-						transition: all 0.15s ease-in-out
+				text-decoration: none
+				color: var(--section-contacts-color) !important
 
-			svg.icon
-				fill: $icon-color
+				&:hover
+					color: var(--link-color) !important
 
-			.main-info span
-				display: block
-				margin-bottom: 0.5em
-				svg.phone-icon
-					height: 18px
+			>*
+				margin-bottom: 0.75rem
+
+		.main-info,
+		.get-in-touch
+			svg
+				width: 24px
+				height: 24px
+
+
+		+media-breakpoint-down(lg)
+			margin: auto
+			flex-direction: column
+			align-items: center
+			>*
+				margin-bottom: 1.5rem
 
 			.socials
-				margin: 1rem auto auto
-				.social-link
-					display: inline-block
-					margin: 0 0.5em
-
-			.get-in-touch
-				svg.icon
-					margin-right: 8px
-				.btn
-					background-color: transparent
-					text-align: left
-				a
-					color: #fff
-
-				>*
-					margin-bottom: 0.75rem
-
-			.main-info,
-			.get-in-touch
-				svg
-					width: 24px
-					height: 24px
-
-				a, .btn
-					&:hover svg
-						fill: $main-color
-
-			+media-breakpoint-down(lg)
-				margin: auto
-				flex-direction: column
-				align-items: center
-				>*
-					margin-bottom: 1.5rem
-
-				.socials
-					margin-bottom: 2.5rem
-
-
-		.modal-content
-			border-radius: 0
-			.modal-title
-				color: $main-color
-			.modal-footer
-				.cancel-button
-					color: $base-title-color
-				.send-button
-					color: $main-color
-
-
-	.navbar-search, .nav-search-link, #searchContainer
-		display: none
-	a.nav-link
-		text-transform: uppercase
-		letter-spacing: 2px
-	.nav-social-link
-		margin-bottom: 1vh
-	.navbar-toggler:hover
-		background-color: #fff
-	&.portfolio
-		.navbar-toggler
-			top: 2vw
-			right: 2vw
-			padding: 1vw
-		+media-breakpoint-down(sm)
-			.navbar-toggler
-				svg.icon
-					width: 30px
-					height: 30px
-
-	#back2top
-		z-index: 1000
-
-figure
-	background-color: #fff
-
-figcaption
-	position: relative
-	padding: 4%
-	display: flex
-	flex-wrap: wrap
-	flex: 1 1 auto
-	background-color: #fff
-	.title
-		flex: 1
-		margin-bottom: 0.5rem
-		margin-right: 0.5rem
-		color: $main-color
-		font-weight: 700
-		text-transform: uppercase
-	.meta
-		flex: 100%
-		margin-top: auto
-		font-size: 0.8em
-		font-weight: normal
-
-		>div
-			line-height: 1.2
-		.category
-			margin-top: 4%
-			font-weight: 600
-		span
-			margin-left: 5px
-			text-transform: uppercase
-			font-size: 0.8em
-		&.exh-meta
-			font-size: 1rem
-
-	.portfolio-award
-		svg.award
-			width: 1.5rem
-			height: 1.5rem
-			margin: 0rem
-			stroke: unset
-
-	+media-breakpoint-up(xl)
-		font-size: 0.8rem
-
+				margin-bottom: 2.5rem
 
 
 /* Masonry styles */
@@ -641,53 +553,11 @@ figcaption
 
 	figure
 		overflow: hidden
+		border: var(--border-thickness) solid transparent
+		transition: all 300ms ease-out
 		img
-			transition: all 300ms ease-out
 			&:hover
-				transform: scale(1.1)
+				transform: scale(1.05)
 		&:hover
-			box-shadow: 0 0 2.2vw -1vw $section-dark-bg
-
-
-	/* hide by default */
-	&.loading
-		.grid-item
-			opacity: 0
-
-.page-load-status
-	display: none
-	>*
-		display: none
-	padding: 4vh 0
-	text-align: center
-	font-size: 0.8rem
-	border-top: 1px solid $border-dark-color
-
-.modal-dialog
-	form
-		transition: opacity 150ms linear
-		>div
-			margin-bottom: 0.8rem
-		button
-			margin-bottom: 0
-		&.disabled
-			opacity: 0.3
-
-	.status-wrapper
-		+push--absolute
-		padding: 1rem
-		text-align: center
-		flex-direction: column
-		background-color: #fff
-		span
-			text-align: center
-
-	.btn
-		color: $base-title-color
-		border-color: $border-color
-
-
-	.loading-block
-		.spinner-border
-			border-color: $border-color
+			border-color: var(--link-hover-color) !important
 

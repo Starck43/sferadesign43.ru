@@ -24,10 +24,14 @@
 			transform: translateY(-100%)
 			opacity: 0
 
+	.navbar-toggler:hover
+		background-color: #fff
+
 	.navbar-collapse
-		background-color: $menu-bg
+		background-color: var(--menu-bg)
 		height: auto
 		flex-direction: row
+		visibility: visible
 		overflow-y: auto
 
 		.btn-close
@@ -70,6 +74,9 @@
 		margin: 0
 		.nav-link
 			position: relative
+			white-space: nowrap
+			text-align: center
+			color: #000
 			&::before
 				content: ''
 				position: absolute
@@ -80,77 +87,33 @@
 					right: 0
 				bottom: 0
 				height: 0
-				background-color: #fff
+				background-color: #000
 				//border-bottom: 3px #fff solid
 			&:hover
+				opacity: 1
 				&::before
 					height: 1px
 
-	.navbar-search
-		display: none
-		+media-breakpoint-down(lg)
-			display: block
-
-
-	+media-breakpoint-down(lg)
-		.dropdown-menu
-			font-size: 0.8em
-			background-color: transparent !important
-			&.show
-				display: grid
-				grid-template-columns: repeat(auto-fill, minmax(70px, 1fr) )
-				gap: 0 .5em
-				li
-					//display: inline-flex
-					//width: 70px
-					//margin: 0 5px 10px
-					border-radius: 5px
-					box-sizing: content-box
-					.dropdown-item
-						padding: .25rem 0
-						text-align: center
-
-		.dropdown-menu.navbar-dark
-			li
-				&.exh-nav-item
-					display: flex
-					flex-direction: column
-				border: solid 1px transparentize(#fff, 0.3)
-				transition: all 150ms ease-out
-				&:focus,
-				&:hover
-					border-color: #fff
 
 .nav-link.dropdown-toggle.hidden~.dropdown-menu
 	display: none
 
 
-
 @media (max-width: 575.98px) and (orientation: landscape)
 
 	.navbar-expand-lg
-		background-color: transparentize($menu-bg, 1)
+		background-color: var(--menu-bg)
 		transition: background-color 300ms 100ms ease-in-out
-		.navbar-toggler, .nav-search-link .search-icon
-			stroke: $main-color
+		.navbar-toggler
+			stroke: var(--main-color)
 
 	.navbar ul.navbar-nav
 		font-size: 1em
 
 
-a.nav-link
-	text-transform: lowercase
-	white-space: nowrap
-	text-align: center
-	&.account-link
-		color: #fff
-		font-weight: 300
-		&:hover
-			color: #fff
-
 
 .navbar-dark
-	background-color: $menu-bg
+	background-color: var(--menu-bg)
 	.navbar-toggler
 		position: fixed
 		top: 0
@@ -161,58 +124,49 @@ a.nav-link
 		border-radius: 0
 		box-shadow: none
 		z-index: 1000
-		stroke: #fff
+		stroke: var(--bs-body-color)
 		stroke-width: 1.5px
 	&.bg-transparent
 		.navbar-toggler
 			padding: 1.25rem
 			background-color: transparent
 			svg.icon
-				stroke: coral
+				stroke: var(--menu-bg)
+
+	.navbar-nav
+		.nav-link
+			font-weight: 300
+			padding: 0.75em 0
+			margin: 1vh 0
+			color: #fff !important
+			opacity: 0.8
+			&:focus,
+			&:hover
+				background-color: transparent !important
+				opacity: 1
+				&::before
+					background-color: #fff !important
 
 
-	.navbar-nav .nav-link,
-	.dropdown-item
-		font-weight: 200
-		color: $menu-text-color !important
-		opacity: 0.7
-		&:focus,
-		&:hover
-			background-color: transparent
-			opacity: 1
+a.nav-link
+	text-transform: uppercase
+	letter-spacing: 2px
 
 
-.nav-search-link
-	margin-left: 2vw
-	margin-right: 1vw
-	.search-icon
-		stroke: transparentize(#fff, 0.3)
-		transition: all 150ms ease-out
-		&:hover
-			stroke: #fff
-	+media-breakpoint-down(lg)
-		margin-left: 0.25rem
-
-
-.nav-item .nav-search-link
-	+media-breakpoint-down(lg)
-		display: none
-
-
-.nav-social-link
+.social-block a.nav-social-link
 	display: inline-block
 	margin-right: 1vw
+	margin-bottom: 1vh
 	svg.icon
-		width: 24px
-		height: 24px
-		fill: transparentize(#fff, 0.3)
-		transition: all 150ms ease-out
-		&.instagram
-			//background-color: #ff543e
-			stroke: $main-color
-			stroke-width: 2
-		&:hover
-			fill: #fff
+		width: 1.5rem
+		height: 1.5rem
+		fill: #fff
+		opacity: 0.7
+		transition: fill 150ms ease-in-out
+	&:hover
+		svg
+			fill: #fff !important
+			opacity: 1
 
 	+media-breakpoint-down(lg)
 		display: block
@@ -220,5 +174,7 @@ a.nav-link
 		text-align: center
 
 
+.navbar-search, .nav-search-link, #searchContainer
+	display: none
 
 

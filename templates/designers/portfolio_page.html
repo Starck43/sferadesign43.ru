@@ -43,15 +43,12 @@
 	</a>
 	{% endblock brand_block %}
 
-	<div id="filterBlock" class="filters-group navigation centered gap-4">
-
-		<div class="button-group all">
-			<button class="category-link is-checked" type="button" data-filter="*">все проекты</button>
-		</div>
-		<div class="button-group category-filters">
-		{% for key, value in filter_attributes %}
-			<button class="category-link text-weight" type="button" data-filter=".{{key}}">{{value}}</button>
-		{% endfor %}
+	<div id="filterBlock" class="filters-group navigation">
+		<div class="button-group category-filters centered">
+			<button class="nav-link category-link is-checked" type="button" data-filter="*">Все</button>
+			{% for key, value in filter_attributes %}
+				<button class="nav-link category-link text-weight" type="button" data-filter=".{{key}}">{{value}}</button>
+			{% endfor %}
 		</div>
 
 	</div>
@@ -61,7 +58,7 @@
 {% block content %}
 
 	{% if portfolio_list %}
-		<div id="portfolioBlock" class="portfolio-container loading">
+		<div id="portfolioBlock" class="portfolio-container">
 			<div class="grid-sizer"></div>
 			{% for e in portfolio_list %}
 
@@ -93,7 +90,7 @@
 							</div>
 							{% endif %}
 
-							<div class="meta text-weight">
+							<div class="meta">
 								<div class="detail">
 									{% if e.win_year %}
 									Победитель в выставке<span>Сфера Дизайна {{ e.win_year }}</span>
@@ -135,27 +132,23 @@
 				{% endwith %}
 
 			{% endfor %}
-	</div>
 
-	<!-- status elements -->
-	<div class="page-load-status">
-		<div id="preloader" class="infinite-scroll-request centered fade">
-			<div class="dot"></div>
-			<div class="dot"></div>
-			<div class="dot"></div>
-			<div class="dot"></div>
-			<div class="dot"></div>
+			<!-- status elements -->
+			<div class="page-load-status">
+				<div id="preloader" class="loader centered">
+					<div class="dot"></div>
+					<div class="dot"></div>
+					<div class="dot"></div>
+					<div class="dot"></div>
+					<div class="dot"></div>
+				</div>
+			</div>
+
+			{% if user.is_authenticated %}
+			<a class="nav-link centered" href="/portfolio/new">Добавить портфолио</a>
+			{% endif %}
+
 		</div>
-		{% if user.is_authenticated %}
-		<a href="/portfolio/new" class="centered">Добавить портфолио</a>
-		{% else %}
-		<p class="infinite-scroll-error centered">Конец списка</p>
-		{% endif %}
-	</div>
-	<!-- pagination has path -->
-	<p class="pagination">
-		<a class="btn pagination__next" type="button" href="page2.html">Еще портфолио</a>
-	</p>
 	{% endif %}
 
 {% endblock content %}

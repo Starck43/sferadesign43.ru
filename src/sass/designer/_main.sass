@@ -8,41 +8,97 @@ html
 	+media-breakpoint-up(xl)
 		font-size: 18px
 
+
 body
 	display: flex
 	flex-direction: column
 	min-height: 100vh
-	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
+	--bs-font-sans-serif: Arial, Tahoma
+	--bs-body-bg: #{$body-bg}
+	--bs-body-color: #{$text-color}
+	--main-color: #{$main-color}
+	--title-color: #{$header-color}
+	--bs-primary: #{$main-color}
+	--bs-white: white
+	--btn-color: #{$btn-color}
+	--link-color: #{$link-color}
+	--link-hover-color: #{$link-hover-color}
+	--nav-link-color: #{$nav-link-color}
+	--body-color: #{$body-color}
+	--light-color: #{$light-color}
+	--dark-color: #{$dark-color}
+	--border-color: #{$main-color}
+	--border-thickness: #{$border-thickness}
+	--border-light-color: #{$border-light-color}
+	--border-dark-color: #{$border-dark-color}
+	--highlight-border-color: #{$highlight-border-color}
+	--menu-bg: #{$menu-bg}
 
+	--section-partners-bg:  #{$light-color}
+	--section-partners-color: #{$dark-color}
+	--section-achievements-bg:  #{$body-bg}
+	--section-achievements-color: #{$text-color}
+	--section-customers-bg:  #{$light-color}
+	--section-customers-color: #{$dark-color}
+	--section-contacts-bg:  #{$dark-color}
+	--section-contacts-color: #{$light-color}
+
+
+*:focus
+	box-shadow: none !important
+	border-color: var(--main-color) !important
+
+*::selection
+	color: var(--light-color)
+	background-color: var(--dark-color)
 
 h1
-	color: $header-color
-	text-transform: lowercase
-	font-size: calc(2rem + 1vw)
+	color: var(--title-color)
+	font-size: calc(2.2rem + 0.5vw)
+	margin-left: 3rem
+	margin-bottom: 0
+
 	span
 		display: block
 		font-size: .5em
 		font-style: italic
-		color: $text-color
+		color: var(--bs-body-color)
+
+h2
+	margin-bottom: 0
+	flex: 100%
+	color: var(--main-color)
+	font-size: calc(1.8rem + 0.5vw)
+	text-align: center
+	text-transform: uppercase
+
+h3
+	margin-bottom: 1.5rem
+	font-size: calc(1.6rem + 0.4vw)
+	+media-breakpoint-down(md)
+		font-size: calc(1.2rem + 1vw)
+	letter-spacing: 1px
+	text-transform: lowercase
+
+h4
+	font-size: calc(1rem + .5vw)
+
+h1, h2
+	font-weight: 500
+	letter-spacing: 1px
 
 h3, h4
 	min-height: 0vw
-	font-size: calc(1.1em + .2vw)
 	font-weight: 500
 
-h4
-	font-size: calc(1em + .2vw)
 
-a
-	color: $link-color
-	text-decoration: none
-	outline: none
-	cursor: pointer
+.text-weight
+	font-weight: 500
+	letter-spacing: 1px
 
-	&.active
-		font-weight: 500
-	&:hover
-		color: lighten($link-color, 20%)
+p
+	font-weight: 300
+	letter-spacing: 1px
 
 ul li
 	margin-bottom: 0.5em
@@ -108,13 +164,11 @@ img[data-sizes="auto"]
 		@supports (backdrop-filter: blur(0))
 			backdrop-filter: blur(0)
 
-.loading, .loaded
-	transition: opacity 500ms ease-in
-
 .loading
 	opacity: 0
 
 .loaded
+	transition: opacity 300ms ease-in
 	opacity: 1 !important
 
 
@@ -127,6 +181,8 @@ img[data-sizes="auto"]
 	display: flex
 	flex-direction: column
 
+.box-shadow
+	box-shadow: 0 0 2.2rem -0.3rem transparentize(#000, 0.8)
 
 .hidden
 	display: none !important
@@ -170,6 +226,34 @@ svg.icon
 	&.error
 		color: #842029
 
+
+a, .btn
+	transition: all .15ms ease-in-out
+	&:hover svg
+		fill: var(--main-color) !important
+
+a
+	display: block
+	color: var(--link-color)
+	text-decoration: none
+	outline: none
+	cursor: pointer
+
+	&.active
+		font-weight: 500
+	&:hover
+		color: var(--link-hover-color) !important
+
+
+svg.burger-icon
+	width: 2rem
+	height: 2rem
+
+.nav-link
+	color: var(--nav-link-color)
+	border: var(--border-thickness) solid transparent
+	user-select: none
+
 .back-link
 	svg
 		stroke: black
@@ -182,24 +266,28 @@ svg.icon
 		right: $container-margin*2
 
 .btn
-	color: $main-color
-	background-color: #fff
-	border-color: $main-color
+	padding: .75em 1.5em
+	//font-weight: 100
+	border-radius: 0
+	border: solid var(--btn-color) var(--border-thickness)
+	color: var(--btn-color)
+	background-color: transparent
 	&:hover
-		box-shadow: 0 0 1px 1px white inset, 0 0 1px 1px $main-color inset
-
-.btn-primary, .btn-primary:hover
-	color: #fff
-	background-color: $main-color
+		color: var(--link-hover-color) !important
+		border-color: var(--link-hover-color)
+		//box-shadow: 0 0 1px 1px var(--main-color) inset
 
 .btn-primary
+	color: var(--bs-primary) !important
+	border-color: var(--bs-primary)
 	&:hover
-		box-shadow: 0 0 1px 1px white inset
-	&:disabled,
-	&.disabled
-		color: transparentize(white, 0.65)
-		background-color: $main-color
-		border-color: $main-color
+		color: inherit !important
+		background-color: var(--bs-primary)
+
+button
+	background-color: transparent
+	&:disabled, &.disabled
+		opacity: 0.5
 
 .btn-close
 	opacity: 0.7
@@ -211,9 +299,9 @@ svg.icon
 .social-link
 	display: inline-block
 	svg
-		fill: $main-color
+		fill: var(--main-color)
 		//border-radius: 5px
-		//background-color: $main-color
+		//background-color: var(--main-color)
 		&.vk
 			//background-color: #4D76A1
 		&.fb
@@ -221,6 +309,56 @@ svg.icon
 		&.instagram
 			//background-color: #ff543e
 			stroke: white
+
+
+figcaption
+	position: relative
+	padding: 4%
+	display: flex
+	flex-wrap: wrap
+	flex: 1 1 auto
+
+	.title
+		flex: 1
+		margin-bottom: 0.5rem
+		margin-right: 0.5rem
+		color: var(--main-color)
+		font-weight: 700
+		text-transform: uppercase
+
+	.meta
+		flex: 100%
+		color: var(--bs-body-color)
+		margin-top: auto
+		font-size: 0.8em
+		font-weight: normal
+		>div
+			line-height: 1.2
+
+		.category
+			margin-top: 1.5em
+			opacity: 0.5
+			span
+				text-decoration: underline
+
+		span
+			margin-left: 5px
+			text-transform: uppercase
+			font-size: 0.8em
+			font-weight: bold
+
+		&.exh-meta
+			font-size: 1em
+
+	.portfolio-award
+		svg.award
+			width: 1.5rem
+			height: 1.5rem
+			margin: 0rem
+			stroke: unset
+
+	+media-breakpoint-up(xl)
+		font-size: 0.8rem
 
 
 #back2top
@@ -246,9 +384,10 @@ svg.icon
 	padding: 3px
 	opacity: 0.6
 	border: 0
+	background-color: #fff
 	.arrow-icon
 		padding: .25em
-		stroke: #000
+		stroke: var(--main-color)
 		stroke-width: 2
 		&+span
 			display: none
@@ -261,31 +400,6 @@ svg.icon
 		.arrow-icon
 			&+span
 				display: block
-
-#main-title
-	overflow: visible
-	text
-		fill: $main-color
-		stroke: $main-color
-		stroke-width: 6px
-		font-size: 122px
-		text-transform: uppercase
-		font-weight: 300
-		letter-spacing: 1px
-
-#site-header
-	position: relative
-	display: flex
-	flex-wrap: wrap
-	align-items: center
-	padding-top: 1.5vh !important
-
-	.back-link
-		position: absolute
-		top: 2.5vw
-		right: 2.5vw
-		display: flex
-		align-items: center
 
 
 .container
@@ -334,31 +448,6 @@ svg.icon
 		margin-right: $col-width-xxl
 
 
-.description
-	position: relative
-	transition: 500ms all ease
-	a.read-more-link
-		position: absolute
-		display: block
-		width: 100%
-		//height: 40px
-		bottom: 0
-		text-align: center
-		cursor: pointer
-		&:before
-			content: 'Свернуть'
-
-	&.brief
-		height: 300px
-		overflow: hidden
-		a.read-more-link
-			padding-top: 80px
-			background: linear-gradient(to top, #FFF 30%, rgba(255,255,255,0.6) 80%, rgba(255,255,255,0.1) 100%)
-			&:before
-				content: 'Читать далее'
-
-
-
 #alertContainer
 	position: fixed
 	left: 0
@@ -368,12 +457,13 @@ svg.icon
 	background-color: transparent
 	transition: background-color 150ms linear
 	z-index: 2
+
 	.btn-close
 		margin-left: auto
 		padding: 0
 
 	.alert-body h3
-		border-bottom: 1px solid transparentize($text-color, 0.75)
+		border-bottom: 1px solid var(--bs-body-color)
 		margin-bottom: 2vw
 
 	>.alert
@@ -383,10 +473,10 @@ svg.icon
 		min-width: 300px
 		max-width: 90%
 		width: 100%
-		color: $text-color
+		color: var(--bs-body-color)
 		background-color: #fff
-		border: solid $border-thickness $highlight-border-color
-		box-shadow: 0 0 1rem transparentize($main-color, 0.7)
+		border: solid var(--border-thickness) var(--highlight-border-color)
+		//box-shadow: 0 0 1rem var(--main-color)
 		transform: translateY(-50px)
 		opacity: 0
 		+media-breakpoint-up(sm)
@@ -406,6 +496,43 @@ svg.icon
 	background-color: transparentize(black, 0.5)
 
 
+.modal-dialog
+	form
+		transition: opacity 150ms linear
+		>div
+			margin-bottom: 0.8rem
+		button
+			margin-bottom: 0
+			font-size: 0.8em
+
+		&.disabled
+			opacity: 0.3
+
+	.status-wrapper
+		+push--absolute
+		padding: 1rem
+		text-align: center
+		flex-direction: column
+		//background-color: #fff
+		span
+			text-align: center
+
+
+	.loading-block
+		.spinner-border
+			border-color: var(--border-color)
+
+	.modal-content
+		border-radius: 0
+		.modal-title
+			color: var(--main-color)
+		.modal-footer
+			.cancel-button
+				color: var(--btn-color)
+			.send-button
+				color: var(--main-color)
+
+
 .admin-edit-link
 	svg
 		width: 1rem
@@ -413,37 +540,6 @@ svg.icon
 		margin-left: 5px
 		fill: deepskyblue
 		vertical-align: middle
-
-#site-footer
-	margin-top: auto
-	padding: 2vh
-	border-top: 1px solid $highlight-border-color
-	.copyright
-		text-align: center
-
-.upload-form
-	select, .django-ckeditor-widget
-		width: 100%
-	input[type="text"]
-		min-width: 100%
-
-	.portfolio-image
-		.form-label, .input-group-text, .upload-link .input-group
-			display: none
-		.input-group-text+div
-			border: none
-		input
-			max-width: 100%
-		textarea
-			height: 6rem
-		.image
-			width: auto
-			max-width: 300px
-		.meta
-			flex: 1
-			>div
-				width: 100%
-				line-height: 1.2
 
 
 

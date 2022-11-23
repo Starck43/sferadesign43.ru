@@ -54,18 +54,17 @@
 
 	<div class="navigation centered">
 		{% if portfolio_list %}
-			<a href="#designerPortfolio"><button class="btn category-link" type="button">Выставочные работы</button></a>
-			<a href="portfolio"><button class="btn category-link" type="button">Портфолио</button></a>
+			<a href="portfolio" class="nav-link">Портфолио</a>
 		{% endif %}
 		{% if exh_victories_list or competitions or publications %}
-			<a href="#designerAchievements"><button class="btn category-link" type="button">Достижения</button></a>
+			<a href="#designerAchievements" class="nav-link">Достижения</a>
 		{% endif %}
 
-		{% if object.customer_set.count %}
-			<a href="#designerCustomers"><button class="btn category-link" type="button">Клиенты</button></a>
+		{% if object.customers.count %}
+			<a href="#designerCustomers" class="nav-link">Клиенты</a>
 		{% endif %}
 
-		<a href="#designerContacts"><button class="btn category-link" type="button">Контакты</button></a>
+		<a href="#designerContacts" class="nav-link">Контакты</a>
 	</div>
 
 {% endblock header %}
@@ -91,7 +90,7 @@
 			<header>
 				<h2>О себе</h2>
 			</header>
-			<div class="about text-weight">{{ about|safe }}</div>
+			<div class="about">{{ about|safe }}</div>
 		</div>
 		{% endif %}
 
@@ -100,7 +99,7 @@
 
 
 	{% if portfolio_list %}
-	<section id="designerPortfolio" class="portfolio-block dark-bg">
+	<section id="designerPortfolio" class="portfolio-block">
 
 		<header>
 			<h2>Выставочные проекты</h2>
@@ -114,7 +113,7 @@
 
 					{% with cover=e.project_cover %}
 					{% if cover %}
-					<figure class="slide-wrapper">
+					<figure class="slide-wrapper box-shadow">
 						<a id="project-{{e.id}}" class="gallery-photo ratio ratio-16x9" href="{{ e.get_absolute_url }}">
 							{% thumbnail cover "320" crop="center" as xs %}
 							{% thumbnail cover "576" crop="center" as sm %}
@@ -152,7 +151,9 @@
 				{% endif %}
 			</div>
 		</div>
-		<a class="all-portfolio-link mt-5" href="portfolio"><button class="btn btn-link" type="button">Смотреть все проекты</button></a>
+		<a class="all-portfolio-link btn" href="portfolio">
+			Смотреть все проекты
+		</a>
 	</section>
 	{% endif %}
 
@@ -162,10 +163,10 @@
 		<header>
 			<h2>Сотрудничество</h2>
 		</header>
-		<div class="partners-content centered">
+		<div class="partners-content centered gap-4">
 		{% for partner in object.partners.all %}
 			{% if partner.logo %}
-				<div class="partner-logo">
+				<div class="partner-logo centered">
 				{% thumbnail partner.logo "150x150" as logo %}
 					<img src="{{ logo.url }}">
 				{% empty %}
@@ -205,7 +206,7 @@
 			{% with event=competitions %}
 			{% if event %}
 			<div class="competitions-content">
-				<h3>Другие конкурсы</h3>
+				<h3>Другие</h3>
 				{% include "designers/achievements-list.html" %}
 			</div>
 			{% endif %}
@@ -224,14 +225,14 @@
 	{% endif %}
 
 
-	{% if object.customer_set.count %}
+	{% if object.customers.count %}
 	<section id="designerCustomers" class="customers-block">
 		<div class="container">
 			<header>
 				<h2>Клиенты</h2>
 			</header>
 			<div class="customers-content row g-4">
-			{% for person in object.customer_set.all %}
+			{% for person in object.customers.all %}
 				{% if person.link %}
 				<a class="col" href="{{person.link}}">
 				{% else %}

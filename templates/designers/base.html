@@ -26,9 +26,8 @@
 
 
 	<link rel="canonical" href="{{ site_url }}"/>
-	<link rel="shortcut icon" href="{% static 'favicons/favicon.ico' %}"/>
-	<link rel="icon" type="image/x-icon" href="{% static 'favicons/favicon.ico' %}">
-
+	<link rel="shortcut icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
+	<link rel="icon" type="image/x-icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
 	<link rel="apple-touch-icon" sizes="180x180" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/{{ object.slug }}/favicons/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/{{ object.slug }}/favicons/favicon-16x16.png">
@@ -42,6 +41,7 @@
 	{% endif %}
 
 	<!-- CSS only -->
+	<link href="/{{ object.slug }}/css/variables.css" rel="stylesheet" type="text/css" media="screen"/>
 	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 	<link href="{% md5url 'css/designer/designer.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
@@ -121,44 +121,38 @@
 
 	{% block navigation %}{% endblock navigation %}
 
+	<div id="header" class="header">
+		{% block header %}
 
+			{% block brand_block %}
+			<div class="brand-block centered{% if object.title %} with-title{% endif %}">
 
-	<div class="container-fluid loading">
-
-		<div id="header" class="header">
-			{% block header %}
-
-				{% block brand_block %}
-				<div class="brand-block centered{% if object.title %} with-title{% endif %}">
-
-					{% if object.owner.logo %}
-					<div class="brand-logo logo">
-						<a href="{{object.get_absolute_url}}">
-							<img src="{{ object.owner.logo.url }}">
-						</a>
-					</div>
-					{% endif %}
-
-					<h1>{{ object.title }}</h1>
-
-					{% if user.is_staff %}
-						<a class="admin-edit-link" href="{% url 'designer'|admin_change_url:"designers" object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
-					{% endif %}
+				{% if object.owner.logo %}
+				<div class="brand-logo logo">
+					<a href="{{object.get_absolute_url}}">
+						<img src="{{ object.owner.logo.url }}">
+					</a>
 				</div>
-				{% endblock brand_block %}
+				{% endif %}
 
-			{% endblock header %}
-		</div>
+				<h1>{{ object.title }}</h1>
 
-		<div id="content" class="content">
-			{% block content %}{% endblock content %}
-		</div>
+				{% if user.is_staff %}
+					<a class="admin-edit-link" href="{% url 'designer'|admin_change_url:"designers" object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+				{% endif %}
+			</div>
+			{% endblock brand_block %}
 
+		{% endblock header %}
+	</div>
+
+	<div id="content" class="content">
+		{% block content %}{% endblock content %}
 	</div>
 
 
 	<div id="site-footer">
-		<div id="designerContacts" class="contacts-block dark-bg">
+		<div id="designerContacts" class="contacts-block">
 			<div class="container">
 				<header>
 					<h2>Контакты</h2>
@@ -190,14 +184,14 @@
 
 					<div class="get-in-touch column-centered">
 						{% if object.owner.email or object.owner.user.email %}
-						<button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
+						<button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
 							<svg class="icon message-icon"><use xlink:href="#logo-envelope"></use></svg>Отправить сообщение
 						</button>
 						{% endif %}
 
 						{% for name, label, value, link in object %}
 							{% if link and name == 'whatsapp' or link and name == 'telegram' %}
-							<a href="{{ link }}" class="btn btn-link {{name}}">
+							<a href="{{ link }}" class="btn {{name}}">
 								<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>Написать в {{label}}
 							</a>
 							{% endif %}
@@ -241,7 +235,7 @@
 						{% endif %}
 						{{ field|as_crispy_field }}
 						{% endfor %}
-						<button type="submit" class="btn send-button">Отправить</button>
+						<button type="submit" class="btn btn-primary send-button">Отправить</button>
 					</form>
 					<div class="status-wrapper centered fade hidden">
 						<div class="status-text"></div>

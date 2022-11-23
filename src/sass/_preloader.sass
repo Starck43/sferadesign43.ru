@@ -2,12 +2,13 @@
 @import mixins
 
 #preloader
-	$colors: $main-color
-	position: absolute
+	position: fixed
 	left: 50%
-	transform: translateX(-50%)
-	bottom: -5vw
-	&.show .dot
+	top: 50%
+	transform: translate(-50%, -50%)
+	z-index: 1000000
+
+	.dot
 		position: relative
 		width: 0.8vw
 		height: 0.8vw
@@ -26,9 +27,11 @@
 
 		@for $i from 1 through 5
 			&:nth-child(#{$i})
-				background: transparentize($main-color, 0.8-$i*0.1)
+				background-color: var(--link-color)
+				opacity: (0.8-$i*0.1)
 				&::before
 					animation-delay: $i * 0.15s
+
 
 @keyframes wave
 	50%,
