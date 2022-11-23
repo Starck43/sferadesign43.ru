@@ -4,29 +4,33 @@
 
 	document.onscroll = function(e) { // закрытие окна поиска по скролу
 
-		if (scrollDown && window.pageYOffset >= window.innerHeight  ) {
-			scrollDown.remove();
-			scrollDown = null;
+		if (scrollDown) {
+			if (window.pageYOffset >= window.innerHeight  ) {
+				scrollDown.remove();
+				scrollDown = null;
+			}
 		}
 
 		if (scrollUp) {
 			if (window.pageYOffset <= window.innerHeight) {
 				if (! scrollUp.classList.contains('disable')) {
 					scrollUp.classList.add('disable');
-					scrollUp.style.transform = `translateY(${scrollUp.parentElement.clientHeight*2}px)`;
+					scrollUp.style.transform = `translateY(4vh)`;
 				}
 			} else
 				if (scrollUp.classList.contains('disable')) {
 					scrollUp.classList.remove('disable');
-					scrollUp.style.transform = `translateY(${-scrollUp.parentElement.clientHeight}px)`;
+					scrollUp.style.transform = `translateY(0)`;
 				}
 		}
 
-		searchContainer && searchContainer.classList.contains('active') && searchContainer.classList.remove('active');
+		if (searchContainer) {
+			searchContainer.classList.contains('active') && searchContainer.classList.remove('active');
+		}
 	};
 
 
-	const loadingElements = document.body.querySelectorAll('.loading');
+	const loadingElements = document.querySelectorAll('.loading');
 	loadingElements.forEach( function(item) {
 		item.classList.remove('loading');
 		item.classList.add('loaded');

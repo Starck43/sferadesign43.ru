@@ -1,8 +1,8 @@
-//= ../plugins/peppermint/peppermint.js
+//=require ../plugins/peppermint/peppermint.js
 
 document.addEventListener("DOMContentLoaded", function() {
 
-	//= components/_slider.js
-	//= components/_banner.js
+	//=include components/_slider.js
+	//=include components/_banner.js
 
 });

@@ -1,4 +1,4 @@
-//= ../plugins/peppermint/peppermint.js
+//=require ../plugins/peppermint/peppermint.js
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -7,12 +7,12 @@ document.addEventListener("DOMContentLoaded", function() {
 	var navbarMenu = bootstrap.Offcanvas.getInstance(offcanvas);
 	if (!navbarMenu) navbarMenu = new bootstrap.Offcanvas(offcanvas);
 
-	//= components/_init.js
-	//= components/_lazyLoad.js
+	//=include components/_init.js
+	//=include components/_lazyLoad.js
 	lazyloadInit();
-	//= components/_ajax.js
-	//= components/_alert.js
-	//= components/_sendMessage.js
+	//=include components/_ajax.js
+	//=include components/_alert.js
+	//=include components/_sendMessage.js
 
 	const navLinks = document.querySelectorAll('a.nav-link');
 	navLinks.forEach( (item) => {
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		slider = Peppermint( container, {
 			dots: true,
 			//touchSpeed: 300,
-			speed: window.innerWidth/1.5,
+			speed: Math.round(window.innerWidth/0.8),
 			slideshow: true,
 			slideshowInterval: 5000,
 			stopSlideshowAfterInteraction: true,

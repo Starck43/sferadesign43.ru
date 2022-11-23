@@ -49,7 +49,7 @@ function navbarOffset(elem) {
 
 
 document.addEventListener("DOMContentLoaded", function() {
-	//= components/_init.js
+	//=require components/_init.js
 
 	const navbar = document.querySelector('nav.navbar');
 	const html = document.querySelector('html.sd43');

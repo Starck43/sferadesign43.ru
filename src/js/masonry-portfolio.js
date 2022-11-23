@@ -1,16 +1,16 @@
 
-//= ../../node_modules/imagesloaded/imagesloaded.pkgd.js
-//= ../../node_modules/isotope-layout/dist/isotope.pkgd.js
-//= ../../node_modules/infinite-scroll/dist/infinite-scroll.pkgd.js
+//=require ../../node_modules/imagesloaded/imagesloaded.pkgd.js
+//=require ../../node_modules/isotope-layout/dist/isotope.pkgd.js
+// ../../node_modules/infinite-scroll/dist/infinite-scroll.pkgd.js
 
 document.addEventListener("DOMContentLoaded", function() {
 
 	const searchContainer = null;
-	//= components/_init.js
-	//= components/_lazyLoad.js
-	//= components/_ajax.js
-	//= components/_alert.js
-	//= components/_sendMessage.js
+	//=include components/_init.js
+	//=include components/_lazyLoad.js
+	//=include components/_ajax.js
+	//=include components/_alert.js
+	//=include components/_sendMessage.js
 
 	lazyloadInit();
 	const header = document.getElementById('header')
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	var grid;
 
 	imagesLoaded( container, function() {
-  		// init Isotope after all images have loaded
+  		// init Isotope after all images are loaded
 		grid = new Isotope( container, {
 			itemSelector: '.grid-item',
 			columnWidth: '.grid-sizer',
@@ -31,11 +31,13 @@ document.addEventListener("DOMContentLoaded", function() {
 			// nicer reveal transition
 			visibleStyle: { transform: 'translateY(0)', opacity: 1 },
 			hiddenStyle: { transform: 'translateY(100px)', opacity: 0 },
-		});
-		container.classList.remove('loading')
+		})
+	}).on( "always", function() {
+		container && container.classList.add('loaded')
 	});
 
 
+/*
 	let infScroll = new InfiniteScroll( container, {
 		path: '.pagination__next',
 		append: '.grid-item',
@@ -47,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	infScroll.imagesLoaded = imagesLoaded;
 
-
+*/
 	// bind filter button click
 	var filtersElem = document.querySelector('.filters-group');
 	filtersElem.addEventListener( 'click', function( event ) {

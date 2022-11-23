@@ -1,10 +1,10 @@
 
 document.addEventListener("DOMContentLoaded", function() {
 
-	//= components/_ajax.js
-	//= components/_alert.js
-	//= components/_lazyLoad.js
-	//= components/_ajax_projects_filter.js
-	//= components/_ajax_projects_render.js
+	//=include components/_ajax.js
+	//=include components/_alert.js
+	//=include components/_lazyLoad.js
+	//=include components/_ajax_projects_filter.js
+	//=include components/_ajax_projects_render.js
 
 });

@@ -1,6 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", function() {
-	//= components/_ajax.js
+	//=include components/_ajax.js
 
 	const modalContainer = document.getElementById('progressModal');
 	const form = document.querySelector('#portfolio_form');
