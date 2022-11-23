@@ -13,29 +13,18 @@ admin.site.site_title = 'Страницы дизайнеров'
 admin.site.site_header = 'Страницы дизайнеров'
 
 
-@admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
-	fields = ('designer', 'name', 'excerpt', 'logo', 'link')
-	list_display = ('designer', 'name', 'excerpt')
-	list_display_links = ('designer', 'name')
-
-
-@admin.register(Achievement)
-class AchievementAdmin(admin.ModelAdmin):
-	fields = ('designer', 'title', 'description', 'date', 'group', 'link')
-	list_display = ('designer', 'title', 'date', 'group')
-	list_display_links = ('designer', 'title', 'date', 'group')
-
 
 class CustomerInline(admin.TabularInline):
 	model = Customer
 	#template = 'admin/exhibition/edit_inline/stacked.html'
-	extra = 0
+	extra = 1
 	show_change_link = True
 	fields = ('name', 'link','logo',)
 	#list_display = ('logo', 'name',)
 	#list_editable = ['name']
 	classes = ['customers-inline-tab']
+
+
 
 class AchievementInline(admin.TabularInline):
 	model = Achievement
@@ -46,6 +35,23 @@ class AchievementInline(admin.TabularInline):
 	list_display = ('title', 'date',)
 	#list_editable = ['title']
 	classes = ['achievements-inline-tab']
+
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+	fields = ('designer', 'name', 'excerpt', 'logo', 'link')
+	list_display = ('designer', 'name', 'excerpt')
+	list_display_links = ('designer', 'name')
+
+
+
+@admin.register(Achievement)
+class AchievementAdmin(admin.ModelAdmin):
+	fields = ('designer', 'title', 'description', 'date', 'group', 'link')
+	list_display = ('designer', 'title', 'date', 'group')
+	list_display_links = ('designer', 'title', 'date', 'group')
+
 
 
 @admin.register(Designer)

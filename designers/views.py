@@ -125,11 +125,11 @@ class portfolio_page(MetaSeoMixin, DetailView):
 			category_name=F('categories__title')
 		).values_list('category_slug', 'category_name')
 
-
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['designer-page', 'portfolio']
 		context['portfolio_list'] = all_portfolio
-		context['filter_attributes'] = set(tuple(exh_category) + tuple(add_category))
+		context['filter_attributes'] = list(filter(lambda x: x[0] is not None, set(tuple(exh_category) + tuple(add_category))))
+
 		context['form'] = FeedbackForm()
 		return context
 
