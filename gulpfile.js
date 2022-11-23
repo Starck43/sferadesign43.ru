@@ -11,7 +11,7 @@ var gulp 		 = require('gulp'),
 	uglify       = require('gulp-uglify-es').default, // Подключаем плагин для сжатия JS
 	ttf2woff2 	 = require('gulp-ttf2woff2'),
 //	jsRequires   = require('gulp-resolve-dependencies'), // Подключаем пакет для импортирования скриптов через //@requires *.js
-	rigger		 = require('gulp-rigger'), // импорт скриптов через //= filename.js
+	include		 = require('gulp-include'), // импорт скриптов через //=require filename.js
 	postcss      = require("gulp-postcss"),
 	combineCSS   = require('gulp-group-css-media-queries'),  // Объединяет все @media
 	cssImport    = require('postcss-import'),   // Подключаем пакет для импортирования кода css, прописанного через @import '*.css'
@@ -57,7 +57,7 @@ function styles() { // таск 'styles' обработает все файлы 
 function scripts() {
 	return gulp.src([path.src+'js/*.js'])
 //	.pipe(sourcemaps.init()) // Инициализируем sourcemap
-	.pipe(rigger()) //подключаем импортирование скриптов
+	.pipe(include()) //подключаем импортирование скриптов
 //	.pipe(concat('custom.min.js')) // Объединяем в один файл
 //	.pipe(uglify()) // Сжимаем JS файл
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
@@ -134,6 +134,7 @@ function watch() { //таск слежения изменений в sass,css,ht
 // Экспорт скриптов для публичного доступа (через командную строку в том числе)
 exports.browsersync = browsersync;
 exports.styles = styles;
+exports.scripts = scripts;
 exports.css_compress = css_compress;
 exports.scripts_compress = scripts_compress;
 exports.ttf_to_woff2 = ttf_to_woff2;
