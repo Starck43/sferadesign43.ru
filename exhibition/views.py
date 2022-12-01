@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import hmac
+import math
 
 from os import path
 from django.conf import settings
@@ -232,7 +233,8 @@ class projects_list(MetaSeoMixin, BannersMixin, ListView):
 	def setup(self, request, *args, **kwargs):
 		super().setup(request, *args, **kwargs)
 		self.slug = kwargs['slug']
-		self.object = self.model.objects.get(slug=self.slug)
+		if self.slug:
+			self.object = self.model.objects.get(slug=self.slug)
 
 
 	def get_queryset(self):
@@ -549,6 +551,7 @@ class winner_project_detail(MetaSeoMixin, BannersMixin, DetailView):
 			context['user_score'] = None
 
 		context['average_rate'] = round(rate, 2)
+		context['round_rate'] = math.ceil(rate)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
 		context['cache_timeout'] = 86400
@@ -602,6 +605,7 @@ class project_detail(MetaSeoMixin, DetailView):
 			context['user_score'] = None
 
 		context['average_rate'] = round(rate, 2)
+		context['round_rate'] = math.ceil(rate)
 		context['extra_rate_percent'] = int((rate - int(rate))*100)
 		context['rating_form'] = RatingForm(initial={'star': int(rate)}, user=self.request.user, score=context['user_score'])
 		context['cache_timeout'] = 86400

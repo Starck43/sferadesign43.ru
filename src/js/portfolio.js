@@ -1,11 +1,10 @@
 
-//=require ../plugins/peppermint/peppermint.js
+//=include ../plugins/peppermint/peppermint.js
 
 document.addEventListener("DOMContentLoaded", function() {
 
 	//=include components/_inViewport.js
 	//=include components/_slider.js
-
 
 	// обработчик раскрытия всего содержимого при нажатии на кнопку "Читать далее" при наличии блока описания
 	const excerptBlock = document.querySelector('.description');

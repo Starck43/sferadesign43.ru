@@ -93,6 +93,7 @@ MIDDLEWARE = [
     # watson search
     #'django.middleware.transaction.TransactionMiddleware',
     'watson.middleware.SearchContextMiddleware',
+    'exhibition.middleware.AjaxMiddleware' # custom middlewares
 ]
 
 ROOT_URLCONF = 'crm.urls'

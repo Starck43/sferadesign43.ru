@@ -272,6 +272,10 @@ class NominationsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
+		portfolio = Portfolio.objects.filter(nominations=obj)
+		for item in portfolio:
+			delete_cached_fragment('portfolio_list', item.owner.slug, item.project_id, True)
+			delete_cached_fragment('portfolio_list', item.owner.slug, item.project_id, False)
 
 
 

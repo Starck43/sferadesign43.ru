@@ -27,7 +27,7 @@ var path = {
 		html: 'templates/' // Путь до шаблонов
 	}
 var site = {
-		http: 'localhost:7000' // здесь нужно указать адрес рабочего сайта, удаленного или локального
+		http: 'localhost:8001' // здесь нужно указать адрес рабочего сайта, удаленного или локального
 }
 
 
@@ -83,7 +83,7 @@ function css_compress() {
 // Скрипт сжатия скриптов
 function scripts_compress() {
 	return gulp.src(path.static+'js/*.js') // Сжимаем библиотеки
-	.pipe(uglify()) // Сжимаем JS файл
+	// .pipe(uglify()) // Сжимаем JS файл
 	.pipe(gulp.dest(path.static+'js'))
 };
 

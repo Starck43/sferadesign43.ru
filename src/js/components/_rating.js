@@ -22,10 +22,18 @@
 
 			ratingForm.setAttribute('value',data['score']);
 
+			// Вычисляем и обновляем заливку звезды если есть десятые
+			const avgValue = data['score_avg'].toFixed(1)
+			const nextIndex = 5 - Math.ceil(data['score_avg'])
+			const starLabel = document.querySelector(`label[for="id_star_${nextIndex}"]`);
+
+			if (starLabel && avgValue) {
+				starLabel.insertAdjacentHTML("beforeend", `<span style="width: ${(avgValue - Math.floor(data['score_avg']))*100}%"></span>`)
+			}
 			// Обновим средний рейтинг и ниже добавим строку с сохраненной оценкой
 			const summaryScore = document.querySelector('.summary-score');
 			if (summaryScore) {
-				summaryScore.innerHTML = data['score_avg'].toFixed(1);
+				summaryScore.innerHTML = avgValue;
 				var userScore = document.createElement('div');
 				userScore.innerHTML = 'Ваша оценка: <b>'+data['score']+'.0</b>';
 				summaryScore.after(userScore);

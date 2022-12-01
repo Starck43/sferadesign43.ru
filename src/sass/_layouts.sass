@@ -10,7 +10,7 @@
 	width: 100%
 	@supports (display:grid)
 		display: grid
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr) )
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr) )
 		gap: 2vw
 		+media-breakpoint-down(sm)
 			grid-template-columns: repeat(auto-fill, minmax(160px, 1fr) )
@@ -19,7 +19,7 @@
 		position: relative
 		text-align: center
 		color: $cell-text-color
-		border: 1px solid $main-color
+		border: 1px solid transparent
 		overflow: hidden
 		figure
 			margin: 0
@@ -57,12 +57,13 @@
 			font-weight: bold
 			text-shadow: 0 0 1px $text-color
 			background-color: transparentize($overlay-color, 0.85)
-			border: 0 $main-color solid
+			border: 1px solid transparent
 			transition: all 150ms linear
 			&:hover
 				//border-width: $border-thickness
-				padding: calc(0.5em - #{$border-thickness})
-				+blur-background(10, $overlay-color, 0.7)
+				//padding: calc(0.5em - #{$border-thickness})
+				+blur-background(5, $overlay-color, 0.7)
+				border-color: $main-color
 			.meta
 				display: flex
 				width: 100%

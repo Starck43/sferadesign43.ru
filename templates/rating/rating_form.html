@@ -6,22 +6,23 @@
 <form class="rating-form flex-content" method="get" average="{{average_rate}}" name="rating">
 {% endif %}
 	Рейтинг:
+
 	{% csrf_token %}
 	<input type="hidden" value="{{ portfolio.id }}" name="portfolio">
 	<span class="rating">
 		{% for choice in rating_form.star %}
 			{{ choice.tag }}
 			<label for="{{ choice.id_for_label }}" class="centered">
-			<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="22" height="22" viewBox="2 2 20 20" fill="white" stroke="#000" stroke-linecap="butt" stroke-linejoin="round">
-				<defs>
-				<mask id="mask-white">
-					<rect id="main-rect" fill="#000" />
-					<polygon fill="#fff" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-				</mask>
-				</defs>
-				<rect class="rect" width="100%" height="100%" mask="url(#mask-white)" />
-			</svg>
-				{% if forloop.revcounter > average_rate and extra_rate_percent > 0 %}
+				<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="22" height="22" viewBox="2 2 20 20" fill="white" stroke="#000" stroke-linecap="butt" stroke-linejoin="round">
+					<defs>
+					<mask id="mask-white">
+						<rect id="main-rect" fill="#000" />
+						<polygon fill="#fff" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+					</mask>
+					</defs>
+					<rect class="rect" width="100%" height="100%" mask="url(#mask-white)" />
+				</svg>
+				{% if forloop.revcounter == round_rate and extra_rate_percent > 0 %}
 				<span style="width: {{extra_rate_percent|unlocalize}}%"></span>
 				{% endif %}
 			</label>

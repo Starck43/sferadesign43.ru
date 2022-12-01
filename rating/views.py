@@ -53,7 +53,13 @@ class add_rating(View):
 		if request.is_ajax():
 			portfolio = Portfolio.objects.get(id=portfolio_id)
 			score_avg = Rating.calculate(portfolio).average
-			return JsonResponse({'score': score, 'score_avg': score_avg, 'author': portfolio.owner.name}, safe=False)
+			# round_rate = math.ceil(score_avg)
+			return JsonResponse({
+				'score': score,
+				'score_avg': score_avg,
+				#'round_rate': round_rate,
+				'author': portfolio.owner.name
+			}, safe=False)
 		else:
 			form = RatingForm(request.POST, user=request.user)
 			if form.is_valid():

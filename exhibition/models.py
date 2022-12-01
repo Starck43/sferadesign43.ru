@@ -280,7 +280,7 @@ class Nominations(models.Model):
 		if self.category:
 			return reverse('exhibition:projects-list-url', kwargs={'slug': self.category.slug })
 		else:
-			return reverse('exhibition:projects-list-url', kwargs={'slug': None })
+			return reverse('exhibition:category-list-url', kwargs={'slug': None })
 
 
 
