@@ -3,11 +3,13 @@ from django.urls import reverse
 from exhibition.models import Exhibitors, Partners, Portfolio
 from exhibition.logic import get_image_html, ImageResize, MediaFileStorage, DesignerUploadTo
 
+from sorl.thumbnail import delete
 from ckeditor.fields import RichTextField
 from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField, GroupedForeignKey
 
 
 LOGO_FOLDER = 'logos/'
+AVATAR_FOLDER = 'avatars/'
 
 ''' Страница Дизайнера '''
 class Designer(models.Model):
@@ -19,7 +21,7 @@ class Designer(models.Model):
 	owner = models.OneToOneField(Exhibitors, on_delete=models.CASCADE, related_name='designer', verbose_name = 'Владелец сайта')
 	title = models.CharField('Заголовок сайта', max_length=255, blank=True, help_text='Укажите дополнительное название студии рядом с логотипом, если необходимо')
 	slug = models.SlugField('Имя сайта', max_length=20, unique=True, help_text='Субдомен или часть адреса сайта латиницей, типа sitename.sd43.ru')
-	avatar = models.ImageField('Аватар', upload_to=LOGO_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
+	avatar = models.ImageField('Аватар', upload_to=AVATAR_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
 	about = RichTextField('О себе', blank=True)
 	background = models.ImageField('Основное изображение', upload_to=DesignerUploadTo, storage=MediaFileStorage(), null=True, blank=True, help_text='Фоновое изображение в шапке сайта')
 	exh_portfolio = ChainedManyToManyField(Portfolio,
@@ -55,6 +57,11 @@ class Designer(models.Model):
 		ordering = ['owner']
 		db_table = 'designer_pages'
 
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.original_avatar = self.avatar
+		self.original_background = self.background
+
 	def __iter__(self):
 		for f in self._meta.fields:
 			name = f.name
@@ -67,6 +74,32 @@ class Designer(models.Model):
 				link = 'https://'+f.default+'/'+value
 
 			yield (name, label, value, link)
+
+
+	def save(self, *args, **kwargs):
+		# если файл заменен, то требуется удалить все миниатюры в кэше у sorl-thumbnails
+		if self.original_avatar and self.original_avatar != self.avatar:
+			delete(self.original_avatar)
+
+		if self.original_background and self.original_background != self.background:
+			delete(self.original_background)
+
+		resized_avatar = ImageResize(self.avatar, [600, 600])
+		if resized_avatar and resized_avatar != 'error':
+			self.avatar = resized_avatar
+
+		resized_background = ImageResize(self.background, [1920, 1080])
+		if resized_background and resized_background != 'error':
+			self.background = resized_background
+
+		super().save(*args, **kwargs)
+
+		if resized_avatar != 'error':
+			self.original_avatar = self.avatar
+
+		if resized_background != 'error':
+			self.original_background = self.background
+
 
 
 

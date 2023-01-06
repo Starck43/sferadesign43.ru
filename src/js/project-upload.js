@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	var categories = form.querySelector('.field-categories');
 	var attributes = form.querySelector('.field-attributes');
 	var images 	= form.querySelectorAll('.field-images img');
+	var files 	= form.querySelector('input[name=files]');
 
 	if (exhibition.value == ""){
 		nominations && nominations.classList.add('hidden');
@@ -56,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	function ajax(e) {
 		e.preventDefault();
-		var data = new FormData(form.get(0));
+		var data = new FormData(e.target);
 		console.log(data);
 
 		//ajax upload
@@ -68,21 +69,16 @@ document.addEventListener("DOMContentLoaded", function() {
 				return this.error(xhr);
 			}
 
-			this.render_progress(100);
-
-			var url;
 			var content_type = xhr.getResponseHeader('Content-Type');
 
 			// make it possible to return the redirect URL in
 			// a JSON response
 			if (content_type.indexOf('application/json') !== -1) {
 				var response = $.parseJSON(xhr.responseText);
-				url = response.location;
+
+				window.location.href = response.location;
 			}
-			else {
-				url = this.options.redirect_url;
-			}
-			window.location.href = url;
+
 		});
 
 		//The upload progress callback
@@ -94,8 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		});
 
-		console.log(window.location.href);
-		xhr.open(form.attr('method'), window.location.href);
+		xhr.open(form.method, window.location.href);
 		xhr.setRequestHeader('X-REQUESTED-WITH', 'XMLHttpRequest');
 		xhr.send(data);
 

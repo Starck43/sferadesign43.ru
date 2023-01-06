@@ -24,8 +24,19 @@
 			transform: translateY(-100%)
 			opacity: 0
 
-	.navbar-toggler:hover
-		background-color: #fff
+	.navbar-toggler
+		position: fixed
+		top: 4vw
+		right: 4vw
+		padding: 0.25rem
+		text-align: right
+		border-color: transparent
+		border-radius: 0
+		box-shadow: none
+		z-index: 1000
+		stroke-width: 1.5px
+		&:hover
+			background-color: #fff
 
 	.navbar-collapse
 		background-color: var(--menu-bg)
@@ -111,21 +122,10 @@
 		font-size: 1em
 
 
-
 .navbar-dark
 	background-color: var(--menu-bg)
 	.navbar-toggler
-		position: fixed
-		top: 0
-		right: 0
-		padding: 0.25rem
-		text-align: right
-		border-color: transparent
-		border-radius: 0
-		box-shadow: none
-		z-index: 1000
 		stroke: var(--bs-body-color)
-		stroke-width: 1.5px
 	&.bg-transparent
 		.navbar-toggler
 			padding: 1.25rem

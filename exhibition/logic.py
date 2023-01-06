@@ -103,26 +103,45 @@ def GalleryUploadTo(instance, filename):
 
 
 """ Adjusting image size before saving """
-def ImageResize(obj):
-	filename, ext = path.splitext(obj.name)
-	if obj.width > DEFAULT_SIZE[0] or obj.height > DEFAULT_SIZE[1] or ext.upper() == '.PNG' :
+def ImageResize(obj, size=DEFAULT_SIZE, uploaded_file=None):
+	if obj and (obj.width > size[0] or obj.height > size[1] or uploaded_file) :
 		try :
 			fn = obj.path if path.exists(obj.path) else obj
 			image = Im.open(fn)
-			#image.load()
-			if image.mode != 'RGB':
-				image = image.convert('RGB')
 
-			#image = image.resize(DEFAULT_SIZE, Im.ANTIALIAS)
-			image.thumbnail(DEFAULT_SIZE, Im.ANTIALIAS)
+			filename, ext = path.splitext(obj.name)
+
+			if uploaded_file:
+				content_type = uploaded_file.content_type
+				image_format = image.format
+			else:
+				content_type = 'image/jpeg'
+				image_format = 'JPEG'
+				ext = '.jpg'
+
+				if image.mode != 'RGB':
+					image = image.convert('RGB')
+
+			print(image_format)
+			#image = image.resize(size, Im.ANTIALIAS)
+			image.thumbnail(size, Im.ANTIALIAS)
 
 			meta = image.info
 			if not DEFAULT_KEEP_META:
 				meta.pop('exif', None)
 			output = BytesIO()
-			image.save(output, format='JPEG', quality=DEFAULT_QUALITY, optimize=True, **meta)
+			image.save(output, format=image_format, quality=DEFAULT_QUALITY, optimize=True, **meta)
 			output.seek(0)
-			file = InMemoryUploadedFile(output, 'ImageField', filename + '.jpg', 'image/jpeg', getsizeof(output), None)
+
+			file = InMemoryUploadedFile(
+				file=output,
+				field_name='ImageField',
+				name=filename + ext,
+				content_type=content_type,
+				size=getsizeof(output),
+				charset=None
+			)
+
 			if file:
 				if path.exists(obj.path):
 					with open(obj.path, 'wb+') as f:

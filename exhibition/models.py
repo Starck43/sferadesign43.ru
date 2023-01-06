@@ -43,13 +43,33 @@ class Person(models.Model):
 	class Meta:
 		abstract = True # Table will not be created
 
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.original_logo = self.logo
+
+
 	def __str__(self):
 		return self.name
 
-	def save(self, *args, **kwargs):
+
+	def save(self, request, *args, **kwargs):
+
 		if not self.slug:
 			self.slug = uuslug(self.name.lower(), instance=self)
-		super().save(*args, **kwargs)
+
+		# если файл заменен, то требуется удалить все миниатюры в кэше у sorl-thumbnails
+		if self.original_logo and self.original_logo != self.logo:
+			delete(self.original_logo)
+
+		resized_image = ImageResize(self.logo, [300, 300], uploaded_file=request.FILES.get('logo', None))
+		if resized_image and resized_image != 'error':
+			self.logo = resized_image
+
+		if resized_image != 'error':
+			super().save(*args, **kwargs)
+			self.original_logo = self.logo
+
 
 	def logo_thumb(self):
 		return get_image_html(self.logo)

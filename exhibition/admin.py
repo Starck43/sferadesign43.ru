@@ -127,7 +127,7 @@ class PersonAdmin(admin.ModelAdmin):
 			for article in articles:
 				delete_cached_fragment('article', article.id)
 		delete_cached_fragment('articles')
-		super().save_model(request, obj, form, change)
+		obj.save(request)
 
 
 
@@ -432,11 +432,11 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	view_on_site = True
 	inlines = [ImagesInline, RatingInline, ReviewInline]
 
-	class Media:
-		css = {
-             'all': ['/static/bootstrap/css/bootstrap.min.css']
-             }
-		js = ['/static/js/jquery.min.js','/static/bootstrap/js/bootstrap.min.js','/static/js/files-upload.min.js','/static/js/project-upload.min.js']
+	# class Media:
+	# 	css = {
+    #          'all': ['/static/bootstrap/css/bootstrap.min.css']
+    #          }
+	# 	js = ['/static/js/jquery.min.js','/static/bootstrap/js/bootstrap.min.js','/static/js/files-upload.min.js','/static/js/project-upload.min.js']
 
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations.values_list('title', flat=True))

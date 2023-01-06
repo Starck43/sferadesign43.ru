@@ -49,6 +49,7 @@
 			padding: 0 8vw
 			&~.navigation
 				position: absolute
+				//background-color: #fff
 				top: 50%
 				right: 4vw
 				//padding: 4vh
@@ -56,35 +57,34 @@
 				flex-direction: column
 				align-items: flex-end
 				justify-content: space-evenly
-				.btn
-					width: 100%
+				.nav-link
+					padding: 1vh 0
 					margin: 1vh 0
-					padding: 2vh 2vw
-					font-size: 1.4rem
-					background-color: transparent
-					border: none
+					font-size: 1rem
+					border-top: none
+					color: var(--link-color)
 					letter-spacing: 1px
+					text-align: right
 					&:hover
-						background-color: var(--bs-white) !important
+						border-color: var(--link-hover-color) !important
 						color: var(--main-color) !important
 
 				+media-breakpoint-down(md)
 					right: 50%
 					transform: translate(50%, -50%)
 					width: 80%
-					.btn
+					.nav-link
 						font-size: 1rem
 						text-transform: uppercase
-						padding: 1vh 1.5rem
 						letter-spacing: normal
 
 				+media-breakpoint-down(sm)
-					.btn
+					.nav-link
 						font-size: 1.4rem
 
 				@media (max-width: 991.98px) and (orientation: landscape)
 					top: 56%
-					.btn
+					.nav-link
 						font-size: 1rem
 
 				@media (max-width: 575.98px) and (orientation: landscape)
@@ -103,7 +103,7 @@
 			left: 50%
 			transform: translate(-50%, 0)
 			flex-direction: column
-			color: black !important
+			color: white !important
 			font-size: 0.9rem
 			transition: 300ms opacity ease
 			animation: scroll-down-animation 2s infinite ease-in-out
@@ -111,7 +111,7 @@
 			z-index: 1
 			cursor: pointer
 			&:hover
-				color: var(--main-color) !important
+				opacity: 1
 			@keyframes scroll-down-animation
 				0%
 					transform: translate(-50%, 0)
@@ -124,7 +124,7 @@
 				opacity: 1
 
 			svg.icon
-				stroke: black
+				stroke: #fff
 
 
 	.brand-block
@@ -134,8 +134,9 @@
 		padding: 2vw 3vw
 		padding-right: 5rem
 		.brand-logo
-			width: 30%
-			max-width: 300px
+			width: 40%
+			max-width: 500px
+			mix-blend-mode: plus-lighter
 			img
 				width: 100%
 				height: auto
@@ -144,7 +145,7 @@
 			width: 20%
 			max-width: 100px
 			+media-breakpoint-down(sm)
-				width: 100px
+				width: 150px
 
 		+media-breakpoint-down(sm)
 			flex-direction: column
@@ -152,8 +153,8 @@
 			margin-top: 2vw
 			padding-right: 0
 			.brand-logo
-				width: 40%
-				max-width: 280px
+				width: 80%
+				max-width: 200px
 
 			h1
 				display: none
@@ -175,7 +176,7 @@
 		z-index: -1
 
 	.nav-link
-		padding: 0.75em 2vw
+		padding: 0.75em 1em
 		font-size: 0.8rem
 		border-left: 0
 		border-right: 0
@@ -194,7 +195,7 @@
 		overflow: hidden
 	.category-link
 		flex: 0 1 auto
-		min-width: 100px
+		// min-width: 100px
 		height: 100%
 		font-size: 0.65rem
 		&.is-checked
@@ -450,7 +451,7 @@
 
 #site-footer
 	margin-top: auto
-	border-top: var(--border-thickness) solid var(--body-color)
+	// border-top: var(--border-thickness) solid var(--body-color)
 	background-color: var(--dark-color)
 
 #copyright
@@ -560,4 +561,8 @@
 				transform: scale(1.05)
 		&:hover
 			border-color: var(--link-hover-color) !important
+
+.add-portfolio
+	position: sticky
+	top: 1rem
 
