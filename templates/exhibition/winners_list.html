@@ -15,7 +15,7 @@
 		{% for person in exhibitors %}
 		<li>
 			<h3>{{ person.grouper }}</h3>
-			<ul class="mb-4">
+			<ul>
 			{% for nom in person.list %}
 				<li>
 					<a class="nomination-link" href="{% url 'exhibition:project-detail-url' nom.exhibitor_slug nom.project_id %}">

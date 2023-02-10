@@ -15,12 +15,10 @@
 {% endblock script %}
 
 
-{% block site_header %}
-	{{ block.super }}
-{% endblock site_header %}
-
-
-{% block page_title %}{{page_title}}{% endblock page_title %}
+{% block site_title %}
+{{ block.super }}
+<h1>{{page_title}}</h1>
+{% endblock site_title %}
 
 
 {% block sidebar %}
@@ -71,10 +69,8 @@
 		<article id="article-{{article_id}}" class="article-content">
 			<h2 class="article-title ">
 				<a href="{% url 'blog:article-detail-url' article_id %}">{{ article.title }}</a>
-				{% if user.is_staff %}
-				<a class="admin-edit-link" href="{% url 'article'|admin_change_url:"blog" article.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
-				{% endif %}
 			</h2>
+
 			{% with article.person as person %}
 			{% if person %}
 			<span>автор: </span><a class="article-author" href="{{person.get_absolute_url}}"><i><b>{{ person.name }}</b></i></a>

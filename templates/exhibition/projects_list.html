@@ -23,25 +23,32 @@
 {% endblock svg_icons %}
 
 
-{% block site_header %}
+{% block site_title %}
 
-	{% if general_banner %}
-	{% with general_banner as banner %}
-		{% include "ads/banner_horizontal.html" %}
-	{% endwith %}
-	{% endif %}
+{% if general_banner %}
+{% with general_banner as banner %}
+	{% include "ads/banner_horizontal.html" %}
+{% endwith %}
+{% endif %}
 
-{% endblock site_header %}
+<h1>{% if object_list %}{{ category_title }}{% else %}Категория пустая{% endif %}</h1>
+
+{% endblock site_title %}
 
 
-{% block page_title %}{% if object_list %}{{ category_title }}{% else %}Категория пустая{% endif %}{% endblock page_title %}
 {% block link %}
-	{% if filter_attributes %}
-		<a href="#sidebarPrimary" class="sidebar-toggler d-lg-none" tabindex="-1" data-bs-toggle="offcanvas" aria-controls="sidebarPrimary">
-			<svg class="icon bi bi-filter-right left"><use xlink:href="#filter-icon"></use></svg>
-			фильтры
+	<div class="controls centered">
+		<a href="{{parent_link}}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}">
+			<svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>
+			&nbsp;назад
 		</a>
-	{% endif %}
+		{% if filter_attributes %}
+			<a href="#sidebarPrimary" class="filter-toggler centered d-lg-none" tabindex="-1" data-bs-toggle="offcanvas" aria-controls="sidebarPrimary">
+				<svg class="icon bi bi-filter-right left"><use xlink:href="#filter-icon"></use></svg>
+				фильтры
+			</a>
+		{% endif %}
+	</div>
 {% endblock link %}
 
 {% block sidebar_secondary %}{% endblock sidebar_secondary %}
@@ -159,7 +166,7 @@
 
 	{% else %}
 
-		<a class="back-link" href="/category/"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Вернуться к списку категорий</a>
+		<a class="back-link" href="{{parent_link}}"><svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>&nbsp;Вернуться к списку категорий</a>
 
 	{% endif %}
 

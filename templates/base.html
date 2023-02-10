@@ -112,17 +112,14 @@
 		<a id="branding" class="brand-logo ratio ratio-1x1 loading" href="/">
 			<img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
 		</a>
-		{% block site_header %}{% endblock site_header %}
+		{% block site_title %}{% endblock site_title %}
+		{% block link %}{% endblock link %}
+
 	</div>
 
 
 
-
 	<div class="container loading">
-		<header id="page-title" class="flex-content loading">
-			<h1>{% block page_title %}{% endblock page_title %}</h1>
-			{% block link %}{% endblock link %}
-		</header>
 
 		<aside id="sidebarPrimary" class="sidebar sidebar-primary left-side offcanvas offcanvas-start">
 			<button type="button" class="btn-close btn-lg d-lg-none" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>

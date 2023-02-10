@@ -24,8 +24,6 @@
 
 	<link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
 
-
-	<link rel="canonical" href="{{ site_url }}"/>
 	<link rel="shortcut icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
 	<link rel="icon" type="image/x-icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
 	<link rel="apple-touch-icon" sizes="180x180" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
@@ -45,7 +43,9 @@
 	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 	<link href="{% md5url 'css/designer/designer.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
-	{% block styles %}{% endblock %}
+	{% block styles %}
+	<link rel="preload" href="fonts/OrchideaPro-Light.woff2" as="font" type="font/woff2" crossorigin>
+	{% endblock %}
 
 	<!-- Yandex & Google Analytics block -->
 
@@ -127,10 +127,10 @@
 			{% block brand_block %}
 			<div class="brand-block centered{% if object.title %} with-title{% endif %}">
 
-				{% if object.owner.logo %}
+				{% if object.logo %}
 				<div class="brand-logo logo">
 					<a href="{{object.get_absolute_url}}">
-						<img src="{{ object.owner.logo.url }}">
+						<img src="{{ object.logo.url }}">
 					</a>
 				</div>
 				{% endif %}
@@ -151,53 +151,51 @@
 	</div>
 
 
-	<div id="site-footer">
-		<div id="designerContacts" class="contacts-block">
-			<div class="container">
-				<header>
-					<h2>Контакты</h2>
-				</header>
+	<footer id="site-footer">
+		<section id="designerContacts" class="contacts-block">
+			<header>
+				<h2>Контакты</h2>
+			</header>
 
-				<div class="contacts-content d-flex justify-content justify-content-between">
-					<div class="main-info">
-					{% for name, label, value, link in object.owner %}
-						{% if label and value and name != "email" or name == "email" and object.show_email == True %}
-						<span class="{{name}}">
-							{% if link %}<a href="{{link}}" target="_blank">{% endif %}
-							<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>
-							{{ value }}
-							{% if link %}</a>{% endif %}
-						</span>
+			<div class="contacts-content container d-flex justify-content justify-content-between">
+				<div class="main-info">
+				{% for name, label, value, link in object.owner %}
+					{% if label and value and name != "email" or name == "email" and object.show_email == True %}
+					<span class="{{name}}">
+						{% if link %}<a href="{{link}}" target="_blank">{% endif %}
+						<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>
+						{{ value }}
+						{% if link %}</a>{% endif %}
+					</span>
+					{% endif %}
+				{% endfor %}
+				</div>
+
+				<div class="socials">
+				{% spaceless %}
+				{% for name, label, value, link in object.owner %}
+					{% if not label and link %}
+					<a class="social-link" href="{{ link }}" target="_blank"><svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg></a>
+					{% endif %}
+				{% endfor %}
+				{% endspaceless %}
+				</div>
+
+				<div class="get-in-touch column-centered">
+					{% if object.owner.email or object.owner.user.email %}
+					<button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
+						<svg class="icon message-icon"><use xlink:href="#logo-envelope"></use></svg>Отправить сообщение
+					</button>
+					{% endif %}
+
+					{% for name, label, value, link in object %}
+						{% if link and name == 'whatsapp' or link and name == 'telegram' %}
+						<a href="{{ link }}" class="btn {{name}}">
+							<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>Написать в {{label}}
+						</a>
 						{% endif %}
 					{% endfor %}
-					</div>
 
-					<div class="socials">
-					{% spaceless %}
-					{% for name, label, value, link in object.owner %}
-						{% if not label and link %}
-						<a class="social-link" href="{{ link }}" target="_blank"><svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg></a>
-						{% endif %}
-					{% endfor %}
-					{% endspaceless %}
-					</div>
-
-					<div class="get-in-touch column-centered">
-						{% if object.owner.email or object.owner.user.email %}
-						<button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
-							<svg class="icon message-icon"><use xlink:href="#logo-envelope"></use></svg>Отправить сообщение
-						</button>
-						{% endif %}
-
-						{% for name, label, value, link in object %}
-							{% if link and name == 'whatsapp' or link and name == 'telegram' %}
-							<a href="{{ link }}" class="btn {{name}}">
-								<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>Написать в {{label}}
-							</a>
-							{% endif %}
-						{% endfor %}
-
-					</div>
 				</div>
 			</div>
 		</div>
@@ -206,13 +204,14 @@
 			{% now "Y" as current_year %}
 			<small>{% blocktranslate %}{{ current_year }} © Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
 		</div>
+
 		<div id="back2top" class="disable">
 			<button class="top-link">
 				<svg class="icon arrow-icon up"><use xlink:href="#arrow-icon"></use></svg>
 				<span>вверх</span>
 			</button>
 		</div>
-	</div>
+	</footer>
 
 
 	<!-- Контейнер для диалоговых окон -->

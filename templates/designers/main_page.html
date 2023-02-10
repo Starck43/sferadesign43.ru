@@ -56,6 +56,7 @@
 		{% if portfolio_list %}
 			<a href="portfolio" class="nav-link">Портфолио</a>
 		{% endif %}
+
 		{% if exh_victories_list or competitions or publications %}
 			<a href="#designerAchievements" class="nav-link">Достижения</a>
 		{% endif %}
@@ -113,8 +114,8 @@
 
 					{% with cover=e.project_cover %}
 					{% if cover %}
-					<figure class="slide-wrapper box-shadow">
-						<a id="project-{{e.id}}" class="gallery-photo ratio ratio-16x9" href="{{ e.get_absolute_url }}">
+					<a id="project-{{e.id}}" class="gallery-photo" href="{{ e.get_absolute_url }}">
+						<figure class="slide-wrapper ratio ratio-16x9">
 							{% thumbnail cover "320" crop="center" as xs %}
 							{% thumbnail cover "576" crop="center" as sm %}
 							{% thumbnail cover "992" crop="center" as md %}
@@ -124,21 +125,21 @@
 							{% endthumbnail %}
 							{% endthumbnail %}
 							{% endthumbnail %}
-						</a>
-						<figcaption>
-							{% if e.title  %}
-							<h4 class="title">{{ e.title }}</h4>
-							{% endif %}
+							<figcaption>
+								{% if e.title  %}
+								<h4 class="title">{{ e.title }}</h4>
+								{% endif %}
 
-							{% if e.win_year %}
-							<div class="portfolio-award" title="Победитель в выставке Сфера дизайна {{e.win_year}}">
-								<svg class="award"><use xlink:href="#award-icon"></use></svg>
-							</div>
-							{% endif %}
+								{% if e.win_year %}
+								<div class="portfolio-award" title="Победитель в выставке Сфера дизайна {{e.win_year}}">
+									<svg class="award"><use xlink:href="#award-icon"></use></svg>
+								</div>
+								{% endif %}
 
-							<div class="meta exh-meta text-weight">Сфера Дизайна {{ e.exh_year }}</div>
-						</figcaption>
-					</figure>
+								<div class="meta exh-meta text-weight">Сфера Дизайна {{ e.exh_year }}</div>
+							</figcaption>
+						</figure>
+					</a>
 					{% endif %}
 					{% endwith %}
 
@@ -159,11 +160,11 @@
 
 
 	{% if object.partners.count %}
-	<section id="designerPartners" class="partners-block container">
+	<section id="designerPartners" class="partners-block">
 		<header>
 			<h2>Сотрудничество</h2>
 		</header>
-		<div class="partners-content centered gap-4">
+		<div class="partners-content container centered gap-4">
 		{% for partner in object.partners.all %}
 			{% if partner.logo %}
 				<div class="partner-logo centered">
@@ -227,39 +228,37 @@
 
 	{% if object.customers.count %}
 	<section id="designerCustomers" class="customers-block">
-		<div class="container">
-			<header>
-				<h2>Клиенты</h2>
-			</header>
-			<div class="customers-content row g-4">
-			{% for person in object.customers.all %}
-				{% if person.link %}
-				<a class="col" href="{{person.link}}">
+		<header>
+			<h2>Клиенты</h2>
+		</header>
+		<div class="customers-content container row g-4">
+		{% for person in object.customers.all %}
+			{% if person.link %}
+			<a class="col" href="{{person.link}}">
+			{% else %}
+			<div class="col">
+			{% endif %}
+			<div class="customer">
+				{% if person.logo %}
+				{% thumbnail person.logo "100x100" as logo %}
+					<img class="logo" src="{{ logo.url }}">
+				{% empty %}
+					<img class="logo" src="{% get_media_prefix %}no-image.png">
+				{% endthumbnail %}
 				{% else %}
-				<div class="col">
+					<div class="logo"></div>
 				{% endif %}
-				<div class="customer">
-					{% if person.logo %}
-					{% thumbnail person.logo "100x100" as logo %}
-						<img class="logo" src="{{ logo.url }}">
-					{% empty %}
-						<img class="logo" src="{% get_media_prefix %}no-image.png">
-					{% endthumbnail %}
-					{% else %}
-						<div class="logo"></div>
-					{% endif %}
-					<div class="info text-weight">
-						<h4>{{person.name}}</h4>
-						{% if person.excerpt %}<p>{{person.excerpt}}</p>{% endif %}
-					</div>
+				<div class="info text-weight">
+					<h4>{{person.name}}</h4>
+					{% if person.excerpt %}<p>{{person.excerpt}}</p>{% endif %}
 				</div>
-				{% if person.link %}
-				</a>
-				{% else %}
-				</div>
-				{% endif %}
-			{% endfor %}
 			</div>
+			{% if person.link %}
+			</a>
+			{% else %}
+			</div>
+			{% endif %}
+		{% endfor %}
 		</div>
 	</section>
 	{% endif %}

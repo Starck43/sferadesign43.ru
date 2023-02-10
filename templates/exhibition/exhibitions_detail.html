@@ -18,7 +18,9 @@
 <link href="{% md5url 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 {% endblock %}
 
+
 {% block script %}
+
 <script type="text/javascript">
 {% if is_mobile %}
 var is_mobile = true;
@@ -31,12 +33,12 @@ var is_mobile = false;
 <script type="text/javascript" src="{% static 'js/pinchzoom.min.js' %}" defer></script>
 {% endif %}
 
-<script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}" defer></script>
+<script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}" defer ></script>
 
 {% endblock script %}
 
 
-{% block site_header %}
+{% block site_title %}
 
 	<svg class="brand-text"><use xlink:href="#main-title"></use></svg>
 
@@ -78,17 +80,14 @@ var is_mobile = false;
 
 	{% endcache %}
 
-{% endblock site_header %}
-
-
-{% block page_title %}
+<h1>
 {{ object.title }}
 
 {% if user.is_staff %}
 <a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
 {% endif %}
-
-{% endblock page_title %}
+</h1>
+{% endblock site_title %}
 
 
 {% block sidebar %}{% include "ads/sidebar_banners_list.html" %}{% endblock sidebar %}

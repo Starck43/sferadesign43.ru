@@ -19,16 +19,19 @@
 {% endblock svg_icons %}
 
 
-{% block site_header %}
-<a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}/{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}">
-	<svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>
-	&nbsp;Назад
-</a>
-{% endblock site_header %}
+{% block site_title %}
+<h1>Выставленные проекты {{ year }}</h1>
+{% endblock site_title %}
 
 
-{% block page_title %}Выставленные проекты {{ year }}{% endblock page_title %}
-
+{% block link %}
+	<div class="controls centered">
+		<a href="{% if request.META.HTTP_REFERER %}{{request.META.HTTP_REFERER}}{% else %}/{% endif %}" class="back-link" onclick="{% if request.META.HTTP_REFERER %}javascript:history.back(); return false;{% endif %}">
+			<svg class="icon arrow-icon"><use xlink:href="#arrow-icon"></use></svg>
+			&nbsp;назад
+		</a>
+	</div>
+{% endblock link %}
 
 {% block sidebar_secondary %}{% endblock sidebar_secondary %}
 

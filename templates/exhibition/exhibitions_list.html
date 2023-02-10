@@ -6,18 +6,18 @@
 {% block title %}{{ block.super }} {{separator}} {{page_title}}{% endblock %}
 
 
-{% block site_header %}
+{% block site_title %}
 
 	{% if general_banner %}
 	{% with general_banner as banner %}
 		{% include "ads/banner_horizontal.html" %}
 	{% endwith %}
 	{% endif %}
+	<h1>{{ page_title }}</h1>
 
-{% endblock site_header %}
+{% endblock site_title %}
 
 
-{% block page_title %}{{ page_title }}{% endblock page_title %}
 
 {% block sidebar %}{% include "ads/sidebar_banners_list.html" %}{% endblock sidebar %}
 
