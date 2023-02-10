@@ -92,26 +92,32 @@
 				opacity: 0.5
 
 
+.home .sidebar
+	max-width: calc($brand-logo-width)
+	+media-breakpoint-down(xxl)
+		max-width: $brand-logo-width - 20px
+	+media-breakpoint-down(xl)
+		max-width: $brand-logo-width - 40px
+	+media-breakpoint-down(lg)
+		max-width: $brand-logo-width - 70px
+
+
 .articles .sidebar-primary
 	transform: none
 	visibility: visible !important
 	+media-breakpoint-down(lg)
 		z-index: 1000
 		.sidebar-inner
-			padding: $container-margin-sm * 2 $container-margin-sm
+			padding: $container-margin-sm
 
 
 .participants .sidebar
-	max-width: 180px
+	max-width: 300px
 
 
 .sidebar-toggler
 	display: inline-flex
 	justify-content: flex-end
-	flex: 100%
-	margin-top: auto
-	margin-bottom: 0.75em
-	font-size: 0.9em
 	svg
 		height: 20px
 		stroke: $main-color

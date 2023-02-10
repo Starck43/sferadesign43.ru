@@ -131,7 +131,9 @@ figure
 			font-weight: 300
 
 	.container
-		max-width: 1500px
+		width: 100%
+		margin: auto
+		// max-width: 1500px
 		.content
 			width: 100%
 			max-width: unset
@@ -209,14 +211,14 @@ figure
 		bottom: $overlay-padding
 		margin-bottom: 0
 		max-width: calc(100vw - #{$overlay-padding} * 2)
-		padding: calc(3px + 0.15vw) calc(8px + 0.15vw)
+		padding: calc(5px + 0.15vw) calc(10px + 0.15vw)
 		> li
-			flex: 0 1 100%
-			width: calc(10px + .3vw)
-			height: calc(3px + .1vw)
-			margin: calc(2px + .3vw)
+			flex: 1 1 100%
+			width: calc(5px + .1vw)
+			height: calc(5px + .1vw)
+			margin: calc(2px + .1vw)
 			+media-breakpoint-down(sm)
-				margin: auto 2px
+				margin: auto 3px
 
 		+media-breakpoint-down(md)
 			padding: calc(5px + .3vh) calc(10px + .3vh)

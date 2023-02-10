@@ -33,8 +33,8 @@
 	.banner-container
 		position: relative
 		display: block
-		margin-top: 1.5vh
-		//margin-bottom: 6vh
+		// margin-top: 1.5vh
+		// margin-bottom: 6vh
 		overflow: hidden
 		visibility: visible
 		flex: 100%
@@ -89,7 +89,7 @@
 			margin-left: -.75em
 			margin-right: -.75em
 		>li
-			padding: 3vh 3vw
+			padding: 1.2em
 			border-bottom: 1px solid #fff
 			.event-details
 				>p
@@ -104,7 +104,7 @@
 	.exh-title
 		justify-content: start
 		&:not(.subtitle)
-			margin-top: 1.5rem
+			margin-top: 1.3rem
 			text-transform: uppercase
 			+media-breakpoint-down(sm)
 				font-size: 1.4rem
@@ -129,5 +129,15 @@
 			grid-template-columns: repeat(auto-fill, minmax(105px, 1fr) )
 			gap: 0.5em
 
+.winners-list
+	display: flex
+	flex-direction: column
+	gap: 1.5rem
+
+	>li
+		padding: 1.2em !important
+		background-color: $highlight-block-bg
+	ul li
+		list-style-type: square
 
 

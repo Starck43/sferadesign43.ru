@@ -22,8 +22,6 @@ html
 		font-size: 16px
 	+media-breakpoint-up(lg)
 		font-size: 17px
-	+media-breakpoint-up(xl)
-		font-size: 18px
 
 body
 	display: flex
@@ -38,7 +36,7 @@ h1, h2, h3, h4, .year-text, #main-title
 h1
 	color: $header-color
 	text-transform: lowercase
-	font-size: calc(2rem + 1vw)
+	font-size: calc(1.8rem + 0.8vw)
 	span
 		display: block
 		font-size: .5em
@@ -71,6 +69,7 @@ ul li
 	>ol, >li
 		padding-left: 0
 		list-style-type: none
+
 
 li, img
 	outline: 0
@@ -106,6 +105,7 @@ img, .row .logo img
 
 .logo img
 	width: auto
+	max-width: 300px
 	height: 100%
 
 // Avoid empty images to appear as broken
@@ -180,16 +180,26 @@ svg.icon
 	&.error
 		color: #842029
 
+.controls
+	position: relative
+	display: flex
+	justify-content: space-between
+	width: 100%
+	margin-bottom: 0.75rem
+
 .back-link
+	display: flex
+	align-items: center
 	svg
 		stroke: black
 		stroke-width: 3
 		width: 22px
 		height: 22px
 		transform: rotate(180deg)
-	+media-breakpoint-down(sm)
-		top: $container-margin*2
-		right: $container-margin*2
+
+.filter-toggler
+	svg
+		height: 20px
 
 .btn
 	color: $main-color
@@ -239,7 +249,7 @@ svg.icon
 	right: $container-margin
 	transition: 500ms transform ease-in-out
 	opacity: 1
-	z-index: 10000
+	z-index: 1000
 	&.disable
 		transition: 500ms all ease-in-out
 		visibility: hidden
@@ -289,16 +299,18 @@ svg.icon
 	flex-wrap: wrap
 	align-items: center
 	padding-top: 1.5vh !important
+	gap: calc(#{$col-width-xxl} - #{$brand-logo-width - 10px})
 
 	.brand-logo
 		position: relative
 		display: block
-		//height: 100%
-		width: $brand-logo-width - 10px
-		margin-right: calc(#{$col-width-xxl} - #{$brand-logo-width - 10px})
+		width: $brand-logo-width
+		margin-bottom: .75em
+
 		&.loaded
 			& ~.banner-link, & ~.brand-text
 				opacity: 1
+
 		& ~.banner-link, & ~.brand-text
 			flex: 1
 			margin: 0
@@ -307,6 +319,9 @@ svg.icon
 			opacity: 0
 			overflow: hidden
 			max-width: 100% - $col-width-xxl*2
+			& ~ h1
+				flex: 100%
+				text-align: center
 
 	.brand-text
 		max-width: $content-width_max /*+100px*/
@@ -319,17 +334,11 @@ svg.icon
 		line-height: 0.6
 		color: $main-color !important
 
-	.back-link
-		position: absolute
-		top: 2.5vw
-		right: 2.5vw
-		display: flex
-		align-items: center
 
 	+media-breakpoint-down(xxl)
+		gap: $col-width-xl - $brand-logo-width + 20px
 		.brand-logo
 			width: $brand-logo-width - 20px
-			margin-right: $col-width-xl - $brand-logo-width + 20px
 			& ~.banner-link, & ~.brand-text
 				height: $brand-logo-width - 20px
 				margin-right: $col-width-xl
@@ -338,9 +347,9 @@ svg.icon
 			padding-right: 0
 
 	+media-breakpoint-down(xl)
+		gap: $col-width-lg - $brand-logo-width + 40px
 		.brand-logo
 			width: $brand-logo-width - 40px
-			margin-right: $col-width-lg - $brand-logo-width + 40px
 			& ~.banner-link, & ~.brand-text
 				height: $brand-logo-width - 40px
 				margin-right: $col-width-lg
@@ -349,17 +358,17 @@ svg.icon
 
 
 	+media-breakpoint-down(lg)
+		gap: $col-width-md - $brand-logo-width + 40px
 		.brand-logo
 			width: $brand-logo-width - 70px
 			& ~.banner-link, & ~.brand-text
 				height: $brand-logo-width - 70px
-				margin-right: 0
 
 	+media-breakpoint-down(md)
 		padding-top: $container-margin-sm
+		gap: $container-margin-sm
 		.brand-logo
 			width: $brand-logo-width - 100px
-			margin-right: $container-margin-sm
 			& ~.banner-link, & ~.brand-text
 				height: $brand-logo-width - 100px
 		.year-text
@@ -367,9 +376,9 @@ svg.icon
 
 
 	+media-breakpoint-down(sm)
+		gap: $container-margin
 		.brand-logo
 			width: $brand-logo-width - 130px
-			margin-right: $container-margin
 			& ~.banner-link, & ~.brand-text
 				height: $brand-logo-width - 130px
 				margin-right: $container-margin
@@ -379,9 +388,9 @@ svg.icon
 	position: relative
 	display: flex
 	flex-wrap: wrap
-	width: 100%
+	width: auto
 	max-width: $container-max_w
-	margin-top: 0
+	margin: 0
 	flex-direction: column
 	+media-breakpoint-up(md)
 		flex-direction: unset
@@ -396,16 +405,18 @@ svg.icon
 
 	.content
 		flex: 1
-		max-width: $content-width_max
+		display: flex
+		justify-content: space-between
+		flex-direction: column
 		+media-breakpoint-up(xxl)
 			width: 100% - $col-width-xxl*2
 
-.container, #site-header
-	padding: 0 $container-margin
+#site-header
+	margin: 0 $container-margin $container-margin
 	+media-breakpoint-up(sm)
-		padding: 0 $container-margin-sm
+		margin: 0 $container-margin-sm $container-margin-sm
 	+media-breakpoint-up(lg)
-		padding: 0 $container-margin-lg
+		margin: 0 $container-margin-lg $container-margin-lg
 
 
 .flex-content
@@ -455,6 +466,10 @@ svg.icon
 		.organizer-item
 			flex: 1 1 auto
 
+.exh-description ul
+	padding-left: 1rem
+	li
+		list-style-type: inherit
 
 .participants, .projects
 	header
@@ -524,7 +539,7 @@ svg.icon
 		&:hover
 			background-color: #fff
 			color: $main-color
-			border-width: $border-thickness
+			border-color: $main-color
 
 
 .excerpt

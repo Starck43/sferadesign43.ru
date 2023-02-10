@@ -1,3 +1,9 @@
+@import ../mixins
+
+
++font('OrchideaPro', normal, 300, '../../fonts/OrchideaPro-Light.woff2')
++font('OrchideaPro', normal, 600, '../../fonts/OrchideaPro-SemiBold.woff2')
+
 
 html
 	font-size: 15px
@@ -10,10 +16,8 @@ html
 
 
 body
-	display: flex
-	flex-direction: column
-	min-height: 100vh
 	--bs-font-sans-serif: Arial, Tahoma
+	--bs-body-font-family: #{$font-family-text}
 	--bs-body-bg: #{$body-bg}
 	--bs-body-color: #{$text-color}
 	--main-color: #{$main-color}
@@ -24,6 +28,7 @@ body
 	--link-color: #{$link-color}
 	--link-hover-color: #{$link-hover-color}
 	--nav-link-color: #{$nav-link-color}
+	--bs-nav-link-font-size: 0.8em
 	--body-color: #{$body-color}
 	--light-color: #{$light-color}
 	--dark-color: #{$dark-color}
@@ -42,7 +47,9 @@ body
 	--section-customers-color: #{$dark-color}
 	--section-contacts-bg:  #{$dark-color}
 	--section-contacts-color: #{$light-color}
-
+	display: flex
+	flex-direction: column
+	min-height: 100vh
 
 *:focus
 	box-shadow: none !important
@@ -69,6 +76,7 @@ h2
 	margin-bottom: 0
 	flex: 100%
 	color: var(--main-color)
+	font-weight: 600
 	font-size: calc(1.8rem + 0.25vw)
 	text-align: center
 	text-transform: uppercase
@@ -78,28 +86,22 @@ h3
 	font-size: calc(1.6rem + 0.2vw)
 	+media-breakpoint-down(md)
 		font-size: calc(1.2rem + 1vw)
-	letter-spacing: 1px
+
 	text-transform: lowercase
 
 h4
 	font-size: calc(1.1rem + .2vw)
 
-h1, h2
-	font-weight: 500
-	letter-spacing: 1px
 
 h3, h4
 	min-height: 0vw
-	font-weight: 500
+	font-weight: 600
 
 
 .text-weight
-	font-weight: 500
-	letter-spacing: 1px
+	font-weight: 600
 
-p
-	font-weight: 300
-	letter-spacing: 1px
+
 
 ul li
 	margin-bottom: 0.5em
@@ -141,9 +143,6 @@ img, .row .logo img
 .ratio img
 	object-fit: contain
 
-.logo img
-	width: auto
-	height: 100%
 
 // Avoid empty images to appear as broken
 img:not([src]):not([srcset])
@@ -254,6 +253,9 @@ svg.burger-icon
 	color: var(--nav-link-color)
 	border: var(--border-thickness) solid transparent
 	user-select: none
+	&:focus
+		border: none
+
 
 .back-link
 	svg
@@ -321,10 +323,8 @@ figcaption
 
 	.title
 		flex: 1
-		margin-bottom: 0.5rem
-		margin-right: 0.5rem
+		margin-bottom: 0.25em
 		color: var(--main-color)
-		font-weight: 700
 		text-transform: uppercase
 
 	.meta
@@ -368,7 +368,7 @@ figcaption
 	right: $container-margin
 	transition: 500ms transform ease-in-out
 	opacity: 1
-	z-index: 10000
+	z-index: 1000
 	&.disable
 		transition: 500ms all ease-in-out
 		visibility: hidden
@@ -415,12 +415,6 @@ figcaption
 		flex-direction: unset
 	+media-breakpoint-up(lg)
 		margin-bottom: $container-margin-lg
-
-	header
-		padding: $container-margin*3 0 $container-margin*2
-		flex: 100%
-		+media-breakpoint-up(sm)
-			padding: $container-margin-sm*3 0 $container-margin-sm*2
 
 	.content
 		flex: 1
