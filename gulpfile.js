@@ -42,9 +42,8 @@ function styles() { // таск 'styles' обработает все файлы 
 	.pipe(combineCSS()) //Объединяем медиа запросы
 	.pipe(postcss([ cssImport ])) // Импортируем стили, прописанные через команду @import в начале файла
 	//.pipe(sourcemaps.init())
-	.pipe(sass({
-		outputStyle: 'compressed',
-	}).on('error', sass.logError))
+	.pipe(cleanCSS({level:1})) // Сжимаем CSS файл
+	//.pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
 	//.pipe(sourcemaps.write()) //пропишем sourcemap
 	//.pipe(concat('main.min.css')) // Объединяем все найденные файлы в один
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
@@ -59,7 +58,7 @@ function scripts() {
 //	.pipe(sourcemaps.init()) // Инициализируем sourcemap
 	.pipe(include()) //подключаем импортирование скриптов
 //	.pipe(concat('custom.min.js')) // Объединяем в один файл
-//	.pipe(uglify()) // Сжимаем JS файл
+	.pipe(uglify()) // Сжимаем JS файл
 	.pipe(rename({suffix: '.min'})) // Добавляем суффикс .min
 //	.pipe(sourcemaps.write()) // Пропишем карты
 	.pipe(gulp.dest(path.static+'js')) // Выгружаем в папку dest::/js
@@ -83,7 +82,7 @@ function css_compress() {
 // Скрипт сжатия скриптов
 function scripts_compress() {
 	return gulp.src(path.static+'js/*.js') // Сжимаем библиотеки
-	// .pipe(uglify()) // Сжимаем JS файл
+	.pipe(uglify()) // Сжимаем JS файл
 	.pipe(gulp.dest(path.static+'js'))
 };
 
