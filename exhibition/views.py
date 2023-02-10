@@ -296,6 +296,7 @@ class projects_list(MetaSeoMixin, BannersMixin, ListView):
 
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['projects',]
+		context['parent_link'] = '/category'
 		context['absolute_url'] = self.slug
 		context['category_title'] = self.object
 		context['next_page'] = self.is_next_page

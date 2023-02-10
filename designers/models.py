@@ -21,6 +21,7 @@ class Designer(models.Model):
 	owner = models.OneToOneField(Exhibitors, on_delete=models.CASCADE, related_name='designer', verbose_name = 'Владелец сайта')
 	title = models.CharField('Заголовок сайта', max_length=255, blank=True, help_text='Укажите дополнительное название студии рядом с логотипом, если необходимо')
 	slug = models.SlugField('Имя сайта', max_length=20, unique=True, help_text='Субдомен или часть адреса сайта латиницей, типа sitename.sd43.ru')
+	logo = models.ImageField('Логотип', upload_to=LOGO_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
 	avatar = models.ImageField('Аватар', upload_to=AVATAR_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
 	about = RichTextField('О себе', blank=True)
 	background = models.ImageField('Основное изображение', upload_to=DesignerUploadTo, storage=MediaFileStorage(), null=True, blank=True, help_text='Фоновое изображение в шапке сайта')
@@ -60,6 +61,7 @@ class Designer(models.Model):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.original_avatar = self.avatar
+		self.original_logo = self.logo
 		self.original_background = self.background
 
 	def __iter__(self):
@@ -76,10 +78,13 @@ class Designer(models.Model):
 			yield (name, label, value, link)
 
 
-	def save(self, *args, **kwargs):
+	def save(self, request, *args, **kwargs):
 		# если файл заменен, то требуется удалить все миниатюры в кэше у sorl-thumbnails
 		if self.original_avatar and self.original_avatar != self.avatar:
 			delete(self.original_avatar)
+
+		if self.original_logo and self.original_logo != self.logo:
+			delete(self.original_logo)
 
 		if self.original_background and self.original_background != self.background:
 			delete(self.original_background)
@@ -87,6 +92,10 @@ class Designer(models.Model):
 		resized_avatar = ImageResize(self.avatar, [600, 600])
 		if resized_avatar and resized_avatar != 'error':
 			self.avatar = resized_avatar
+
+		resized_logo = ImageResize(self.logo, [300, 300], uploaded_file=request.FILES.get('logo', None))
+		if resized_logo and resized_logo != 'error':
+			self.logo = resized_logo
 
 		resized_background = ImageResize(self.background, [1920, 1080])
 		if resized_background and resized_background != 'error':
@@ -96,6 +105,9 @@ class Designer(models.Model):
 
 		if resized_avatar != 'error':
 			self.original_avatar = self.avatar
+
+		if resized_logo != 'error':
+			self.original_logo = self.logo
 
 		if resized_background != 'error':
 			self.original_background = self.background

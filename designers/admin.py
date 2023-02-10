@@ -63,9 +63,9 @@ class DesignerAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Model
 
 	form = DesignerForm
 	#fields = ('name', 'slug', 'title')
-	list_display = ('avatar', 'name', 'slug', 'status')
-	list_display_links = ('avatar', 'name', 'slug')
-	search_fields = ('name',)
+	list_display = ('avatar', 'logo', 'name', 'slug', 'status')
+	list_display_links = ('avatar', 'logo', 'name', 'slug')
+	search_fields = ('name', 'slug')
 	#raw_id_fields = ('exh_portfolio','add_portfolio',)
 
 	save_on_top = True # adding save button on top bar
@@ -76,7 +76,7 @@ class DesignerAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Model
 	fieldsets = (
 		(None, {
 			'classes': ('basic-tab',),
-			'fields' : ('owner', 'slug', 'avatar', 'title', 'about', 'background', 'whatsapp','telegram','show_email', 'status', 'pub_date_start', 'pub_date_end', 'comment',)
+			'fields' : ('owner', 'slug', 'avatar', 'logo', 'title', 'about', 'background', 'whatsapp','telegram','show_email', 'status', 'pub_date_start', 'pub_date_end', 'comment',)
 		}),
 		(None, {
 			'classes': ('exh_portfolio-tab',),
@@ -105,6 +105,9 @@ class DesignerAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.Model
 		("Партнеры", ['partners-tab']),
 		("СЕО", ['meta-tab']),
 	)
+
+	def save_model(self, request, obj, form, change):
+		obj.save(request)
 
 	def name(self, obj):
 		return obj.owner.name

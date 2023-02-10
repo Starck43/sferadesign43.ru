@@ -122,7 +122,6 @@ def ImageResize(obj, size=DEFAULT_SIZE, uploaded_file=None):
 				if image.mode != 'RGB':
 					image = image.convert('RGB')
 
-			print(image_format)
 			#image = image.resize(size, Im.ANTIALIAS)
 			image.thumbnail(size, Im.ANTIALIAS)
 
