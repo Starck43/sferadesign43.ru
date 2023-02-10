@@ -30,8 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		//container.classList.add('two-slides');
 		container.classList.remove('peppermint', 'peppermint-inactive');
 	}
-	else
-	{
+	else {
 		slider = Peppermint( container, {
 			dots: true,
 			//touchSpeed: 300,

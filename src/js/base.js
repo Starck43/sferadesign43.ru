@@ -41,10 +41,24 @@ function toggleBurgerMenu(elem) {
 	}
 }
 
-// Вычисление высоты верхнего блока навигации
+// Вычисление высоты блоков навигации, заголовка, и контейнера
 function navbarOffset(elem) {
+	if (!elem) return
+
+	const navHeight = elem.clientHeight;
+
 	// Добавим смещение следущему после меню элементу
-	elem.nextElementSibling.style.marginTop = elem.clientHeight + 'px';
+	const header = elem.nextElementSibling
+	if (header) {
+		header.style.marginTop = navHeight + 'px'
+		const headerHeight = header.clientHeight
+
+		const container = header.nextElementSibling
+		if (container) {
+			container.style.minHeight = `calc(100vh - ${navHeight}px - ${headerHeight}px)`
+		}
+	}
+
 }
 
 
@@ -153,6 +167,5 @@ document.addEventListener("DOMContentLoaded", function() {
 		e = e || window.event;
 		(e.keyCode == 27) && searchContainer.classList.remove('active');
 	};
-
 
 });

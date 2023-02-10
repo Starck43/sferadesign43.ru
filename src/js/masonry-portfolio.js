@@ -1,4 +1,3 @@
-
 //=require ../../node_modules/imagesloaded/imagesloaded.pkgd.js
 //=require ../../node_modules/isotope-layout/dist/isotope.pkgd.js
 // ../../node_modules/infinite-scroll/dist/infinite-scroll.pkgd.js

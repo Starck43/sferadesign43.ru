@@ -1,5 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", function() {
+
 	//=include components/_ajax.js
 
 	const modalContainer = document.getElementById('progressModal');
