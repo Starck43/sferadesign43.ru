@@ -124,7 +124,7 @@ figure
 		padding-bottom: 0
 		margin-bottom: 0
 	h1
-		word-break: break-word
+		display: table
 		.sub-title
 			font-size: 0.6em
 			text-transform: lowercase
@@ -144,11 +144,13 @@ figure
 
 	.portfolio-container
 		.portfolio-meta
-			font-size: 0.9rem
+			display: flex
+			flex-direction: column
+			gap: 0.5rem
 			border: 1px solid $border-color
-			border-radius: 2px
+			border-radius: $border-radius
 			padding: 1rem
-			background: ghostwhite
+			background: $highlight-block-bg
 		a
 			font-weight: 500
 

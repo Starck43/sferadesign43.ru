@@ -21,7 +21,7 @@ html
 	+media-breakpoint-up(sm)
 		font-size: 16px
 	+media-breakpoint-up(lg)
-		font-size: 17px
+		font-size: 16px
 
 body
 	display: flex
@@ -45,11 +45,11 @@ h1
 
 h3, h4
 	min-height: 0vw
-	font-size: calc(1.1em + .2vw)
+	font-size: calc(1.1rem + .2vw)
 	font-weight: 500
 
 h4
-	font-size: calc(1em + .2vw)
+	font-size: calc(1rem + .2vw)
 
 a
 	color: $link-color
@@ -106,7 +106,7 @@ img, .row .logo img
 .logo img
 	width: 100%
 	max-width: 300px
-	height: 100%
+	height: auto
 
 // Avoid empty images to appear as broken
 img:not([src]):not([srcset])
@@ -388,13 +388,20 @@ svg.icon
 	position: relative
 	display: flex
 	flex-wrap: wrap
+	flex-direction: column
 	width: auto
 	max-width: $container-max_w
 	margin: 0
-	flex-direction: column
+	padding-left: $container-margin
+	padding-right: $container-margin
+	+media-breakpoint-up(sm)
+		padding-left: $container-margin-sm
+		padding-right: $container-margin-sm
 	+media-breakpoint-up(md)
 		flex-direction: unset
 	+media-breakpoint-up(lg)
+		padding-left: $container-margin-lg
+		padding-right: $container-margin-lg
 		margin-bottom: $container-margin-lg
 
 	header
@@ -521,6 +528,7 @@ svg.icon
 		.category-title
 			position: absolute
 			padding: 65% 5% 5%
+			text-align: center
 			text-transform: lowercase
 			color: $main-color
 

@@ -8,12 +8,13 @@
 .grid
 	position: relative
 	width: 100%
-	margin: 2vw 0
 	@supports (display:grid)
 		display: grid
 		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr) )
+
 		&.categories-list
 			grid-template-columns: repeat(auto-fill, minmax(23%, 1fr) )
+			margin: 2vw 0
 			+media-breakpoint-down(sm)
 				grid-template-columns: repeat(auto-fill, minmax(48%, 1fr) )
 
@@ -26,7 +27,6 @@
 
 	.grid-cell
 		position: relative
-		text-align: center
 		color: $cell-text-color
 		border: $border-thickness solid transparent
 		overflow: hidden
@@ -47,10 +47,10 @@
 
 			&~.img-title
 				>*:not(:first-child)
-					margin-bottom: 5%
-					font-weight: bold
+					// margin-bottom: 5%
+					// font-weight: bold
 				.project-title
-					font-size: 1.6em
+					// font-size: 1.6em
 
 		>*
 			width: 100%
@@ -62,10 +62,10 @@
 			margin: 0
 			padding: 0.5em
 			display: flex
-			align-items: center
+			// align-items: center
 			flex-direction: column
-			font-weight: bold
-			text-shadow: 0 0 1px $text-color
+			gap: 0.25em
+			text-shadow: 0 0 3px $text-color
 			background-color: transparentize($overlay-color, 0.85)
 			border: 1px solid transparent
 			transition: all 150ms linear
@@ -81,10 +81,6 @@
 				span
 					color: #fff
 
-		.project-title
-			margin-top: 5%
-			margin-bottom: .25rem
-			font-size: 1.2rem
 
 .grid-cell
 	border: $border-thickness solid transparent
@@ -156,7 +152,7 @@
 	svg.award
 		width: 24px
 		height: 24px
-		margin: .5em 0 0
+		margin: 0
 		fill: orange
 		stroke: white
 
