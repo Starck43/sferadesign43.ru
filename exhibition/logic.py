@@ -161,7 +161,7 @@ def ImageResize(obj, size=DEFAULT_SIZE, uploaded_file=None):
 
 """ Image file size validator """
 def limit_file_size(file):
-	limit = settings.FILE_UPLOAD_MAX_MEMORY_SIZE
+	limit = settings.FILE_UPLOAD_MAX_MEMORY_SIZE or 2.5*1024*1024
 	if path.exists(file.path) and file.size > limit:
 		raise ValidationError('Размер файла превышает лимит %s Мб. Рекомендуемый размер фото 1500x1024 пикс.' % (limit/(1024*1024)))
 

@@ -10,7 +10,6 @@ var gulp 		 = require('gulp'),
 	concat       = require('gulp-concat'), // Подключаем gulp-concat (для слияния файлов)
 	uglify       = require('gulp-uglify-es').default, // Подключаем плагин для сжатия JS
 	ttf2woff2 	 = require('gulp-ttf2woff2'),
-//	jsRequires   = require('gulp-resolve-dependencies'), // Подключаем пакет для импортирования скриптов через //@requires *.js
 	include		 = require('gulp-include'), // импорт скриптов через //=require filename.js
 	postcss      = require("gulp-postcss"),
 	combineCSS   = require('gulp-group-css-media-queries'),  // Объединяет все @media
@@ -18,7 +17,6 @@ var gulp 		 = require('gulp'),
 	cleanCSS     = require('gulp-clean-css'), // Подключаем пакет для минификации CSS с объединением одинаковых медиа запросов
 	sourcemaps   = require('gulp-sourcemaps'), // Подключаем пакет sourcemaps для нахождения исходных стилей и скриптов в режиме dev-tool браузера
 	rename       = require('gulp-rename'), // Подключаем библиотеку для переименования файлов
-	//imgCompress  = require('imagemin-jpeg-recompress'), // Подключаем библиотеку для работы с изображениями
 	autoprefixer = require('gulp-autoprefixer');// Подключаем библиотеку для автоматического добавления префиксов
 
 var path = {
@@ -27,7 +25,7 @@ var path = {
 		html: 'templates/' // Путь до шаблонов
 	}
 var site = {
-		http: 'localhost:8001' // здесь нужно указать адрес рабочего сайта, удаленного или локального
+		http: 'localhost:8000' // здесь нужно указать адрес рабочего сайта, удаленного или локального
 }
 
 

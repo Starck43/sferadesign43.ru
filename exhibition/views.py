@@ -27,7 +27,7 @@ from django.views import View
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.forms import inlineformset_factory
-from django.db.models import Q, OuterRef, Subquery, Prefetch, Max, Count, Avg, CharField, Case, When
+from django.db.models import Q, OuterRef, Subquery, Max, Count, Avg, CharField, Case, When
 from django.db.models.expressions import F, Value
 from django.db.models.functions import Coalesce
 from django.db.models.signals import pre_save
@@ -322,11 +322,13 @@ class projects_list(MetaSeoMixin, BannersMixin, ListView):
 					thumb_mini = get_thumbnail(q['project_cover'], ADMIN_DEFAULT_SIZE, crop='center', quality=ADMIN_DEFAULT_QUALITY)
 					thumb_320 = get_thumbnail(q['project_cover'], '320', quality=DEFAULT_QUALITY)
 					thumb_576 = get_thumbnail(q['project_cover'], '576', quality=DEFAULT_QUALITY)
-					queryset[i].update({'thumb_mini':str(thumb_mini)})
-					queryset[i].update({'thumb_xs'	:str(thumb_320)})
-					queryset[i].update({'thumb_sm'	:str(thumb_576)})
-					queryset[i].update({'thumb_xs_w':thumb_320.width})
-					queryset[i].update({'thumb_sm_w':thumb_576.width})
+					queryset[i].update({
+						'thumb_mini' :str(thumb_mini),
+						'thumb_xs' :str(thumb_320),
+						'thumb_sm'	:str(thumb_576),
+						'thumb_xs_w':320,
+						'thumb_sm_w':576
+					})
 
 			json_data = {
 				'current_page': int(self.page or 1),
