@@ -120,10 +120,12 @@
 						{% endwith %}
 
 						<figcaption class="img-title">
-							<h2 class="project-title">{{project_title }}</h2>
-
 							{% if e.owner__name %}
 							<div class="subtitle">{{ e.owner__name }}</div>
+							{% endif %}
+
+							{% if project_title %}
+							<h3 class="project-title">{{project_title }}</h3>
 							{% endif %}
 
 							<div class="meta">

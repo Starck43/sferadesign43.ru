@@ -39,7 +39,7 @@
 				alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}">
 			{% endthumbnail %}
 			{% endif %}
-			<h3 class="category-title centered">{{ e }}</h3>
+			<h3 class="category-title">{{ e }}</h3>
 		</a>
 		{% empty %}
 			<h2>Список пустой</h2>

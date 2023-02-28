@@ -5,21 +5,30 @@
 {% load thumbnail %}
 
 
-{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.exhibitor.name}} - победитель дизайнерсокй выставки Сфера Дизайна {{exh_year}} в номинации "{{nomination.title}}"{% endif %}{% endblock %}
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.exhibitor.name}} - победитель выставки Сфера Дизайна {{exh_year}} в номинации "{{nomination.title}}"{% endif %}{% endblock %}
 
 {% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Победитель выставки {{object.exhibitor.name}}{% endif %}{% endblock %}
-{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.exhibitor.name}} - победитель дизайнерсокй выставки Сфера Дизайна {{exh_year}} в номинации "{{nomination.title}}"{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{object.exhibitor.name}} - победитель выставки Сфера Дизайна {{exh_year}} в номинации "{{nomination.title}}"{% endif %}{% endblock %}
 {% block meta_og_image %}{% if portfolio %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block title %}{{ main_title }} {{exh_year}} {{separator}} Номинация "{{nomination.title}}"{% endblock %}
 
-{% block page_title %}
-<div class="sub-title">Номинация</div>{{ nomination.title }}
+{% block site_title %}
+<div class="nomination-title">
+	<h1>
+		<div class="sub-title">Номинация</div>
+		{{ nomination.title }}
+	</h1>
 
-{% if user.is_staff and portfolio %}
-	<a class="admin-edit-link" href="{% url 'portfolio'|admin_change_url portfolio.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
-{% endif %}
-{% endblock page_title %}
+	{% if user.is_staff and portfolio %}
+		<a class="admin-edit-link" href="{% url 'portfolio'|admin_change_url portfolio.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+	{% endif %}
+
+	{% if nomination.description %}
+		<div class="nomination-description">{{ nomination.description|safe }}</div>
+	{% endif %}
+</div>
+{% endblock site_title %}
 
 
 {% block content %}
@@ -28,11 +37,7 @@
 
 	<div class="portfolio-container">
 
-		<div class="nomination-meta flex-content">
-
-			{% if nomination.description %}
-			<div class="nomination-description">{{ nomination.description|safe }}</div>
-			{% endif %}
+		<div class="flex-content">
 
 			{% if exhibitors %}
 
@@ -48,28 +53,24 @@
 			{% else %}
 
 				{% if object and not portfolio %}
-
-				<section class="winner-detail">
-					<h2>победитель <a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><b>{{ object.exhibitor.name }}</b></a></h2>
-					{% if object.exhibitor.logo %}
-					<div class="logo participant-logo">
-						{% thumbnail object.exhibitor.logo "300x300" as logo %}
-							<img src="{{ logo.url }}" loading="lazy">
-						{% empty %}
-							<img src="{% get_media_prefix %}no-image.png">
-						{% endthumbnail %}
-					</div>
-					{% endif %}
-				</section>
-
+					<section class="winner-detail">
+						<h2>победитель <a class="winner-name" href="{{ object.exhibitor.get_absolute_url }}"><b>{{ object.exhibitor.name }}</b></a></h2>
+						{% if object.exhibitor.logo %}
+						<div class="logo participant-logo">
+							{% thumbnail object.exhibitor.logo "300x300" as logo %}
+								<img src="{{ logo.url }}" loading="lazy">
+							{% empty %}
+								<img src="{% get_media_prefix %}no-image.png">
+							{% endthumbnail %}
+						</div>
+						{% endif %}
+					</section>
 				{% endif %}
 
 				{% if portfolio %}
-
-				<h2>{{ portfolio.title }}</h2>
-				<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
-				<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
-
+					<h2>{{ portfolio.title }}</h2>
+					<p class="portfolio-owner">Автор работы: <a href="{{ portfolio.owner.get_absolute_url }}">{{ portfolio.owner }}</a></p>
+					<div class="portfolio-description description">{{ portfolio.description|safe }}</div>
 				{% endif %}
 
 			{% endif %}
