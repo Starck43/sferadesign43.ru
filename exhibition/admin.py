@@ -519,6 +519,12 @@ class GalleryAdmin(AdminImageMixin, admin.ModelAdmin):
 	readonly_fields = ('file_thumb',)
 	save_on_top = True # adding save button on top bar
 
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+
+		delete_cached_fragment('exhibition_overlay', obj.exhibition.slug)
+		delete_cached_fragment('exhibition_gallery', obj.exhibition.slug)
+
 
 
 @admin.register(Exhibitions)
