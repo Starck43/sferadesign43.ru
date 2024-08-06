@@ -1,5 +1,5 @@
 crispy-bootstrap5
-Django==4.2.13
+Django==4.2.14
 django-allauth
 django-ckeditor==6.5.1
 django-cleanup
