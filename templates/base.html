@@ -42,9 +42,9 @@
 	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 	<link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
-	{% block styles %}{% endblock %}
+	{% block styles %}{% endblock styles%}
 
-	<title>{% block title %}{{ main_title }}{% endblock %}</title>
+	<title>{% block title %}{{ main_title }}{% endblock title %}</title>
 </head>
 
 <body>
@@ -99,13 +99,9 @@
 	{% endblock svg_icons %}
 	</svg>
 
-
-	{% block navigation %}
 	<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
 		{% include "navbar.html" %}
 	</nav>
-	{% endblock navigation %}
-
 
 	<div id="site-header">
 		{# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
@@ -116,7 +112,6 @@
 		{% block link %}{% endblock link %}
 
 	</div>
-
 
 
 	<div class="container loading">

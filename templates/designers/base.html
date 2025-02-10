@@ -6,296 +6,325 @@
 <!DOCTYPE html>
 <html lang="ru" class="{{ html_classes|to_string }}{% if is_mobile %} mobile{% else %} desktop{% endif %}">
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
-	<meta name="description" content="{% block meta_description %}{{ meta.description }}{% endblock %}">
-	<meta name="keywords" content="{% block meta_keywords %}{{ meta.keywords }}{% endblock %}">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
+    <meta name="description" content="{% block meta_description %}{{ meta.description }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{{ meta.keywords }}{% endblock %}">
 
-	<meta property="og:locale" content="ru_RU">
-	<meta property="og:url" content="{{ site_url }}{{ request.path }}">
-	<meta property="og:site_name" content="{{ object.owner.title }}">
-	<meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
-	<meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
-	<meta property="og:image" content="{% if object.owner.logo %}{{ object.owner.logo.url }}{% endif %}">
-	<meta property="og:image:secure_url" content="{% if object.owner.logo %}{{ object.owner.logo.url }}{% endif %}">
-	<meta property="og:description" content="{% block meta_og_description %}{{ meta.description }}{% endblock %}">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:url" content="{{ site_url }}{{ request.path }}">
+    <meta property="og:site_name" content="{{ object.owner.title }}">
+    <meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
+    <meta property="og:image" content="{% if object.owner.logo %}{{ object.owner.logo.url }}{% endif %}">
+    <meta property="og:image:secure_url" content="{% if object.owner.logo %}{{ object.owner.logo.url }}{% endif %}">
+    <meta property="og:description" content="{% block meta_og_description %}{{ meta.description }}{% endblock %}">
 
-	<link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
+    <link rel="canonical" href="{{ scheme }}://{{ object.slug }}.{{ site_host }}{{ page_path }}"/>
 
-	<link rel="shortcut icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
-	<link rel="icon" type="image/x-icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
-	<link rel="apple-touch-icon" sizes="180x180" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/{{ object.slug }}/favicons/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/{{ object.slug }}/favicons/favicon-16x16.png">
-	<link rel="manifest" href="/{{ object.slug }}/favicons/site.webmanifest">
-	<link rel="mask-icon" href="/{{ object.slug }}/favicons/safari-pinned-tab.svg" color="#000000">
-	<meta name="msapplication-TileColor" content="#ffffff">
-	<meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="/{{ object.slug }}/favicons/favicon.svg">
+    <link rel="shortcut icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/{{ object.slug }}/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/{{ object.slug }}/favicons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/{{ object.slug }}/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/{{ object.slug }}/favicons/favicon-16x16.png">
+    <link rel="manifest" href="/{{ object.slug }}/favicons/site.webmanifest">
+    <link rel="mask-icon" href="/{{ object.slug }}/favicons/safari-pinned-tab.svg">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
 
-	{% if object.owner.logo %}
-		<link rel="preload" as="image" href="{{ object.owner.logo.url }}">
-	{% endif %}
+    {% if object.owner.logo %}
+        <link rel="preload" as="image" href="{{ object.owner.logo.url }}">
+    {% endif %}
 
-	<!-- CSS only -->
-	<link href="/{{ object.slug }}/css/variables.css" rel="stylesheet" type="text/css" media="screen"/>
-	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
-	<link href="{% md5url 'css/designer/designer.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+    <!-- CSS only -->
+    <link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+    <link href="{% md5url 'css/designer/designer.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+    <link href="/{{ object.slug }}/css/variables.css" rel="stylesheet" type="text/css" media="screen"/>
 
-	{% block styles %}
-	<link rel="preload" href="fonts/OrchideaPro-Light.woff2" as="font" type="font/woff2" crossorigin>
-	{% endblock %}
+    {% block styles %}
+        <link rel="preload" href="fonts/OrchideaPro-Light.woff2" as="font" type="font/woff2" crossorigin>
+    {% endblock %}
 
-	<!-- Yandex & Google Analytics block -->
+    <!-- Yandex & Google Analytics block -->
 
-	<title>{% block title %}{{ object.owner.name }}{% endblock %}</title>
+    <title>{% block title %}{{ object.owner.name }}{% endblock %}</title>
 </head>
 
 <body style="overflow-x:hidden">
 
-	<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="display:none">
-	{% block svg_icons %}
-		<symbol id="arrow-icon" viewBox="0 0 24 24" fill="transparent" stroke-linejoin="round" stroke-linecap="round">
-			<path d="M7 2 L17 12 L7 22"/>
-		</symbol>
-		<symbol id="close-icon" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round">
-			<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-		</symbol>
-		<symbol id="close2-icon" height="30" viewBox="0 0 24 24">
-			<path d="M1 1 L23 23 M23 1 L1 23"/>
-		</symbol>
-		<symbol id="search-icon" width="100%" height="100%" viewBox="0 0 30 30" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="transparent">
-			<circle cx="13" cy="13" r="10"/><path d="M20 20 L27 27"/>
-		</symbol>
-		<symbol id="burger-icon" viewBox="0 0 24 24">
-			<path d="M1 4 h22 M1 12 h22 M1 20 h22"/>
-		</symbol>
-		<symbol id="login-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
-			<path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="12" r="10"/>
-		</symbol>
-		<symbol id="filter-icon" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-			<path d="M14 10.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0 0 1h11a.5.5 0 0 0 .5-.5z"/>
-		</symbol>
-		<symbol id="star-icon" width="20" height="20" viewBox="2 2 22 22">
-			<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-		</symbol>
-		<symbol id="edit-icon" width="100%" height="100%" viewBox="0 0 384 384">
-			<polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"/>
-			<path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"/>
-		</symbol>
-		<symbol id="logo-phone" width="100%" height="100%" viewBox="0 0 16 16">
-			<path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-		</symbol>
-		<symbol id="logo-site" width="100%" height="100%" viewBox="0 0 16 16">
-			<path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
-			<path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
-		</symbol>
-		<symbol id="logo-address" width="100%" height="100%" viewBox="0 0 16 16">
-			<path fill-rule="evenodd" d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.319 1.319 0 0 0-.37.265.301.301 0 0 0-.057.09V14l.002.008a.147.147 0 0 0 .016.033.617.617 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.619.619 0 0 0 .146-.15.148.148 0 0 0 .015-.033L12 14v-.004a.301.301 0 0 0-.057-.09 1.318 1.318 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465-1.281 0-2.462-.172-3.34-.465-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411z"/>
-		</symbol>
-		<symbol id="logo-email" width="100%" height="100%" viewBox="0 0 16 16">
-			<path d="M13.106 7.222c0-2.967-2.249-5.032-5.482-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.881-.964-1.6-.964-1.4 0-2.378 1.162-2.378 2.823 0 1.737.957 2.906 2.379 2.906.8 0 1.415-.39 1.709-1.087h.11c.081.67.703 1.148 1.503 1.148 1.572 0 2.57-1.415 2.57-3.643zm-7.177.704c0-1.197.54-1.907 1.456-1.907.93 0 1.524.738 1.524 1.907S8.308 9.84 7.371 9.84c-.895 0-1.442-.725-1.442-1.914z"/>
-		</symbol>
-		<symbol id="logo-instagram" x="0" y="0" width="100%" height="100%" viewBox="0 0 16 16" stroke="transparent">
-			<path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/>
-		</symbol>
-		<symbol id="logo-vk" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
-			<path d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"/>
-		</symbol>
-		<symbol id="logo-fb" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512">
-			<path d="M384,176h-96v-64c0-17.664,14.336-32,32-32h32V0h-64l0,0c-53.024,0-96,42.976-96,96v80h-64v80h64v256h96V256h64L384,176z"/>
-		</symbol>
-		<symbol id="logo-envelope" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 16 16">
-				<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
-		</symbol>
-		<symbol id="logo-telegram" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 24 24">
-			<path d="M22.26465,2.42773a2.04837,2.04837,0,0,0-2.07813-.32421L2.26562,9.33887a2.043,2.043,0,0,0,.1045,3.81836l3.625,1.26074,2.0205,6.68164A.998.998,0,0,0,8.134,21.352c.00775.012.01868.02093.02692.03259a.98844.98844,0,0,0,.21143.21576c.02307.01758.04516.03406.06982.04968a.98592.98592,0,0,0,.31073.13611l.01184.001.00671.00287a1.02183,1.02183,0,0,0,.20215.02051c.00653,0,.01233-.00312.0188-.00324a.99255.99255,0,0,0,.30109-.05231c.02258-.00769.04193-.02056.06384-.02984a.9931.9931,0,0,0,.20429-.11456,250.75993,250.75993,0,0,1,.15222-.12818L12.416,18.499l4.03027,3.12207a2.02322,2.02322,0,0,0,1.24121.42676A2.05413,2.05413,0,0,0,19.69531,20.415L22.958,4.39844A2.02966,2.02966,0,0,0,22.26465,2.42773ZM9.37012,14.73633a.99357.99357,0,0,0-.27246.50586l-.30951,1.504-.78406-2.59307,4.06525-2.11695ZM17.67188,20.04l-4.7627-3.68945a1.00134,1.00134,0,0,0-1.35352.11914l-.86541.9552.30584-1.48645,7.083-7.083a.99975.99975,0,0,0-1.16894-1.59375L6.74487,12.55432,3.02051,11.19141,20.999,3.999Z"/>
-		</symbol>
-		<symbol id="logo-whatsapp" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 16 16">
-			<path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-		</symbol>
-	{% endblock svg_icons %}
-	</svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="display:none">
+    {% block svg_icons %}
+        <symbol id="arrow-icon" viewBox="0 0 24 24" fill="transparent" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M7 2 L17 12 L7 22"/>
+        </symbol>
+        <symbol id="close-icon" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </symbol>
+        <symbol id="close2-icon" height="30" viewBox="0 0 24 24">
+            <path d="M1 1 L23 23 M23 1 L1 23"/>
+        </symbol>
+        <symbol id="search-icon" width="100%" height="100%" viewBox="0 0 30 30" stroke-linejoin="round"
+                stroke-linecap="round" stroke-width="2" fill="transparent">
+            <circle cx="13" cy="13" r="10"/>
+            <path d="M20 20 L27 27"/>
+        </symbol>
+        <symbol id="burger-icon" viewBox="0 0 24 24">
+            <path d="M1 4 h22 M1 12 h22 M1 20 h22"/>
+        </symbol>
+        <symbol id="login-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+            <path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/>
+            <circle cx="12" cy="10" r="3"/>
+            <circle cx="12" cy="12" r="10"/>
+        </symbol>
+        <symbol id="filter-icon" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M14 10.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0 0 1h11a.5.5 0 0 0 .5-.5z"/>
+        </symbol>
+        <symbol id="star-icon" width="20" height="20" viewBox="2 2 22 22">
+            <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </symbol>
+        <symbol id="edit-icon" width="100%" height="100%" viewBox="0 0 384 384">
+            <polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"/>
+            <path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"/>
+        </symbol>
+        <symbol id="logo-phone" width="100%" height="100%" viewBox="0 0 16 16">
+            <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+        </symbol>
+        <symbol id="logo-site" width="100%" height="100%" viewBox="0 0 16 16">
+            <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+            <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
+        </symbol>
+        <symbol id="logo-address" width="100%" height="100%" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+                  d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.319 1.319 0 0 0-.37.265.301.301 0 0 0-.057.09V14l.002.008a.147.147 0 0 0 .016.033.617.617 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.619.619 0 0 0 .146-.15.148.148 0 0 0 .015-.033L12 14v-.004a.301.301 0 0 0-.057-.09 1.318 1.318 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465-1.281 0-2.462-.172-3.34-.465-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411z"/>
+        </symbol>
+        <symbol id="logo-email" width="100%" height="100%" viewBox="0 0 16 16">
+            <path d="M13.106 7.222c0-2.967-2.249-5.032-5.482-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.881-.964-1.6-.964-1.4 0-2.378 1.162-2.378 2.823 0 1.737.957 2.906 2.379 2.906.8 0 1.415-.39 1.709-1.087h.11c.081.67.703 1.148 1.503 1.148 1.572 0 2.57-1.415 2.57-3.643zm-7.177.704c0-1.197.54-1.907 1.456-1.907.93 0 1.524.738 1.524 1.907S8.308 9.84 7.371 9.84c-.895 0-1.442-.725-1.442-1.914z"/>
+        </symbol>
+        <symbol id="logo-instagram" x="0" y="0" width="100%" height="100%" viewBox="0 0 16 16" stroke="transparent">
+            <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/>
+        </symbol>
+        <symbol id="logo-vk" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
+            <path d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"/>
+        </symbol>
+        <symbol id="logo-fb" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512">
+            <path d="M384,176h-96v-64c0-17.664,14.336-32,32-32h32V0h-64l0,0c-53.024,0-96,42.976-96,96v80h-64v80h64v256h96V256h64L384,176z"/>
+        </symbol>
+        <symbol id="logo-envelope" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+        </symbol>
+        <symbol id="logo-telegram" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 24 24">
+            <path d="M22.26465,2.42773a2.04837,2.04837,0,0,0-2.07813-.32421L2.26562,9.33887a2.043,2.043,0,0,0,.1045,3.81836l3.625,1.26074,2.0205,6.68164A.998.998,0,0,0,8.134,21.352c.00775.012.01868.02093.02692.03259a.98844.98844,0,0,0,.21143.21576c.02307.01758.04516.03406.06982.04968a.98592.98592,0,0,0,.31073.13611l.01184.001.00671.00287a1.02183,1.02183,0,0,0,.20215.02051c.00653,0,.01233-.00312.0188-.00324a.99255.99255,0,0,0,.30109-.05231c.02258-.00769.04193-.02056.06384-.02984a.9931.9931,0,0,0,.20429-.11456,250.75993,250.75993,0,0,1,.15222-.12818L12.416,18.499l4.03027,3.12207a2.02322,2.02322,0,0,0,1.24121.42676A2.05413,2.05413,0,0,0,19.69531,20.415L22.958,4.39844A2.02966,2.02966,0,0,0,22.26465,2.42773ZM9.37012,14.73633a.99357.99357,0,0,0-.27246.50586l-.30951,1.504-.78406-2.59307,4.06525-2.11695ZM17.67188,20.04l-4.7627-3.68945a1.00134,1.00134,0,0,0-1.35352.11914l-.86541.9552.30584-1.48645,7.083-7.083a.99975.99975,0,0,0-1.16894-1.59375L6.74487,12.55432,3.02051,11.19141,20.999,3.999Z"/>
+        </symbol>
+        <symbol id="logo-whatsapp" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+        </symbol>
+    {% endblock svg_icons %}
+</svg>
 
 
-	{% block navigation %}{% endblock navigation %}
+<div id="header" class="header">
+    {% block cover %}{% endblock cover %}
+    {% block brand_block %}
+        <div class="brand-block{% if object.title %} with-title{% endif %}">
 
-	<div id="header" class="header">
-		{% block header %}
+            {% if object.logo %}
+                <div class="brand-logo logo">
+                    <a href="{{ scheme }}://{{ object.slug }}.{{ site_host }}">
+                        <img src="{{ object.logo.url }}" alt="">
+                    </a>
+                </div>
+            {% endif %}
 
-			{% block brand_block %}
-			<div class="brand-block centered{% if object.title %} with-title{% endif %}">
+            {% if object.title %}
+                <a href="{{ scheme }}://{{ object.slug }}.{{ site_host }}">
+                    <h1 class="brand-title no-select">{{ object.title }}</h1>
+                </a>
+            {% endif %}
 
-				{% if object.logo %}
-				<div class="brand-logo logo">
-					<a href="{{object.get_absolute_url}}">
-						<img src="{{ object.logo.url }}">
-					</a>
-				</div>
-				{% endif %}
-
-				<h1>{{ object.title }}</h1>
-
-				{% if user.is_staff %}
-					<a class="admin-edit-link" href="{% url 'designer'|admin_change_url:"designers" object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
-				{% endif %}
-			</div>
-			{% endblock brand_block %}
-
-		{% endblock header %}
-	</div>
-
-	<div id="content" class="content">
-		{% block content %}{% endblock content %}
-	</div>
+            {% if user.is_staff %}
+                <a class="admin-edit-link" href="{% url 'designer'|admin_change_url:"designers" object.id %}">
+                    <svg>
+                        <use xlink:href="#edit-icon"></use>
+                    </svg>
+                </a>
+            {% endif %}
+        </div>
+        {% block navigation %}{% endblock navigation %}
+    {% endblock brand_block %}
+</div>
 
 
-	<footer id="site-footer">
-		<section id="designerContacts" class="contacts-block">
-			<header>
-				<h2>Контакты</h2>
-			</header>
+<div id="content" class="content">
+    {% block content %}{% endblock content %}
+</div>
 
-			<div class="contacts-content container d-flex justify-content justify-content-between">
-				<div class="main-info">
-				{% for name, label, value, link in object.owner %}
-					{% if label and value and name != "email" or name == "email" and object.show_email == True %}
-					<span class="{{name}}">
-						{% if link %}<a href="{{link}}" target="_blank">{% endif %}
-						<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>
+
+<footer id="site-footer">
+    <section id="designerContacts" class="contacts-block">
+        <header>
+            <h2>Контакты</h2>
+        </header>
+
+        <div class="contacts-content container d-flex justify-content justify-content-between">
+            <div class="main-info">
+                {% for name, label, value, link in object.owner %}
+                    {% if label and value and name != "email" and name != "phone" or name == "email" and object.show_email == True or name == "phone" and object.show_phone == True%}
+                        <span class="{{ name }}">
+						{% if link %}<a href="{{ link }}" target="_blank">{% endif %}
+                            <svg class="icon {{ name }}-icon"><use xlink:href="#logo-{{ name }}"></use></svg>
 						{{ value }}
-						{% if link %}</a>{% endif %}
+                            {% if link %}</a>{% endif %}
 					</span>
-					{% endif %}
-				{% endfor %}
-				</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
 
-				<div class="socials">
-				{% spaceless %}
-				{% for name, label, value, link in object.owner %}
-					{% if not label and link %}
-					<a class="social-link" href="{{ link }}" target="_blank"><svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg></a>
-					{% endif %}
-				{% endfor %}
-				{% endspaceless %}
-				</div>
+            <div class="socials">
+                {% spaceless %}
+                    {% for name, label, value, link in object.owner %}
+                        {% if not label and link %}
+                            <a class="social-link" href="{{ link }}" target="_blank">
+                                <svg class="icon {{ name }}-icon">
+                                    <use xlink:href="#logo-{{ name }}"></use>
+                                </svg>
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endspaceless %}
+            </div>
 
-				<div class="get-in-touch column-centered">
-					{% if object.owner.email or object.owner.user.email %}
-					<button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
-						<svg class="icon message-icon"><use xlink:href="#logo-envelope"></use></svg>Отправить сообщение
-					</button>
-					{% endif %}
+            <div class="get-in-touch column-centered">
+                {% if object.owner.email or object.owner.user.email %}
+                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#feedbackContainer">
+                        <svg class="icon message-icon">
+                            <use xlink:href="#logo-envelope"></use>
+                        </svg>
+                        Отправить сообщение
+                    </button>
+                {% endif %}
 
-					{% for name, label, value, link in object %}
-						{% if link and name == 'whatsapp' or link and name == 'telegram' %}
-						<a href="{{ link }}" class="btn {{name}}">
-							<svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg>Написать в {{label}}
-						</a>
-						{% endif %}
-					{% endfor %}
+                {% for name, label, value, link in object %}
+                    {% if link and name == 'whatsapp' or link and name == 'telegram' %}
+                        <a href="{{ link }}" class="btn {{ name }}">
+                            <svg class="icon {{ name }}-icon">
+                                <use xlink:href="#logo-{{ name }}"></use>
+                            </svg>
+                            Написать в {{ label }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
 
-				</div>
-			</div>
-		</div>
+            </div>
+        </div>
+    </section>
 
-		<div id="copyright" class="centered">
-			{% now "Y" as current_year %}
-			<small>{% blocktranslate %}{{ current_year }} © Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
-		</div>
+    <div id="copyright" class="centered">
+        {% now "Y" as current_year %}
+        <small>{% blocktranslate %}{{ current_year }} © Права принадлежат компании
+            Арт-Сервис{% endblocktranslate %}</small>
+    </div>
 
-		<div id="back2top" class="disable">
-			<button class="top-link">
-				<svg class="icon arrow-icon up"><use xlink:href="#arrow-icon"></use></svg>
-				<span>вверх</span>
-			</button>
-		</div>
-	</footer>
-
-
-	<!-- Контейнер для диалоговых окон -->
-	<div id="feedbackContainer" class="modal fade" tabindex="-1" aria-labelledby="feedbackTitle" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 id="feedbackTitle" class="modal-title" >Форма обратной связи</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-				</div>
-				<div class="modal-body centered">
-					<form class="feedback-form form-container" action="{% url 'designers:send-message' object.slug %}" method="post" name="feedback">
-						{% csrf_token %}
-
-						{% for field in form %}
-						{% if field.errors %}
-						<div class="alert alert-danger">
-							{{ field.errors }}
-						</div>
-						{% endif %}
-						{{ field|as_crispy_field }}
-						{% endfor %}
-						<button type="submit" class="btn btn-primary send-button">Отправить</button>
-					</form>
-					<div class="status-wrapper centered fade hidden">
-						<div class="status-text"></div>
-						<button type="button" class="btn mt-3" data-bs-dismiss="modal" aria-label="Close">Закрыть</button>
-					</div>
-				</div>
-				<div class="modal-footer centered">
-					<div class="loading-block centered fade"></div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div id="alertContainer" class="hidden centered"></div>
+    <div id="back2top" class="disable">
+        <button class="top-link">
+            <svg class="icon arrow-icon up">
+                <use xlink:href="#arrow-icon"></use>
+            </svg>
+            <span>вверх</span>
+        </button>
+    </div>
+</footer>
 
 
-	<script>
-		(async () => {
-			if ('loading' in HTMLImageElement.prototype) {
-				var observerSupport = true;
+<!-- Контейнер для диалоговых окон -->
+<div id="feedbackContainer" class="modal fade" tabindex="-1" aria-labelledby="feedbackTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="feedbackTitle" class="modal-title">Форма обратной связи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body centered">
+                <form class="feedback-form form-container" action="{% url 'designers:send-message' object.slug %}"
+                      method="post" name="feedback">
+                    {% csrf_token %}
 
-				if (!'IntersectionObserver' in window || !'IntersectionObserverEntry' in window || !'intersectionRatio' in window.IntersectionObserverEntry.prototype) {
-					observerSupport = false;
-				}
-				else {
-					var observer = new IntersectionObserver(entries => {
-						entries.forEach(entry => {
-							let ratio = entry.intersectionRatio
-							if (ratio > 0.0) {
-								img = entry.target;
-								if ( img.classList.contains('lazyload') ) {
-									img.classList.add('lazyloaded')
-									img.classList.remove('lazyload')
-								}
-							}
-						})
-					})
-				}
+                    {% for field in form %}
+                        {% if field.errors %}
+                            <div class="alert alert-danger">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
+                        {{ field|as_crispy_field }}
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary send-button">Отправить</button>
+                </form>
+                <div class="status-wrapper centered fade hidden">
+                    <div class="status-text"></div>
+                    <button type="button" class="btn mt-3" data-bs-dismiss="modal" aria-label="Close">Закрыть</button>
+                </div>
+            </div>
+            <div class="modal-footer centered">
+                <div class="loading-block centered fade"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-				var images = document.querySelectorAll("img.lazyload");
-				images.forEach(img => {
-					if (observerSupport) {
-						observer.observe(img);
-					} else {
-						img.classList.remove('lazyload');
-					}
+<div id="alertContainer" class="hidden centered"></div>
+{% block extra_container %}{% endblock extra_container %}
 
-					if (img.dataset.src) 	img.src = img.dataset.src;
-					if (img.dataset.srcset) img.srcset = img.dataset.srcset;
-				})
+<script>
+    (async () => {
+        if ('loading' in HTMLImageElement.prototype) {
+            var observerSupport = true;
 
-			} else {
-				const lazySizesLib = await import("{% static 'js/lazysizes.min.js' %}");
-				lazySizes.init();
-			}
-		})();
-	</script>
+            if (!'IntersectionObserver' in window || !'IntersectionObserverEntry' in window || !'intersectionRatio' in window.IntersectionObserverEntry.prototype) {
+                observerSupport = false;
+            } else {
+                var observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        let ratio = entry.intersectionRatio
+                        if (ratio > 0.0) {
+                            img = entry.target;
+                            if (img.classList.contains('lazyload')) {
+                                img.classList.add('lazyloaded')
+                                img.classList.remove('lazyload')
+                            }
+                        }
+                    })
+                })
+            }
 
-	<script src="{% md5url 'js/vendors.min.js' %}"></script>
+            var images = document.querySelectorAll("img.lazyload");
+            images.forEach(img => {
+                if (observerSupport) {
+                    observer.observe(img);
+                } else {
+                    img.classList.remove('lazyload');
+                }
 
-	{% block script %}{% endblock script %}
+                if (img.dataset.src) img.src = img.dataset.src;
+                if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+            })
+
+        } else {
+            const lazySizesLib = await import("{% static 'js/lazysizes.min.js' %}");
+            lazySizes.init();
+        }
+    })();
+</script>
+
+<script src="{% md5url 'js/vendors.min.js' %}"></script>
+<script src="{% md5url 'js/base.min.js' %}"></script>
+
+{% block script %}{% endblock script %}
+
 
 
 </body>

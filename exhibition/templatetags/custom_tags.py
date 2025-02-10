@@ -68,7 +68,7 @@ class UrlCache(object):
 		except KeyError:
 			with cls._lock:
 				try:
-					if settings.DEBUG:
+					if hasattr(settings, 'STATICFILES_DIRS') and settings.STATICFILES_DIRS:
 						filepath = settings.STATICFILES_DIRS[0]
 					else:
 						filepath = settings.STATIC_ROOT

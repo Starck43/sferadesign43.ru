@@ -8,21 +8,21 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-# from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db.models import OuterRef, Subquery
 from django.db.models.expressions import F
 from django.forms.models import ModelMultipleChoiceField
 from django.utils.html import format_html
 
-from .logic import SetUserGroup
+from .logic import set_user_group
 from .models import Exhibitors, Exhibitions, Portfolio, Image, MetaSEO
-
-""" Форма регистрации """
 
 
 class AccountSignupForm(SignupForm):
-	username = forms.CharField(label='Имя пользователя',
-	                           widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (латиницей)'}))
+	""" Форма регистрации """
+	username = (forms.CharField(
+		label='Имя пользователя',
+		widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (латиницей)'}))
+	)
 	email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'placeholder': 'Email адрес'}))
 	first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
 	last_name = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'placeholder': 'Фамилия'}))
@@ -62,20 +62,20 @@ class AccountSignupForm(SignupForm):
 	def save(self, request):
 		# .save() returns a User object.
 		user = super().save(request)
-		user = SetUserGroup(request, user)
+		user = set_user_group(request, user)
 
 		return user
 
 
-""" Форма регистрации """
-
-
 class CustomSocialSignupForm(SocialSignupForm):
+	""" Форма регистрации """
 	first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
 	last_name = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'placeholder': 'Фамилия'}))
 
-	username = forms.CharField(label='Имя пользователя',
-	                           widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (уникальный ник)'}))
+	username = forms.CharField(
+		label='Имя пользователя',
+		widget=forms.TextInput(attrs={'placeholder': 'Имя пользователя (уникальный ник)'})
+	)
 	email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'placeholder': 'Email адрес'}))
 	exhibitor = forms.BooleanField(label="Участник выставки?", required=False)
 
@@ -86,27 +86,85 @@ class CustomSocialSignupForm(SocialSignupForm):
 	def save(self, request):
 		# .save() returns a User object.
 		user = super().save(request)
-		user = SetUserGroup(request, user)
+		user = set_user_group(request, user)
 
 		return user
 
 
 class DeactivateUserForm(forms.Form):
-	deactivate = forms.BooleanField(label='Удалить?',
-	                                help_text='Пожалуйста, поставьте галочку, если желаете удалить аккаунт',
-	                                required=True)
+	deactivate = forms.BooleanField(
+		label='Удалить?',
+		help_text='Пожалуйста, поставьте галочку, если желаете удалить аккаунт',
+		required=True
+	)
+
+
+class MetaSeoForm(forms.ModelForm):
+	model = forms.ModelChoiceField(
+		label='Раздел',
+		queryset=MetaSEO.get_content_models(),
+	)
+
+	post_id = forms.ModelChoiceField(
+		label='Запись раздела',
+		widget=forms.Select(),
+		queryset=None,
+		required=False
+	)
+
+	class Meta:
+		model = MetaSEO
+		fields = '__all__'
+		widgets = {
+			'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Описание'}),
+		}
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		if not self.instance.pk:
+			choices = [[None, '--------']] + [
+				[obj.pk, obj.model_class()._meta.verbose_name_plural] for obj in
+				MetaSEO.get_content_models()
+			]
+			self.fields['model'].choices = choices
+			self.fields['post_id'].widget = forms.HiddenInput()  # скрыть поле post_id
+
+		else:
+			if self.instance.post_id:
+				self.fields['model'].disabled = True
+
+			if self.instance.model:
+				model = MetaSEO.get_model(self.instance.model.model)
+				queryset = model.objects.all()
+				self.fields['post_id'].queryset = queryset
+				choices = [[None, '--------']] + list((x.id, x.__str__()) for x in queryset)
+				self.fields['post_id'].choices = choices
+
+	def clean(self):
+		cleaned_data = super().clean()
+		if self.cleaned_data['post_id']:
+			self.cleaned_data['post_id'] = self.cleaned_data['post_id'].id
+		return cleaned_data
 
 
 class MetaSeoFieldsForm(forms.ModelForm):
-	meta_title = forms.CharField(label='Мета заголовок',
-	                             widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}),
-	                             required=False)
-	meta_description = forms.CharField(label='Мета описание',
-	                                   widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}),
-	                                   required=False)
-	meta_keywords = forms.CharField(label='Ключевые фразы', widget=forms.TextInput(
-		attrs={'style': 'width:100%;box-sizing: border-box;', 'placeholder': 'введите ключевые слова через запятую'}),
-	                                required=False)
+	meta_title = forms.CharField(
+		label='Мета заголовок',
+		widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}),
+		required=False
+	)
+	meta_description = forms.CharField(
+		label='Мета описание',
+		widget=forms.TextInput(attrs={'style': 'width:100%;box-sizing: border-box;'}),
+		required=False
+	)
+	meta_keywords = forms.CharField(
+		label='Ключевые фразы', widget=forms.TextInput(
+			attrs={'style': 'width:100%;box-sizing: border-box;', 'placeholder': 'введите ключевые слова через запятую'}
+		),
+		required=False
+	)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -124,7 +182,7 @@ class MetaSeoFieldsForm(forms.ModelForm):
 
 	def save(self, *args, **kwargs):
 		instance = super().save(*args, **kwargs)
-		meta_changed = any(str in ['meta_title', 'meta_keywords', 'meta_description'] for str in self.changed_data)
+		meta_changed = any(s in ['meta_title', 'meta_keywords', 'meta_description'] for s in self.changed_data)
 		meta_title = self.cleaned_data['meta_title']
 		meta_description = self.cleaned_data['meta_description']
 		meta_keywords = self.cleaned_data['meta_keywords']
@@ -149,7 +207,7 @@ class MetaSeoFieldsForm(forms.ModelForm):
 class ExhibitionsForm(MetaSeoFieldsForm, forms.ModelForm):
 	files = forms.ImageField(
 		label='Фото',
-		widget=forms.ClearableFileInput(attrs={'allow_multiple_selected': True}),
+		widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
 		required=False
 	)
 
@@ -167,11 +225,15 @@ class ExhibitionsForm(MetaSeoFieldsForm, forms.ModelForm):
 			"nominations": forms.CheckboxSelectMultiple(attrs={'class': ''}),
 		}
 
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['files'].widget.attrs['multiple'] = True
+
 
 class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 	files = forms.FileField(
-		label='Фото проекта',
-		widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'allow_multiple_selected': True}),
+		label='Фото',
+		widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
 		required=False,
 		help_text='Общий размер загружаемых фото не должен превышать %s Мб' % round(
 			settings.MAX_UPLOAD_FILES_SIZE / 1024 / 1024)
@@ -181,7 +243,8 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 		model = Portfolio
 		fields = (
 			'owner', 'exhibition', 'categories', 'nominations', 'attributes', 'title', 'description', 'cover', 'files',
-			'status',)
+			'status',
+		)
 
 		STATUS_CHOICES = (
 			(False, "Скрыт"),
@@ -190,9 +253,9 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 
 		widgets = {
 			'cover': forms.ClearableFileInput(attrs={'class': 'form-control', 'multiple': False}),
-			'categories': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
-			'nominations': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
-			'attributes': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
+			# 'categories': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
+			# 'nominations': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
+			# 'attributes': forms.CheckboxSelectMultiple(attrs={'class': 'form-group'}),
 			'status': forms.Select(choices=STATUS_CHOICES),
 		}
 
@@ -203,9 +266,10 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 			self.request = request
 
 		super().__init__(*args, **kwargs)
+		self.fields['files'].widget.attrs['multiple'] = True
 		self.css_class = 'form-control'
 
-		if self.exhibitor != None:
+		if self.exhibitor is not None:
 			# self.fields['files'].initial = files
 			if self.exhibitor == 'staff':
 				self.fields['exhibition'].queryset = Exhibitions.objects.all()
@@ -216,10 +280,11 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 				self.fields['status'].widget = forms.HiddenInput()
 
 				self.helper.layout[0].append(
-					HTML('<div>Участиник выставки:<br><h2>' + self.exhibitor.name + '</h2></div>'))
+					HTML('<div>Участник выставки:<br><h2>' + self.exhibitor.name + '</h2></div>'))
 
 				self.fields['exhibition'].queryset = Exhibitions.objects.prefetch_related('exhibitors').filter(
-					exhibitors=self.exhibitor)
+					exhibitors=self.exhibitor
+				)
 
 	@property
 	def helper(self):
@@ -252,7 +317,7 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 	def clean(self):
 		cleaned_data = super().clean()
 
-		if self.exhibitor != None:
+		if self.exhibitor is not None:
 			if self.cleaned_data['exhibition']:
 				self.cleaned_data['categories'] = []
 			else:
@@ -282,11 +347,13 @@ class ImageForm(forms.ModelForm):
 	class Meta:
 		model = Image
 		fields = '__all__'
-		exclude = ('portfolio',)
+
+	# exclude = ('portfolio',)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		self.fields['description'].widget = forms.Textarea()
+		self.fields['description'].widget = forms.Textarea(
+			attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Описание'})
 
 
 class ImageFormHelper(FormHelper):
@@ -321,24 +388,25 @@ class ImageFormHelper(FormHelper):
 		)
 
 
-# self.render_required_fields = True
-
-
 class FeedbackForm(forms.Form):
-	name = forms.CharField(label='Имя', required=True, widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
-	# from_phone = forms.EmailField(label='Телефон', required=False, widget=forms.TextInput(attrs={'placeholder': 'Ваш номер для связи'}))
-	from_email = forms.EmailField(label='E-mail', required=True,
-	                              widget=forms.TextInput(attrs={'placeholder': 'Ваш почтовый ящик'}))
-	message = forms.CharField(label='Сообщение', required=True,
-	                          widget=forms.Textarea(attrs={'placeholder': 'Сообщение'}))
-
-
-""" Mixin: Переопределение отображения списка пользователей в UsersListForm """
+	name = forms.CharField(
+		label='Имя', required=True, widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'})
+	)
+	from_email = forms.EmailField(
+		label='E-mail', required=True,
+		widget=forms.TextInput(attrs={'placeholder': 'Ваш почтовый ящик'})
+	)
+	message = forms.CharField(
+		label='Сообщение', required=True,
+		widget=forms.Textarea(attrs={'placeholder': 'Сообщение'})
+	)
 
 
 class UserMultipleModelChoiceField(ModelMultipleChoiceField):
+	""" Mixin: Переопределение отображения списка пользователей в UsersListForm """
+
 	def label_from_instance(self, obj):
-		if not obj.verified == None:
+		if obj.verified is not None:
 			if obj.verified:
 				email_status = '<img src="/static/admin/img/icon-yes.svg">'
 			else:
@@ -346,17 +414,14 @@ class UserMultipleModelChoiceField(ModelMultipleChoiceField):
 		else:
 			email_status = ''
 
-		return format_html('<b>{0}</b> [{1}] </span><span>{2}</span><span>{3}</span>', obj.name, obj.user_email,
-		                   obj.last_exh or '', format_html(email_status))
-
-
-# return format_html('<b>{0}</b> [{1}] </span><span>{2}</span>', obj['name'], obj['user_email'], obj['last_exh'] or '')
-
-
-""" Вывод списка пользователей в рассылке сброса паролей"""
+		return format_html(
+			'<b>{0}</b> [{1}] </span><span>{2}</span><span>{3}</span>', obj.name, obj.user_email,
+			obj.last_exh or '', format_html(email_status)
+		)
 
 
 class UsersListForm(forms.Form):
+	""" Вывод списка пользователей в рассылке сброса паролей"""
 	subquery = Subquery(Exhibitions.objects.filter(exhibitors=OuterRef('pk')).values('slug')[:1])
 	subquery2 = Subquery(EmailAddress.objects.filter(user_id=OuterRef('user_id')).values('verified')[:1])
 	users = UserMultipleModelChoiceField(
@@ -372,7 +437,3 @@ class UsersListForm(forms.Form):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-# self.fields['users'].widget.attrs = {'class': 'reset-psw-user-input'}
-
-# User fields to output:
-# date_joined, email, emailaddress, exhibitors, first_name, groups, id, is_active, is_staff, is_superuser, last_login, last_name, logentry, organizer, password, rating, reviews, user_permissions, username

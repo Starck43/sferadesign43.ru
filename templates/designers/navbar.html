@@ -1,19 +1,6 @@
 
 
 <div class="container-fluid">
-
-	<div class="navbar-search me-auto">
-		<a class="nav-search-link" href="#"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
-	</div>
-
-	<div id="searchContainer">
-		<form class="nav-search centered" action="{% block search-action %}{% url 'exhibition:search-results' %}{% endblock %}" method="GET">
-			<input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск" aria-label="Search">
-			<button type="submit">Найти</button>
-			<button class="clear-input btn-close btn-sm fade" type="button" aria-label="Close"></button>
-		</form>
-	</div>
-
 	<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown">
 		<svg class="icon burger-icon"><use xlink:href="#burger-icon"></use></svg>
 	</button>
@@ -75,7 +62,6 @@
 			{% endif %}
 		{% endfor %}
 		</div>
-
 
 	</div>
 </div>

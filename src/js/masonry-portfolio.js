@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	const content = document.getElementById('content')
 	content.style.minHeight = `calc(100vh - ${header.clientHeight}px)`
 
-	var container = document.querySelector('.portfolio-container');
+	var container = document.querySelector('.masonry-portfolio');
 	var grid;
 
 	imagesLoaded( container, function() {
@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		grid = new Isotope( container, {
 			itemSelector: '.grid-item',
 			columnWidth: '.grid-sizer',
+			gutter: '.gutter-sizer',
 			percentPosition: true,
 			//columnWidth: 450,
 			//isFitWidth: true

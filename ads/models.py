@@ -35,12 +35,10 @@ class Banner(models.Model):
 	def __str__(self):
 		return self.title
 
-
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.file_200_current = self.file_200
 		self.file_1000_current = self.file_1000
-
 
 	def save(self, *args, **kwargs):
 		# если файл заменен, то требуется удалить все миниатюры в кэше у sorl-thumbnails
@@ -48,7 +46,6 @@ class Banner(models.Model):
 			delete(self.file_1000_current)
 		super().save(*args, **kwargs)
 		self.file_1000_current = self.file_1000
-
 
 	def delete(self, *args, **kwargs):
 		# физически удалим файл и его sorl-миниатюры с диска
@@ -59,16 +56,14 @@ class Banner(models.Model):
 
 		super().delete(*args, **kwargs)
 
-
-	def get_banners(self):
-		model_name = self.model.__name__.lower() #возьмем имя модели для отбора баннеров
+	@classmethod
+	def get_banners(cls, model_name):
 		today = date.today()
 
-		banners = Banner.objects.filter(
+		banners = cls.objects.filter(
 			Q(pages__model=model_name) & (Q(show_start__lte=today) & Q(show_end__gte=today) | Q(is_general=True))
-		).annotate(page=Value(model_name, output_field=CharField())) # добавим значение модели как строка
+		).annotate(page=Value(model_name, output_field=CharField()))  # добавим значение модели как строка
 		return banners
-
 
 	def owner(self):
 		try:
@@ -80,12 +75,10 @@ class Banner(models.Model):
 				q = None
 		return q
 
-
 	def banner_thumb(self):
 		if self.file_200:
 			return get_image_html(self.file_200)
 		else:
 			return get_image_html(self.file_1000)
-
 
 	banner_thumb.short_description = 'Миниатюра'

@@ -1,9 +1,10 @@
-
-
 .navbar
 	padding: 0
 	+media-breakpoint-down(lg)
 		max-height: 100vh
+
+	.container-fluid
+		justify-content: center
 
 	.navbar-toggler
 		stroke: var(--bs-body-color)
@@ -50,9 +51,10 @@
 
 	.navbar-toggler
 		position: fixed
-		top: 2rem
-		right: 3vw
-		padding: 0.25rem
+		width: max-content
+		top: 0
+		right: 0
+		padding: var(--gap)
 		text-align: right
 		border-color: transparent
 		border-radius: 0
@@ -94,7 +96,6 @@
 			height: 100%
 			padding: 4vh 0
 			flex: 1
-			font-size: 1rem
 			overflow-y: auto
 			li.nav-item
 				&:first-child
@@ -103,9 +104,6 @@
 					margin-bottom: auto
 				.nav-link
 					padding: 1vh 0
-
-		+media-breakpoint-down(sm)
-			font-size: 0.9rem
 
 	li.nav-item
 		margin: 0
@@ -119,13 +117,13 @@
 				position: absolute
 				left: 0
 				right: 0
-				+media-breakpoint-down(lg)
-					left: 0
-					right: 0
 				bottom: 0
 				height: 0
 				background-color: #000
 				//border-bottom: 3px #fff solid
+				+media-breakpoint-down(lg)
+					left: 0
+					right: 0
 			&:hover
 				opacity: 1
 				&::before
@@ -143,9 +141,6 @@
 		transition: background-color 300ms 100ms ease-in-out
 		.navbar-toggler
 			stroke: var(--main-color)
-
-	.navbar ul.navbar-nav
-		font-size: 1em
 
 
 .navbar-dark

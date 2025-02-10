@@ -20,20 +20,21 @@
 	.back-link
 		position: absolute
 		top: 2.5vw
-		right: 2.5vw
+		left: 2.5vw
 		display: flex
 		align-items: center
 
+
 #header
+	position: relative
+
 	.back-link
-		display: block
 		flex: 1
-		margin-right: 3vw
-		margin-bottom: 1rem
-		text-align: right
+		text-align: left
 		text-transform: uppercase
 		font-size: 0.75em
 		color: var(--bs-body-color)
+		z-index: 1
 		svg
 			stroke: var(--main-color)
 
@@ -42,15 +43,17 @@
 		height: 100vh
 		background-size: cover
 		background-position: center
-		&~.brand-block
+		&~.navbar
 			position: absolute
 			top: 0
 			left: 0
+			right: 0
+
 			&~.navigation
 				position: absolute
 				//background-color: #fff
 				top: 50%
-				right: 2rem
+				right: var(--gap)
 				transform: translate(0, -50%)
 				flex-direction: column
 				align-items: flex-end
@@ -59,10 +62,10 @@
 					padding: 1vh 0
 					margin: 1vh 0
 					font-size: 1rem
-					font-weight: 600
+					font-weight: 700
 					border-top: none
 					color: var(--link-color)
-					text-shadow: 0 0 2px white
+					//text-shadow: 0 0 2px white
 					text-align: right
 					&:hover
 						border-color: var(--link-hover-color) !important
@@ -74,7 +77,6 @@
 					width: 80%
 					.nav-link
 						font-size: 1rem
-						text-transform: uppercase
 						letter-spacing: normal
 
 				+media-breakpoint-down(sm)
@@ -103,6 +105,7 @@
 			transform: translate(-50%, 0)
 			flex-direction: column
 			color: white !important
+			mix-blend-mode: exclusion
 			font-size: 0.9rem
 			transition: 300ms opacity ease
 			animation: scroll-down-animation 2s infinite ease-in-out
@@ -125,56 +128,56 @@
 			svg.icon
 				stroke: #fff
 
+	+media-breakpoint-down(sm)
+		padding-bottom: 1rem
 
 	.brand-block
 		position: relative
-		justify-content: flex-start
+		display: flex
+		align-items: center
+		gap: var(--gap)
 		width: 100%
 		// max-height: 140px
-		padding: 2rem 5rem
 		.brand-logo
 			width: 40%
 			max-width: 300px
 
+		.brand-title
+			margin-bottom: 0
 
-		&.with-title .brand-logo
-			width: 20%
-			max-width: 100px
-			+media-breakpoint-down(sm)
-				width: 150px
+		&:not(.with-title) .admin-edit-link
+			position: absolute
+			top: 5px
+
+		+media-breakpoint-up(sm)
+			&.with-title .brand-logo
+				width: 20%
+				max-width: 100px
 
 		+media-breakpoint-down(sm)
-			flex-direction: column
-			padding-right: 0
 			.brand-logo
-				width: 80%
-				max-width: 200px
+				display: grid
+				width: unset
+				height: 100%
+				> *
+					max-height: 70px
+				img
+					object-fit: contain
+					height: 100%
+					width: 100%
 
-			h1
+			.brand-title, &~.back-link span
 				display: none
-			.back-link
-				text-align: left
-				flex: 100%
 
 
 .navigation
 	position: relative
-	&::before
-		content: ""
-		position: absolute
-		+push--absolute(1px, 0, 1px, 0)
-		border: 1px solid var(--body-color)
-		opacity: 0.8
-		border-left: 0
-		border-right: 0
-		z-index: -1
-
 	.nav-link
 		padding: 0.75em 1em
 		font-size: 0.8rem
 		border-left: 0
 		border-right: 0
-		text-transform: uppercase
+		z-index: 1
 		&:hover
 			color: var(--link-hover-color) !important
 
@@ -184,20 +187,31 @@
 			letter-spacing: normal
 
 	.button-group
+		position: relative
 		flex-wrap: wrap
 		width: 100%
 		overflow: hidden
+
 	.category-link
 		flex: 0 1 auto
 		// min-width: 100px
 		height: 100%
 		font-size: 0.65rem
 		&.is-checked
-			color: var(--bs-body-color)
+			color: var(--link-color)
 			font-weight: 600
 
 	.nav-link:not(.category-link):hover
 		border-color: var(--highlight-border-color) !important
+
+	&::before
+		content: ""
+		+push--absolute(1px, 0, 1px, 0)
+		border: 1px solid var(--bs-body-color)
+		opacity: 0.6
+		border-left: 0
+		border-right: 0
+		//z-index: -1
 
 
 .portfolio-container.loaded
@@ -205,9 +219,23 @@
 		display: none !important
 
 
-
 .designer-page
-	&:not(.portfolio) .container
+	.portfolio-container a
+		border-radius: var(--border-radius)
+		overflow: hidden
+
+	&.portfolio .header, &.project .header
+		+media-breakpoint-down(sm)
+			display: flex
+			align-items: center
+			width: 100%
+
+	&.portfolio .back-link
+		+media-breakpoint-up(sm)
+			bottom: 1.2rem
+			transform: translateY(-100%)
+
+	&:not(.portfolio):not(.project) .container
 		max-width: 1200px
 		margin: 0 auto 0
 
@@ -215,10 +243,28 @@
 		padding: 0 0 2rem
 		flex: 100%
 
+	.brand-block
+		padding: 1rem var(--gap)
+		+media-breakpoint-up(sm)
+			padding: 2rem var(--gap)
+
+	.back-link
+		padding: 0 var(--gap)
+		margin-left: auto
+		+media-breakpoint-up(sm)
+			position: absolute
+			top: unset
+			right: 0
+			bottom: 0.5rem
+
 	section
-		padding: 4rem 2rem
+		box-sizing: border-box
+		padding: 3rem var(--gap)
 		>div
 			flex: auto
+
+	&.portfolio section
+		padding-top: 2rem
 
 
 	.navigation
@@ -238,33 +284,33 @@
 		header h2
 				text-align: left
 
-		+media-breakpoint-down(md)
-			&.container
-				flex-direction: column
-			.designer-logo
-				margin: auto
-			.about-content
-				margin: 3em auto
-				max-width: 450px
-
-		.designer-logo
+		.about-logo
 			flex: 0 1 40%
 			max-width: 450px
 			padding-bottom: 8vh
 
-		.about-content
-			border-left: 5px solid var(--border-color)
+		.about-description
+			border-left: var(--separator-w) solid var(--highlight-border-color)
 			margin-left: 3rem
 			margin-top: 0
-			padding-left: 1rem
+			padding-left: 1.5rem
 			flex: 1
+
+		+media-breakpoint-down(md)
+			flex-direction: column
+			.about-logo
+				margin: -4vh auto
+
+			.about-description
+				margin: 2rem auto
+				max-width: 450px
 
 	.portfolio-block
 		padding-left: 1rem
 		padding-right: 1rem
-		color: var(--light-color)
-		background-color: var(--dark-color)
-		border-bottom: var(--border-thickness) solid var(--body-color)
+		color: var(--section-portfolio-color)
+		background-color: var(--section-portfolio-bg)
+		border-bottom: var(--separator-w) solid var(--border-dark-color)
 		overflow: hidden
 		header
 			display: table
@@ -277,15 +323,13 @@
 				font-weight: 300
 				padding: 1rem
 
-		.portfolio-slides
-			justify-content: center
-
 		.slider-container
 			position: relative
 			width: 100%
 			margin-bottom: 4rem
 			opacity: 1
 			transition: all 300ms ease-in
+
 			&.peppermint
 				+media-breakpoint-up(sm)
 					width: 60%
@@ -300,6 +344,7 @@
 				visibility: hidden
 				opacity: 0
 			&.peppermint-active
+				touch-action: pan-x
 				visibility: visible
 
 			.peppermint-dots
@@ -307,28 +352,36 @@
 				&.peppermint-active
 					background-color: var(--light-color)
 
+			.portfolio-slides
+				justify-content: center
+				gap: 0
+
 			a.gallery-photo
 				position: relative
 				display: flex
 				flex-direction: column
 				width: 100%
 				max-width: 900px
-				margin: 0 1rem
-				background-color: var(--bs-white)
+				margin: calc(var(--gap) / 2)
+				//outline: var(--border-thickness) solid var(--border-color)
 				img
 					object-fit: cover
 
+			figure
+				display: flex
+				flex-direction: column
+				&::before
+					flex: 1
+
 			figcaption
 				position: relative
-				flex-direction: column
-				flex-wrap: unset
-				background-color: transparentize(white, 0.2)
+
 				.title
 					flex: auto
-					text-shadow: 1px 1px 2px white
+					//text-shadow: 1px 1px 2px white
 				.meta
-					padding-top: 0.75em
-					color: black
+					padding-top: 0.15em
+					color: var(--bs-body-color)
 
 
 		.controls-block
@@ -350,26 +403,50 @@
 			display: table
 			color: var(--light-color)
 			border-color: var(--light-color)
+			&:hover
+				border-color: var(--link-hover-color)
 
 
 	.partners-block
-		background-color: var(--section-partners-bg)
+		background-color: var(--section-partners-bg, var(--bs-white, #eee))
 		header h2
-			color: var(--section-partners-color)
+			color: var(--section-partners-color, #333)
 		h3
-			color: var(--section-partners-color)
+			color: var(--section-partners-color, #333)
 			opacity: 0.7
 
-		.partners-content
+		.partners-container
+			// display: grid
+			// grid-template-columns: repeat(auto-fit, minmax(100px, 1fr))
+			display: flex
+			justify-content: center
 			flex-wrap: wrap
-			//border-radius: 1rem 1rem
+			gap: 2vw
+			+media-breakpoint-down(xs)
+				gap: var(--gap)
+			//justify-items: center
+
 			.partner-logo
-				flex: 0 0 100px
-				width: 100px
-				height: 100px
+				max-width: 175px
+				flex: 1 1 auto
 				background-color: var(--section-partners-bg)
+				padding: 0.7rem
+				border: var(--border-thickness) solid var(--border-color)
+				border-radius: var(--border-radius)
+				cursor: default
+
 				img
 					object-fit: contain
+					height: 100%
+					aspect-ratio: 1 / 1
+				>*
+					margin: 0
+					text-transform: uppercase
+
+				+media-breakpoint-down(sm)
+					max-width: 150px
+				+media-breakpoint-down(xs)
+					max-width: 140px
 
 	.achievements-block
 		background-color: var(--section-achievements-bg)
@@ -378,15 +455,13 @@
 		header h2
 			color: var(--section-achievements-color)
 
-		h3
-			opacity: 0.7
-
-		.container >div
-			padding: 2rem
+		.achievements-container
+			gap: 2rem
+			flex-direction: column
 			//border: var(--border-thickness) solid var(--section-achievements-color)
+			header
+				padding: 0
 
-			&:last-child
-				padding-bottom: 0
 		ul li
 			@extend h4
 			opacity: 0.7
@@ -399,38 +474,57 @@
 				font-weight: 300
 
 	.customers-block
-		background-color: var(--section-customers-bg)
+		background-color: var(--section-customers-bg, var(--bs-white, #eee))
+		.container
+			gap: 2vw
+			+media-breakpoint-down(xs)
+				gap: var(--gap)
 
 		header
 			h2
 				color: var(--section-customers-color)
 
+		p:last-child
+				margin-bottom: 0
+
 		.col
-			flex: 1 0 auto
+			display: flex
+			align-items: center
+			flex: 1 1 auto
 			width: 100%
-			padding: 0
-			margin: 0
-			+media-breakpoint-up(lg)
-				width: 50%
+			background-color: white
+			border-radius: var(--border-radius)
+			overflow: hidden
+			min-height: 150px
+
+			+media-breakpoint-up(md)
+				max-width: calc(50% - 1vw)
+				min-height: 180px
+
+			+media-breakpoint-up(xl)
+				min-height: 200px
 
 		.customer
 			display: flex
 			align-items: center
-			padding: 2%
+			width: auto
+			height: 100%
+			padding: 1rem
 			//background-color: var(--light-color)
 			.logo
-				flex: 1 0 75px
+				flex: 1 1 75px
 				max-width: 100px
 				margin-right: 1.5rem
 				+media-breakpoint-down(sm)
 					max-width: 75px
 			.info
 				color: var(--section-customers-color) !important
-				//border-left: 3px solid var(--border-color)
-				flex: 1
+				height: auto
+				margin: auto
 
 				>p
 					padding-bottom: 0
+					opacity: 0.7
 
 				span
 					font-style: italic
@@ -440,39 +534,40 @@
 					text-transform: initial
 					color: var(--section-customers-color) !important
 
+			img ~ .info
+				flex: 1
+
+#header
+	background-color: var(--header-bg)
 
 #site-footer
 	margin-top: auto
-	// border-top: var(--border-thickness) solid var(--body-color)
+	// border-top: var(--border-thickness) solid var(--bs-body-color)
 	background-color: var(--dark-color)
-
 
 #copyright
 	padding: 0.25rem
-	color: var(--light-color)
-	background-color: var(--dark-color)
+	//color: var(--light-color)
+	//background-color: var(--dark-color)
 	text-align: center
 
 
 .contacts-block
-	padding-bottom: 0 !important
 	color: var(--section-contacts-color)
 	background-color: var(--section-contacts-bg)
-	header h2
+	border-top: var(--separator-w) solid var(--border-dark-color)
+	a, .btn, header >*
 		color: var(--section-contacts-color)
 
 	.contacts-content
 		width: 100%
-		margin-bottom: 4rem !important
 
 		>div:first-child, >div:last-child
 			flex: 0 1 40%
 			max-width: 280px
 
-		a, a:hover
-			color: var(--section-contacts-color) !important
-
 		svg.icon
+			opacity: 0.7
 			fill: var(--section-contacts-color)
 
 		.main-info span
@@ -494,14 +589,9 @@
 			.btn
 				text-align: left
 				white-space: nowrap
-				color: var(--section-contacts-color)
 
 			a
 				text-decoration: none
-				color: var(--section-contacts-color) !important
-
-				&:hover
-					color: var(--link-color) !important
 
 			>*
 				margin-bottom: 0.75rem
@@ -512,57 +602,65 @@
 				width: 24px
 				height: 24px
 
-
 		+media-breakpoint-down(lg)
 			flex-direction: column
 			align-items: center
 			>*
-				margin-bottom: 1.5rem
+				margin-bottom: var(--gap)
 
 			.socials
 				margin-bottom: 2.5rem
 
 
 /* Masonry styles */
-#portfolioBlock
-	margin: 0.5em
-	+media-breakpoint-up(sm)
-		figure
-			margin: 0.5em
-
+.masonry-portfolio
 	.grid-sizer,
 	.grid-item
 		width: 100%
 		//padding: 1vw
 		+media-breakpoint-up(sm)
-			width: 50%
+			width: calc(100% / 2 - var(--gap))
 		+media-breakpoint-up(lg)
-			width: 33.333%
+			width: calc(100% / 3 - var(--gap))
 		+media-breakpoint-up(xxl)
-			width: 25%
+			width: calc(100% / 4 - var(--gap))
 
-	.grid-item
+	a.grid-item
 		float: left
+		margin: calc(var(--gap) / 2) 0
+		figure
+			border-radius: var(--border-radius)
+			overflow: hidden
+
+		figcaption
+			background-color: inherit
+			transition: all .3s ease-in-out
+
 		&:hover
-			color: inherit !important
+			outline: var(--border-thickness) solid var(--highlight-border-color)
+			color: var(--light-color) !important
+			figcaption
+				background-color: var(--dark-color)
 
-	.grid-item img
-		display: block
-		max-width: 100%
+		img
+			display: block
+			max-width: 100%
+			&:hover
+				transform: scale(1.05)
 
-figure
+		+media-breakpoint-up(sm)
+			margin: calc(var(--gap) / 2)
+
+	+media-breakpoint-up(sm)
+		margin: calc(var(--gap) / -2)
+
+
+.content figure
 	height: 100%
 	margin: 0
-	border: var(--border-thickness) solid transparent
-	transition: all 300ms ease-out
-	overflow: hidden
-	img
-		&:hover
-			transform: scale(1.05)
-	&:hover
-		border-color: var(--link-hover-color) !important
 
 .add-portfolio
-	position: sticky
+	position: fixed
 	top: 1rem
+	left: var(--gap)
 

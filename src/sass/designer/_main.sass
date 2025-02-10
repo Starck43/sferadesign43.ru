@@ -16,6 +16,8 @@ html
 
 
 body
+	--gap: max(1rem, 3vw)
+	--separator-w: 5px
 	--bs-font-sans-serif: Arial, Tahoma
 	--bs-body-font-family: #{$font-family-text}
 	--bs-body-bg: #{$body-bg}
@@ -23,28 +25,32 @@ body
 	--main-color: #{$main-color}
 	--title-color: #{$header-color}
 	--bs-primary: #{$main-color}
-	--bs-white: white
+	--header-bg: var(--bs-body-bg, transparent)
+	--bs-white: #eeeeee
 	--btn-color: #{$btn-color}
 	--link-color: #{$link-color}
 	--link-hover-color: #{$link-hover-color}
 	--nav-link-color: #{$nav-link-color}
 	--bs-nav-link-font-size: 0.8em
-	--body-color: #{$body-color}
-	--light-color: #{$light-color}
-	--dark-color: #{$dark-color}
-	--border-color: #{$main-color}
+	--blur: 0px
+	--light-color: #fff
+	--dark-color: #eee
+	--border-color: #{$dark-color}
 	--border-thickness: #{$border-thickness}
+	--border-radius: #{$border-radius}
 	--border-light-color: #{$border-light-color}
 	--border-dark-color: #{$border-dark-color}
 	--highlight-border-color: #{$highlight-border-color}
 	--menu-bg: #{$menu-bg}
 
+	--section-portfolio-bg:  #{$dark-color}
+	--section-portfolio-color: #{$light-color}
 	--section-partners-bg:  #{$light-color}
 	--section-partners-color: #{$dark-color}
 	--section-achievements-bg:  #{$body-bg}
 	--section-achievements-color: #{$text-color}
 	--section-customers-bg:  #{$light-color}
-	--section-customers-color: #{$dark-color}
+	--section-customers-color: #{$text-color}
 	--section-contacts-bg:  #{$dark-color}
 	--section-contacts-color: #{$light-color}
 	display: flex
@@ -57,13 +63,11 @@ body
 
 *::selection
 	color: var(--light-color)
-	background-color: var(--dark-color)
+	background-color: var(--main-color)
 
 h1
-	margin-left: 2rem
-	margin-bottom: 0
 	color: var(--title-color)
-	font-size: calc(2rem + .25vw)
+	font-size: calc(2em + .25vw)
 	font-weight: 300
 
 	span
@@ -77,20 +81,19 @@ h2
 	flex: 100%
 	color: var(--main-color)
 	font-weight: 600
-	font-size: calc(1.8rem + 0.25vw)
+	font-size: calc(1.8em + 0.25vw)
 	text-align: center
 	text-transform: uppercase
 
 h3
 	margin-bottom: 1.5rem
-	font-size: calc(1.6rem + 0.2vw)
-	+media-breakpoint-down(md)
-		font-size: calc(1.2rem + 1vw)
-
+	font-size: calc(1.6em + 0.2vw)
 	text-transform: lowercase
+	+media-breakpoint-down(md)
+		font-size: calc(1.2em + 1vw)
 
 h4
-	font-size: calc(1.1rem + .2vw)
+	font-size: calc(1.1em + .2vw)
 
 
 h3, h4
@@ -155,14 +158,16 @@ img[data-sizes="auto"]
 .lazyload
 	opacity: 0
 	~figcaption
+		opacity: 0
 		@supports (backdrop-filter: blur(0))
-			backdrop-filter: blur(3px)
+			backdrop-filter: blur(0)
 
 .lazyloaded
 	opacity: 1
 	~figcaption
+		opacity: 1
 		@supports (backdrop-filter: blur(0))
-			backdrop-filter: blur(0)
+			backdrop-filter: blur(var(--blur))
 
 .loading
 	opacity: 0
@@ -230,7 +235,8 @@ svg.icon
 a, .btn
 	transition: all .15ms ease-in-out
 	&:hover svg
-		fill: var(--main-color) !important
+		fill: var(--link-hover-color) !important
+		opacity: 1
 
 a
 	display: block
@@ -243,6 +249,7 @@ a
 		font-weight: 500
 	&:hover
 		color: var(--link-hover-color) !important
+		opacity: 1
 
 
 svg.burger-icon
@@ -264,17 +271,19 @@ svg.burger-icon
 		width: 22px
 		height: 22px
 		transform: rotate(180deg)
+
 	+media-breakpoint-down(sm)
-		top: $container-margin*2
-		right: $container-margin*2
+		top: $container-margin * 2
+		left: $container-margin * 2
 
 .btn
 	padding: .75em 1.5em
-	//font-weight: 100
-	border-radius: 0
-	border: solid var(--btn-color) var(--border-thickness)
 	color: var(--btn-color)
+	border: var(--border-thickness) solid
+	border-radius: var(--border-radius)
 	background-color: transparent
+	svg
+		fill: var(--btn-color)
 	&:hover
 		color: var(--link-hover-color) !important
 		border-color: var(--link-hover-color)
@@ -303,23 +312,19 @@ button
 	display: inline-block
 	svg
 		fill: var(--main-color)
-		//border-radius: 5px
-		//background-color: var(--main-color)
-		&.vk
-			//background-color: #4D76A1
-		&.fb
-			//background-color: #1976D2
 		&.instagram
-			//background-color: #ff543e
 			stroke: white
 
 
 figcaption
 	position: relative
-	padding: 4%
+	padding: max(0.5rem, 4%)
 	display: flex
 	flex-wrap: wrap
-	flex: 1 1 auto
+	transition: opacity 300ms ease-in
+	background-color: transparentize(white, 0.3)
+	user-select: none
+	//flex: 1 1 auto
 
 	.title
 		flex: 1
@@ -338,7 +343,7 @@ figcaption
 		.category
 			margin-top: 1.5em
 			font-size: 0.8em
-			opacity: 0.5
+			opacity: 0.6
 			span
 				text-decoration: underline
 
@@ -359,15 +364,17 @@ figcaption
 			stroke: unset
 
 	+media-breakpoint-up(xl)
-		font-size: 0.8rem
+		font-size: 0.8em
 
 
 #back2top
 	position: fixed
 	bottom: $container-margin
 	right: $container-margin
+	border-radius: var(--border-radius)
 	transition: 500ms transform ease-in-out
 	opacity: 1
+	overflow: hidden
 	z-index: 1000
 	&.disable
 		transition: 500ms all ease-in-out
@@ -383,9 +390,9 @@ figcaption
 
 .top-link
 	padding: 3px
-	opacity: 0.6
-	border: 0
 	background-color: #fff
+	border: 0
+	opacity: 0.6
 	.arrow-icon
 		padding: .25em
 		stroke: var(--main-color)
@@ -411,7 +418,7 @@ figcaption
 	max-width: $container-max_w
 	margin-top: 0
 	flex-direction: column
-	+media-breakpoint-up(md)
+	+media-breakpoint-up(sm)
 		flex-direction: unset
 	+media-breakpoint-up(lg)
 		margin-bottom: $container-margin-lg
@@ -421,13 +428,6 @@ figcaption
 		max-width: $content-width_max
 		+media-breakpoint-up(xxl)
 			width: 100% - $col-width-xxl*2
-
-.container, #site-header
-	padding: 0 $container-margin
-	+media-breakpoint-up(sm)
-		padding: 0 $container-margin-sm
-	+media-breakpoint-up(lg)
-		padding: 0 $container-margin-lg
 
 
 .flex-content
@@ -508,7 +508,7 @@ figcaption
 		padding: 1rem
 		text-align: center
 		flex-direction: column
-		//background-color: #fff
+		background-color: #fff
 		span
 			text-align: center
 
@@ -518,7 +518,8 @@ figcaption
 			border-color: var(--border-color)
 
 	.modal-content
-		border-radius: 0
+		border-radius: var(--border-radius)
+
 		.modal-title
 			color: var(--main-color)
 		.modal-footer

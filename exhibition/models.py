@@ -1,6 +1,5 @@
 import re
 from os import path, rename, rmdir, listdir
-
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.conf import settings
@@ -17,8 +16,10 @@ from sorl.thumbnail import delete
 from uuslug import uuslug
 
 from crm import models
-from .logic import get_image_html, ImageResize, PortfolioUploadTo, CoverUploadTo, GalleryUploadTo, MediaFileStorage, \
+from .logic import (
+	MediaFileStorage, get_image_html, image_resize, portfolio_upload_to, cover_upload_to, gallery_upload_to,
 	limit_file_size, update_google_sitemap
+)
 
 LOGO_FOLDER = 'logos/'
 BANNER_FOLDER = 'banners/'
@@ -53,7 +54,7 @@ class Person(models.Model):
 		if self.original_logo and self.original_logo != self.logo:
 			delete(self.original_logo)
 
-		resized_logo = ImageResize(self.logo, [450, 450], quality=90, uploaded_file=request.FILES.get('logo', None))
+		resized_logo = image_resize(self.logo, [450, 450], uploaded_file=request.FILES.get('logo'))
 		if resized_logo and resized_logo != 'error':
 			self.logo = resized_logo
 
@@ -156,7 +157,6 @@ class Exhibitors(Person, Profile):
 			self.original_slug = self.slug
 
 		super().save(*args, **kwargs)
-		update_google_sitemap()  # обновим карту сайта Google
 
 	def clean_username(self, username):
 		try:
@@ -293,12 +293,15 @@ class Exhibitions(models.Model):
 	date_start = models.DateField('Начало выставки', unique=True)
 	date_end = models.DateField('Окончание выставки', unique=True)
 	location = models.CharField('Расположение выставки', max_length=200, blank=True)
-	exhibitors = models.ManyToManyField(Exhibitors, related_name='exhibitors_for_exh', verbose_name='Участники',
-	                                    blank=True)
+	exhibitors = models.ManyToManyField(
+		Exhibitors, related_name='exhibitors_for_exh', verbose_name='Участники', blank=True
+	)
 	partners = models.ManyToManyField(Partners, related_name='partners_for_exh', verbose_name='Партнеры', blank=True)
 	jury = models.ManyToManyField(Jury, related_name='jury_for_exh', verbose_name='Жюри', blank=True)
-	nominations = models.ManyToManyField(Nominations, related_name='nominations_for_exh', verbose_name='Номинации',
-	                                     blank=True)
+	nominations = models.ManyToManyField(
+		Nominations, related_name='nominations_for_exh', verbose_name='Номинации',
+		blank=True
+	)
 
 	# events = models.ManyToManyField(Events, related_name='events_for_exh', verbose_name = 'Мероприятия')
 
@@ -416,7 +419,6 @@ class PortfolioAttributes(models.Model):
 class Portfolio(models.Model):
 	project_id = models.IntegerField(null=True)
 	owner = models.ForeignKey(Exhibitors, on_delete=models.CASCADE, verbose_name='Участник')
-	# exhibition = models.ForeignKey(Exhibitions, on_delete=models.SET_NULL, null=True, verbose_name = 'Выставка')
 	exhibition = ChainedForeignKey(
 		Exhibitions,
 		chained_field="owner",
@@ -428,9 +430,13 @@ class Portfolio(models.Model):
 		help_text='Выберите год, если проект будет участвовать в конкурсе'
 	)
 
-	categories = models.ManyToManyField(Categories, related_name='categories_for_portfolio', blank=True,
-	                                    verbose_name='Категории',
-	                                    help_text='Отметьте нужные категории соответствующие вашему проекту')
+	categories = models.ManyToManyField(
+		Categories,
+		related_name='categories_for_portfolio',
+		blank=True,
+		verbose_name='Категории',
+		help_text='Отметьте нужные категории соответствующие вашему проекту'
+	)
 	nominations = ChainedManyToManyField(
 		Nominations,
 		chained_field="exhibition",
@@ -443,9 +449,14 @@ class Portfolio(models.Model):
 
 	title = models.CharField('Название', max_length=200, blank=True)
 	description = RichTextField('Описание портфолио', blank=True)
-	cover = models.ImageField('Обложка', upload_to=CoverUploadTo, storage=MediaFileStorage(), null=True, blank=True,
-	                          validators=[limit_file_size], help_text='Размер файла не более %s Мб' % round(
-			settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024))
+	cover = models.ImageField(
+		'Обложка',
+		upload_to=cover_upload_to,
+		storage=MediaFileStorage(),
+		null=True,
+		blank=True,
+		validators=[limit_file_size],
+		help_text='Размер файла не более %s Мб' % round(settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024))
 	attributes = models.ManyToManyField(
 		PortfolioAttributes,
 		related_name='attributes_for_portfolio',
@@ -462,16 +473,27 @@ class Portfolio(models.Model):
 		db_table = 'portfolio'
 		unique_together = ['owner', 'project_id']
 
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.original_cover = self.cover
+
 	def delete(self, *args, **kwargs):
 		# удаление связанных фото с портфолио
 		for post in self.images.all():
 			post.delete()
 
 		super().delete(*args, **kwargs)
-		update_google_sitemap()
 
 	def save(self, *args, **kwargs):
-		images = kwargs.pop('images', None)
+		# если файл заменен, то требуется удалить все миниатюры в кэше у sorl-thumbnails
+		if self.original_cover and self.original_cover != self.cover:
+			delete(self.original_cover)
+
+		resized_cover = image_resize(self.cover, [1500, 800])
+		if resized_cover and resized_cover != 'error':
+			self.cover = resized_cover
+
+		images = kwargs.pop('images', [])
 
 		if not self.project_id:
 			# найдем последнюю запись с наибольшим id
@@ -483,26 +505,29 @@ class Portfolio(models.Model):
 
 		super().save(*args, **kwargs)
 
+		if resized_cover != 'error':
+			self.original_cover = self.cover
+
 		# сохраним связанные с портфолио изображения
 		if self.pk and images:
 			for image in images:
 				exhibition_slug = self.exhibition.slug if self.exhibition else 'non-exhibition'
 				upload_filename = path.join(
+					settings.MEDIA_ROOT,
 					settings.FILES_UPLOAD_FOLDER,
 					self.owner.slug,
 					exhibition_slug,
 					self.slug,
 					image.name
 				)
-				file_path = path.join(settings.MEDIA_ROOT, upload_filename)
 				append_image = True
 
-				if path.exists(file_path):
+				if path.exists(upload_filename):
 					try:
 						# Portfolio has an image yet
 						exist_image = Image.objects.get(portfolio=self, file=upload_filename)
 						# Проверим размер загруженного повторно файла и изменим оригинал, если он превысит лимит указанный в settings
-						ImageResize(exist_image.file)
+						image_resize(exist_image.file)
 						append_image = False
 					except Image.DoesNotExist:
 						# New image in portfolio
@@ -511,8 +536,6 @@ class Portfolio(models.Model):
 				if append_image:
 					instance = Image(portfolio=self, file=image)
 					instance.save()
-
-		update_google_sitemap()  # обновим карту сайта Google
 
 	@property
 	def slug(self):
@@ -528,7 +551,6 @@ class Portfolio(models.Model):
 			return 'Проект %s' % self.project_id
 
 	def get_absolute_url(self):
-		# return reverse('portfolio-detail-url', kwargs={'year': self.exhibition.date_start, 'owner': self.owner.slug, 'id': self.pk })
 		return reverse(
 			'exhibition:project-detail-url',
 			kwargs={'owner': self.owner.slug, 'project_id': self.project_id}
@@ -559,7 +581,7 @@ class Winners(models.Model):
 		auto_choose=True,
 		sort=True,
 		related_name='exhibitor_for_winner', on_delete=models.CASCADE, null=True,
-		verbose_name='Победитель'
+		verbose_name='Победители выставки'
 	)
 	portfolio = ChainedForeignKey(
 		Portfolio,
@@ -607,10 +629,12 @@ class Winners(models.Model):
 
 # Exhibition Photo Gallery
 class Gallery(models.Model):
-	exhibition = models.ForeignKey(Exhibitions, on_delete=models.CASCADE, related_name='gallery',
-	                               verbose_name='Выставка')
+	exhibition = models.ForeignKey(
+		Exhibitions, on_delete=models.CASCADE, related_name='gallery',
+		verbose_name='Выставка'
+	)
 	title = models.CharField('Заголовок', max_length=100, null=True, blank=True)
-	file = models.ImageField('Фото', upload_to=GalleryUploadTo)
+	file = models.ImageField('Фото', upload_to=gallery_upload_to)
 
 	# Metadata
 	class Meta:
@@ -635,7 +659,7 @@ class Gallery(models.Model):
 
 	def save(self, *args, **kwargs):
 		self.delete_storage_file()
-		resized_image = ImageResize(self.file)
+		resized_image = image_resize(self.file)
 		if resized_image:
 			self.file = resized_image
 		super().save(*args, **kwargs)
@@ -658,19 +682,31 @@ class Gallery(models.Model):
 
 
 class Image(models.Model):
-	portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, null=True, related_name='images',
-	                              verbose_name='Портфолио')
+	portfolio = models.ForeignKey(
+		Portfolio,
+		on_delete=models.CASCADE,
+		null=True,
+		related_name='images',
+		verbose_name='Портфолио'
+	)
 	title = models.CharField('Заголовок', max_length=100, null=True, blank=True)
 	description = models.CharField('Описание', max_length=250, blank=True)
-	file = models.ImageField('Файл', upload_to=PortfolioUploadTo, storage=MediaFileStorage(),
-	                         validators=[limit_file_size], help_text='Размер файла не более %s Мб' % round(
-			settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024))
+	file = models.ImageField(
+		'Файл',
+		upload_to=portfolio_upload_to,
+		storage=MediaFileStorage(),
+		validators=[limit_file_size],
+		help_text=(
+				'Можно выбрать несколько фото одновременно. '
+				'Размер файла не более %s Мб' % round(settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024)
+		)
+	)
 	sort = models.SmallIntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
 	class Meta:
-		verbose_name = 'Фото проекта'
-		verbose_name_plural = 'Фото портфолио'
+		verbose_name = 'Фото'
+		verbose_name_plural = 'Фото проектов'
 		ordering = [Coalesce("sort", F('id') + 500)]  # сортировка в приоритете по полю sort, а потом уже по-умолчанию
 		db_table = 'images'
 
@@ -702,7 +738,7 @@ class Image(models.Model):
 
 		# Resizing uploading image
 		# Alternative package - django-resized
-		resized_image = ImageResize(self.file)
+		resized_image = image_resize(self.file)
 		if resized_image and resized_image != 'error':
 			self.file = resized_image
 
@@ -725,10 +761,14 @@ class MetaSEO(models.Model):
 	model = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name='Раздел')
 	post_id = models.PositiveIntegerField('Запись в разделе', null=True, blank=True)
 	title = models.CharField('Заголовок страницы', max_length=100, blank=True, null=True)
-	description = models.CharField('Мета описание', max_length=100, blank=True, null=True,
-	                               help_text='Описание в поисковой выдаче. Рекомендуется 70-80 символов')
-	keywords = models.CharField('Ключевые слова', max_length=255, blank=True, null=True,
-	                            help_text='Поисковые словосочетания указывать через запятую. Рекомендуется до 20 слов и не более 3-х повторов')
+	description = models.CharField(
+		'Мета описание', max_length=100, blank=True, null=True,
+		help_text='Описание в поисковой выдаче. Рекомендуется 70-80 символов'
+	)
+	keywords = models.CharField(
+		'Ключевые слова', max_length=255, blank=True, null=True,
+		help_text='Поисковые словосочетания указывать через запятую. Рекомендуется до 20 слов и не более 3-х повторов'
+	)
 
 	# Metadata
 	class Meta:
@@ -737,8 +777,22 @@ class MetaSEO(models.Model):
 		db_table = 'metaseo'
 		unique_together = ['model', 'post_id']
 
-	def get_model(self):
-		return ContentType.objects.get(model=self).model_class()
-
 	def __str__(self):
 		return self.title
+
+	@classmethod
+	def get_model(cls, model):
+		return ContentType.objects.get(model=model).model_class()
+
+	@staticmethod
+	def get_content_models():
+		return ContentType.objects.filter(
+			model__in=[
+				'article', 'portfolio', 'exhibitions', 'categories', 'winners', 'exhibitors', 'partners', 'jury', 'events'
+			]
+		)
+
+	@classmethod
+	def get_content(cls, model, object_id=None):
+		model_name = model.__name__.lower()
+		return cls.objects.filter(model__model=model_name, post_id=object_id or None).first()

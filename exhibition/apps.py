@@ -25,7 +25,6 @@ class ExhibitionConfig(AppConfig):
 
 
 class ExhibitionsAdapter(watson.SearchAdapter):
-
 	def get_title(self, obj):
 		return 'Выставка "%s"' % obj.title
 
@@ -33,9 +32,7 @@ class ExhibitionsAdapter(watson.SearchAdapter):
 		return '<b>Дата проведения:</b> %s - %s %s' % (obj.date_start.strftime('%d.%m.%Y'), obj.date_end.strftime('%d.%m.%Y'),obj.description)
 
 
-
 class NominationsAdapter(watson.SearchAdapter):
-
 	def get_description(self, obj):
 		if obj.category:
 			return '<p>%s</p><b>Категория:</b> %s' % (obj.description, obj.category.title)
@@ -43,9 +40,7 @@ class NominationsAdapter(watson.SearchAdapter):
 			return '<p>%s</p>' % (obj.description)
 
 
-
 class PortfolioAdapter(watson.SearchAdapter):
-
 	def get_description(self, obj):
 		return '<p><b>Автор проекта:</b> %s</p>%s' % (obj.owner.name, obj.description)
 

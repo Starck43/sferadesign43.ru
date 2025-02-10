@@ -1,10 +1,11 @@
 crispy-bootstrap5
-Django==4.2.15
+Django
 django-allauth
 django-ckeditor==6.5.1
 django-cleanup
 django-cors-headers
 django-crispy-forms
+django-jazzmin
 django-debug-toolbar
 django-environ
 django-js-asset
@@ -13,10 +14,11 @@ django-smart-selects
 django-static-jquery-ui
 django-tabbed-changeform-admin
 django-uuslug
-django-watson==1.6.2
-Pillow==10.3.0
+django-watson
+mysqlclient
+Pillow
 redis
-requests==2.32.3
+requests
 sorl-thumbnail
 Wand
 zipp

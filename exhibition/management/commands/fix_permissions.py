@@ -4,6 +4,7 @@ from django.contrib.auth.management import create_permissions
 from django.core.management.base import BaseCommand
 from django.apps import apps
 
+
 class Command(BaseCommand):
 	help = 'Recreate permissions from scratch'
 

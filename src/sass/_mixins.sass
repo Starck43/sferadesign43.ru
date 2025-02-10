@@ -1,14 +1,17 @@
 @use "sass:math"
+@use "sass:map"
+@use "sass:string"
+@use "sass:color"
 
 // Source mixin
 @mixin make-container($padding-x: 0)
 	width: 100%
+	margin-right: auto
+	margin-left: auto
+
 	@if ($padding-x != 0)
 		padding-right: $padding-x
 		padding-left: $padding-x
-
-	margin-right: auto
-	margin-left: auto
 
 @mixin font($f-name, $f-style, $f-weight, $local-url, $url:none, $display:swap)
 	@font-face
@@ -178,24 +181,28 @@ $parallax-ios         : true !default
 		position: $pos
 
 
-
 // Миксин для создания масштабируемыхэлементов(обычно изображения/картинки заднего фона),
 // чтобы поддерживать соотношение. Пример: @include responsive-ratio(16,9)
-@mixin responsive-ratio($x:1, $y:1, $h:0, $pseudo:false,$pos:relative)
-	$padding: unquote(math.div($y, $x)*100+'%')
+@mixin responsive-ratio($x:1, $y:1, $h:0, $pseudo:false, $pos:relative)
+	$padding: string.unquote(math.div($y, $x) *100+"%")
+
+	> img
+		+push--absolute
+
 	@if $pseudo
 		position: $pos
+
 		&::before
 			@include pseudo($pos)
 			width: 100%
 			padding-bottom: $padding
+
 	@else
 		position: $pos
 		width: 100%
 		height: $h
 		padding-bottom: $padding
-	img
-		+push--absolute
+
 
 //миксин создает треугольники. Задаются цвет, размер и направление
 @mixin css-triangle($color, $direction, $size: 6px, $position: absolute, $round: false)

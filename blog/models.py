@@ -34,8 +34,8 @@ class Category(models.Model):
 
 
 class Article(models.Model):
-	category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, verbose_name = 'Раздел')
-	owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name = 'Автор статьи')
+	category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, verbose_name='Раздел')
+	owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='Автор статьи')
 	title = models.CharField('Название статьи', max_length=150)
 	slug = models.SlugField('Ярлык', max_length=150, unique=True, null=True)
 	content = RichTextUploadingField('Статья', blank=True)
@@ -47,23 +47,19 @@ class Article(models.Model):
 		ordering = ['-modified_date']
 		db_table = 'article'
 
-
 	def save(self, *args, **kwargs):
 		if not self.slug:
 			self.slug = uuslug(self.title.lower(), instance=self)
 		super().save(*args, **kwargs)
 
 	def person(self):
-		try:
-			post = Exhibitors.objects.get(user=self.owner)
-		except Exhibitors.DoesNotExist:
-			try:
-				post = Partners.objects.get(user=self.owner)
-			except Partners.DoesNotExist:
-				try:
-					post = Jury.objects.get(user=self.owner)
-				except Jury.DoesNotExist:
-					post = None
+
+		post = Exhibitors.objects.filter(user=self.owner).first()
+		if not post:
+			post = Partners.objects.filter(user=self.owner).first()
+			if not post:
+				post = Jury.objects.filter(user=self.owner).first()
+
 		return post
 
 	def __str__(self):
@@ -71,6 +67,3 @@ class Article(models.Model):
 
 	def get_absolute_url(self):
 		return reverse('blog:article-detail-url', kwargs={'pk': self.id})
-
-
-

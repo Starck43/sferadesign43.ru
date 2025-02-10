@@ -3,8 +3,8 @@ from allauth.account.adapter import DefaultAccountAdapter
 from .models import Exhibitors
 
 
-""" Hook for overriding the send_mail method of the account adapter """
 class CustomPasswordResetAdapter(DefaultAccountAdapter):
+	""" Hook for overriding the send_mail method of the account adapter """
 	def send_mail(self, template_prefix, email, context):
 		is_exhibitor = context['user'].groups.filter(name='Exhibitors').exists()
 		if is_exhibitor and template_prefix == 'account/email/password_reset_key':
