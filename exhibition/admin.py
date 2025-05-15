@@ -3,7 +3,6 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin, GroupAdmin as 
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import ImageField
-from django.forms.widgets import Select
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
@@ -183,7 +182,7 @@ class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.Model
 	user_name.short_description = 'Пользователь'
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('persons', 'exhibitors', 'all')
+		delete_cached_fragment('persons', 'exhibitors', None)
 		exhibitions = Exhibitions.objects.filter(exhibitors=obj.id).only('slug')
 		for exh in exhibitions:
 			delete_cached_fragment('persons', 'exhibitors', exh.slug)
@@ -204,7 +203,7 @@ class JuryAdmin(PersonAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	list_display_links = ('logo_thumb', 'name',)
 
 	def save_model(self, request, obj, form, change):
-		delete_cached_fragment('persons', 'jury', 'all')
+		delete_cached_fragment('persons', 'jury', None)
 		exhibitions = Exhibitions.objects.filter(jury=obj.id).only('slug')
 		for exh in exhibitions:
 			delete_cached_fragment('persons', 'jury', exh.slug)
@@ -237,7 +236,7 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAd
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
 		delete_cached_fragment('index_page')
-		delete_cached_fragment('persons', 'partners', 'all')
+		delete_cached_fragment('persons', 'partners', None)
 
 		exhibitions = Exhibitions.objects.filter(partners=obj).only('slug')
 		for exh in exhibitions:
@@ -360,7 +359,7 @@ class WinnersAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
 
-		delete_cached_fragment('persons', 'winners', 'all')
+		delete_cached_fragment('persons', 'winners', None)
 		exhibitions = Exhibitions.objects.all()
 		for exh in exhibitions:
 			delete_cached_fragment('persons', 'winners', exh.slug)

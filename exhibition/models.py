@@ -116,7 +116,7 @@ class Exhibitors(Person, Profile):
 	# Metadata
 	class Meta(Person.Meta):
 		verbose_name = 'Участник выставки'
-		verbose_name_plural = 'Участники выставки'
+		verbose_name_plural = 'Участники'
 		ordering = ['user__last_name']
 		# unique_together = ('name',)
 		db_table = 'exhibitors'
@@ -193,7 +193,7 @@ class Jury(Person):
 
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
-		update_google_sitemap()  # обновим карту сайта Google
+		#update_google_sitemap()  # обновим карту сайта Google
 
 	def get_absolute_url(self):
 		return reverse('exhibition:jury-detail-url', kwargs={'slug': self.slug})
@@ -205,7 +205,7 @@ class Partners(Person, Profile):
 	# Metadata
 	class Meta(Person.Meta):
 		verbose_name = 'Партнер выставки'
-		verbose_name_plural = 'Партнеры выставки'
+		verbose_name_plural = 'Партнеры'
 		db_table = 'partners'
 		ordering = [Coalesce("sort", F('id') + 500)]  # сортировка в приоритете по полю sort, а потом уже по-умолчанию
 

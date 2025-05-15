@@ -11,7 +11,7 @@
 
 	<section class="partners-container">
 
-		{% if exh_year == 'all' or exhibitions_list.first.slug == exh_year %}
+		{% if not exh_year or exhibitions_list.first.slug == exh_year %}
 		<div class="grid-container row">
 			{% for partner in exhibitions_list.first.partners.all %}
 			<a class="grid-cell col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3" href="{{ partner.get_absolute_url }}">

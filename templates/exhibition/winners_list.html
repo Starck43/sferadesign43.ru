@@ -8,7 +8,7 @@
 
 {% block content %}
 
-	{% cache cache_timeout persons absolute_url exh_year %}
+	{% cache 2592000 persons absolute_url exh_year %}
 	<ol class="winners-list">
 		{% regroup object_list by exhibitor_name as exhibitors %}
 

@@ -70,6 +70,8 @@ class ExhibitorsList(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants', ]
+		context['cache_timeout'] = 2592000
+
 		return context
 
 
@@ -91,6 +93,7 @@ class PartnersList(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants', 'partners', ]
+		context['cache_timeout'] = 2592000
 
 		return context
 
@@ -112,6 +115,7 @@ class JuryList(MetaSeoMixin, ExhibitionYearListMixin, ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['html_classes'] = ['participants', 'jury', ]
+		context['cache_timeout'] = 2592000
 
 		return context
 

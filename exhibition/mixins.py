@@ -1,5 +1,3 @@
-from django.db.models import Q
-
 from .models import MetaSEO
 from ads.models import Banner
 
@@ -10,6 +8,8 @@ class ExhibitionYearListMixin:
 		context['page_title'] = self.model._meta.verbose_name_plural
 		context['absolute_url'] = self.model.__name__.lower()
 		context['exh_year'] = self.kwargs.get('exh_year', None)
+		if not context.get('cache_timeout'):
+			context['cache_timeout'] = 86400
 		return context
 
 
