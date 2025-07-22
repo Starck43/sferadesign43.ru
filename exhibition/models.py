@@ -464,10 +464,11 @@ class Portfolio(models.Model):
 		blank=True
 	)
 	status = models.BooleanField('Статус', null=True, blank=True, default=True, help_text='Видимость на сайте')
+	order = models.IntegerField('Порядок', null=True, blank=True, default=1)
 
 	# Metadata
 	class Meta:
-		ordering = ['-exhibition__slug', 'title']  # '-' for DESC ordering
+		ordering = ['-exhibition__slug', 'order', 'title']  # '-' for DESC ordering
 		verbose_name = 'Портфолио'
 		verbose_name_plural = 'Портфолио работ'
 		db_table = 'portfolio'

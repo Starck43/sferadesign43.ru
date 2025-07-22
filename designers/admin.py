@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
 
 from exhibition.admin import MetaSeoFieldsAdmin
 from .forms import DesignerForm
@@ -9,7 +8,7 @@ admin.site.site_title = 'Страницы дизайнеров'
 admin.site.site_header = 'Страницы дизайнеров'
 
 
-class CustomerInline(admin.TabularInline):
+class CustomerInline(admin.StackedInline):
 	model = Customer
 	# template = 'admin/exhibition/edit_inline/stacked.html'
 	extra = 1
@@ -20,13 +19,13 @@ class CustomerInline(admin.TabularInline):
 	classes = ['customers-inline-tab']
 
 
-class AchievementInline(admin.TabularInline):
+class AchievementInline(admin.StackedInline):
 	model = Achievement
 	# template = 'admin/exhibition/edit_inline/stacked.html'
 	extra = 0
 	show_change_link = True
-	fields = ('title', 'link', 'date', 'group',)
-	list_display = ('title', 'date',)
+	fields = ('cover', 'title', 'subtitle', 'description', 'group', 'link', 'date', )
+	list_display = ('title', 'group', 'date',)
 	# list_editable = ['title']
 	classes = ['achievements-inline-tab']
 
@@ -41,7 +40,7 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(Achievement)
 class AchievementAdmin(admin.ModelAdmin):
 	fields = ('designer', 'title', 'description', 'date', 'group', 'link')
-	list_display = ('designer', 'title', 'date', 'group')
+	list_display = ('designer', 'title', 'subtitle', 'date', 'group')
 	list_display_links = ('designer', 'title', 'date', 'group')
 
 

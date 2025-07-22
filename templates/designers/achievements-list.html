@@ -1,19 +1,41 @@
-	<ul class="victories-list my-2">
-		{% for e in event %}
-		<li>
-			{% if e.link %}
-			<a class="customer" href="{{e.link}}">{% else %}<div class="customer text-weight">
-			{% endif %}
-				{{e.title}}
-			{% if e.link %}
-			</a>{% else %}</div>
-			{% endif %}
-			{% if e.description %}
-			<p>{{e.description}}</p>
-			{% endif %}
-			{% if e.date %}
-			<span>{{e.date}}</span>
-			{% endif %}
-		</li>
-		{% endfor %}
-	</ul>
+{% load thumbnail %}
+
+<ul class="victories-list my-2">
+    {% for e in event %}
+        <li>
+            {% if e.cover %}
+                {% thumbnail e.cover "160" crop="center" as xs %}
+                    {% thumbnail e.cover "320" crop="center" as sm %}
+                        {% thumbnail e.cover "576" crop="center" as md %}
+                            <img class="achievement-cover lazyload"
+                                 src="{{ sm.url }}"
+                                 srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ cover.url }} {{ e.cover.width }}w">
+                        {% endthumbnail %}
+                    {% endthumbnail %}
+                {% endthumbnail %}
+            {% endif %}
+
+            {% if e.link %}
+                <a class="customer" href="{{ e.link }}">{% else %}
+                <div class="customer text-weight">
+            {% endif %}
+            {{ e.title }}
+            {% if e.link %}
+                </a>
+            {% else %}
+                </div>
+            {% endif %}
+
+            {% if e.subtitle %}
+                <div class="subtitle">{{ e.subtitle }}</div>
+            {% endif %}
+
+            {% if e.description %}
+                <p class="descr">{{ e.description }}</p>
+            {% endif %}
+            {% if e.date %}
+                <span class="date">{{ e.date }}</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>

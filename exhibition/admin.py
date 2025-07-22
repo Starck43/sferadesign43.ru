@@ -193,11 +193,11 @@ class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.Model
 
 class JuryAdmin(PersonAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-		            (None, {
-			            'classes': ('user-block',),
-			            'fields': ('logo', 'name', 'slug', 'excerpt', 'description', 'sort',),
-		            }),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+					(None, {
+						'classes': ('user-block',),
+						'fields': ('logo', 'name', 'slug', 'excerpt', 'description', 'sort',),
+					}),
+				) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'name', 'excerpt',)
 	list_display_links = ('logo_thumb', 'name',)
@@ -247,11 +247,11 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAd
 @admin.register(Categories)
 class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-		            (None, {
-			            'classes': ('user-block',),
-			            'fields': ('title', 'slug', 'description', 'logo', 'sort',),
-		            }),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+					(None, {
+						'classes': ('user-block',),
+						'fields': ('title', 'slug', 'description', 'logo', 'sort',),
+					}),
+				) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'title', 'nominations_list', 'description',)
 	list_display_links = ('logo_thumb', 'title',)
@@ -269,13 +269,13 @@ class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 @admin.register(Nominations)
 class NominationsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-		            (
-			            None, {
-				            'classes': ('user-block',),
-				            'fields': ('category', 'title', 'slug', 'description', 'sort',),
-			            }
-		            ),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+					(
+						None, {
+							'classes': ('user-block',),
+							'fields': ('category', 'title', 'slug', 'description', 'sort',),
+						}
+					),
+				) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('category', 'title', 'description_html',)
 	list_display_links = ('title',)
@@ -305,15 +305,15 @@ class EventsInlineAdmin(admin.StackedInline):
 
 class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = ((
-		             None, {
-			             'classes': ('user-block',),
-			             'fields': (
-				             'exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster',
-				             'lector',
-				             'description',
-			             ),
-		             }
-	             ),) + MetaSeoFieldsAdmin.fieldsets
+					 None, {
+						 'classes': ('user-block',),
+						 'fields': (
+							 'exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster',
+							 'lector',
+							 'description',
+						 ),
+					 }
+				 ),) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('title', 'date_event', 'time_event', 'hoster', 'exhibition',)
 	search_fields = ('title', 'description', 'hoster', 'lector',)
@@ -333,11 +333,11 @@ class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 
 class WinnersAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = ((
-		             None, {
-			             'classes': ('user-block',),
-			             'fields': ('exhibition', 'nomination', 'exhibitor', 'portfolio',),
-		             }
-	             ),) + MetaSeoFieldsAdmin.fieldsets
+					 None, {
+						 'classes': ('user-block',),
+						 'fields': ('exhibition', 'nomination', 'exhibitor', 'portfolio',),
+					 }
+				 ),) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('exh_year', 'nomination', 'exhibitor', 'portfolio')
 	list_display_links = list_display
@@ -430,15 +430,17 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	form = PortfolioForm
 	# fields = MetaSeoFieldsAdmin.meta_fields
 	fieldsets = ((
-		             None, {
-			             'classes': ('portfolio-block',),
-			             'fields': (
-				             'owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover',
-				             'files',
-				             'attributes', 'status',
-			             ),
-		             }
-	             ),) + MetaSeoFieldsAdmin.fieldsets
+					None, {
+						'classes': ('portfolio-block',),
+						'fields': (
+							'owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover',
+							'files',
+							'attributes',
+							'status',
+							'order'
+						),
+					}
+				),) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('owner', '__str__', 'exhibition', 'nominations_list', 'status')
 	list_display_links = ('owner', '__str__')
@@ -659,4 +661,3 @@ admin.site.register(Organizer, OrganizerAdmin)
 
 admin.site.register(Events, EventsAdmin)
 admin.site.register(Winners, WinnersAdmin)
-

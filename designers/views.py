@@ -54,7 +54,7 @@ class MainPage(MetaSeoMixin, DetailView):
 			exh_year=F('nomination_for_winner__exhibition__slug')
 		).values('title', 'slug', 'exh_year').order_by('-exh_year')
 
-		competitions = Achievement.objects.filter(designer=designer, group=1)
+		competitions = Achievement.objects.filter(Q(Q(designer=designer) & ~Q(group=2)))
 		publications = Achievement.objects.filter(designer=designer, group=2)
 
 		context = super().get_context_data(**kwargs)
@@ -107,8 +107,8 @@ class PortfolioPage(MetaSeoMixin, DetailView):
 				),
 				default='cover',
 				output_field=CharField()
-			)
-		).order_by('-exh_year')
+			),
+		).order_by('order')
 
 		exh_category = self.object.exh_portfolio.prefetch_related('nominations__category').annotate(
 			category_slug=F('nominations__category__slug'),

@@ -1,7 +1,7 @@
-crispy-bootstrap5
 Django
 django-allauth
 django-ckeditor==6.5.1
+crispy-bootstrap5
 django-cleanup
 django-cors-headers
 django-crispy-forms

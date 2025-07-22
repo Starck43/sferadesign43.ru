@@ -9,6 +9,7 @@ from exhibition.models import Exhibitors, Partners, Portfolio
 
 LOGO_FOLDER = 'logos/'
 AVATAR_FOLDER = 'avatars/'
+COVER_FOLDER = 'covers/'
 
 
 class Designer(models.Model):
@@ -168,8 +169,10 @@ class Customer(models.Model):
 class Achievement(models.Model):
 	""" Таблица Достижений """
 	STATUS = (
+		(0, 'выставка Сфера Дизайна'),
 		(1, 'другие выставки'),
 		(2, 'публикации в СМИ'),
+		(3, 'сообщества и организации'),
 	)
 	group = models.SmallIntegerField('Вид события', choices=STATUS, default=1)
 	designer = models.ForeignKey(
@@ -178,13 +181,15 @@ class Achievement(models.Model):
 		related_name='achievements',
 		verbose_name='Дизайнер'
 	)
+	cover = models.ImageField('Обложка', upload_to=COVER_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
 	title = models.CharField('Заголовок', max_length=255)
 	description = models.TextField('Дополнительное описание', blank=True)
+	subtitle = models.CharField('Подзаголовок', max_length=100, null=True, blank=True, help_text='Например, название площадки или организатора')
 	link = models.URLField(
 		'Ссылка на источник', blank=True,
 		help_text='Внешняя ссылка для перехода к источнику информации'
 	)
-	date = models.DateField('Дата события', blank=True)
+	date = models.DateField('Дата события', blank=True, null=True)
 
 	# Metadata
 	class Meta:
