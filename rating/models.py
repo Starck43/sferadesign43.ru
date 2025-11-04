@@ -51,6 +51,68 @@ class Rating(models.Model):
 
 
 """Отзывы"""
+class JuryRating(models.Model):
+	"""Оценки жюри (отдельно от общего рейтинга)"""
+	STARS = (
+		(1, '1 звезда'),
+		(2, '2 звезды'),
+		(3, '3 звезды'),
+		(4, '4 звезды'),
+		(5, '5 звезд'),
+	)
+	jury = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Член жюри', limit_choices_to={'jury__isnull': False})
+	portfolio = models.ForeignKey(Portfolio, related_name='jury_ratings', on_delete=models.CASCADE, verbose_name='Портфолио')
+	star = models.SmallIntegerField('Оценка', choices=STARS)
+	exhibition = models.ForeignKey('exhibition.Exhibitions', on_delete=models.CASCADE, verbose_name='Выставка')
+	created_date = models.DateTimeField('Дата оценки', auto_now_add=True)
+	ip = models.CharField("IP адрес", max_length=15, blank=True)
+
+	class Meta:
+		verbose_name = "Оценка жюри"
+		verbose_name_plural = "Оценки жюри"
+		unique_together = ('jury', 'portfolio', 'exhibition')
+		ordering = ['-created_date']
+
+	@property
+	def fullname(self):
+		if self.jury:
+			if (not self.jury.first_name) and (not self.jury.last_name):
+				return self.jury.username
+			else:
+				return f"{self.jury.first_name} {self.jury.last_name}"
+		return ''
+
+	fullname.fget.short_description = 'Член жюри'
+
+	def __str__(self):
+		return f"{self.star} - {self.portfolio} (Жюри: {self.fullname})"
+
+	@classmethod
+	def has_rated(cls, portfolio_id, user, exhibition_id):
+		"""Проверка, выставлял ли член жюри уже оценку"""
+		return cls.objects.filter(
+			portfolio_id=portfolio_id, 
+			jury=user, 
+			exhibition_id=exhibition_id
+		).exists()
+
+	@classmethod
+	def calculate_jury_average(cls, portfolio_id, exhibition_id):
+		"""Расчет средней оценки жюри для конкретной выставки"""
+		from django.db.models import Avg, Count
+		aggregates = cls.objects.filter(
+			portfolio_id=portfolio_id, 
+			exhibition_id=exhibition_id
+		).aggregate(
+			average=Avg('star'), 
+			count=Count('star')
+		)
+		return {
+			'count': aggregates.get('count') or 0,
+			'average': aggregates.get('average') or 0.0
+		}
+
+
 class Reviews(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, verbose_name = 'Пользователь')
 	parent = models.ForeignKey('self', related_name='parent_comments', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Родитель')

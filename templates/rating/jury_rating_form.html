@@ -1,0 +1,49 @@
+{% load l10n %}
+
+{% if portfolio.exhibition and is_jury %}
+<div class="jury-rating-section mt-4">
+	<h3>Оценка жюри</h3>
+	
+	{% if jury_can_rate %}
+	<form class="jury-rating-form flex-content" method="post" action="{% url 'rating:add-jury-rating' %}" value="{% if jury_score %}{{jury_score|floatformat:0}}{% endif %}" average="{{jury_average}}" name="jury_rating">
+		{% csrf_token %}
+		<input type="hidden" value="{{ portfolio.id }}" name="portfolio">
+		<input type="hidden" value="{{ portfolio.exhibition.id }}" name="exhibition">
+		
+		<div class="jury-rating-label">Ваша оценка как члена жюри:</div>
+		
+		<span class="rating jury-rating">
+			{% for choice in jury_rating_form.star %}
+				{{ choice.tag }}
+				<label for="{{ choice.id_for_label }}" class="centered">
+					<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="22" height="22" viewBox="2 2 20 20" fill="white" stroke="#000" stroke-linecap="butt" stroke-linejoin="round">
+						<defs>
+						<mask id="mask-white-jury">
+							<rect id="main-rect" fill="#000" />
+							<polygon fill="#fff" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+						</mask>
+						</defs>
+						<rect class="rect" width="100%" height="100%" mask="url(#mask-white-jury)" />
+					</svg>
+				</label>
+			{% endfor %}
+		</span>
+
+		{% if jury_score %}
+		<div class="jury-current-score">Ваша текущая оценка: <b>{{jury_score}}.0</b></div>
+		{% endif %}
+	</form>
+	{% else %}
+		{% if not exhibition_active %}
+		<p class="text-muted">Выставка завершена, оценки больше не принимаются.</p>
+		{% endif %}
+	{% endif %}
+	
+	{% if jury_count > 0 %}
+	<div class="jury-stats mt-2">
+		<strong>Средняя оценка жюри:</strong> {{jury_average|unlocalize}} 
+		<span class="text-muted">(оценок: {{jury_count}})</span>
+	</div>
+	{% endif %}
+</div>
+{% endif %}

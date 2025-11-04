@@ -1,44 +1,219 @@
-# sd43.ru 
-design exhibition of created projects
+# Выставка Сфера Дизайна (sd43.ru)
 
+**Выставка Сфера Дизайна** — это веб-платформа для демонстрации портфолио дизайнеров-участников выставок, организуемых компанией "Арт-Сервис". Проект представляет собой комплексную систему для управления контентом, портфолио дизайнеров, номинациями, выставками и другими связанными событиями.
 
-## Install
+## Технологический стек
 
-Start a new project:
-`pip install git+https://github.com/Starck43/sferadesign.git`
-`npm i`
+### Backend
+- **Python 3** - основной язык программирования
+- **Django 4.x** - веб-фреймворк
+- **MySQL** - система управления базами данных
+- **Redis** - кэширование и сессии
+- **CKEditor** - WYSIWYG редактор для администрирования
 
-Run project on localhost with Gulp:<br />
-### `gulp [default|styles|scripts|scripts-compress|css-compress|deploy|rsync]`
+### Frontend
+- **HTML5 / CSS3 / JavaScript (ES6+)**
+- **SASS/SCSS** - препроцессор CSS
+- **Bootstrap 5** - CSS фреймворк
+- **jQuery** - JavaScript библиотека
+- **Gulp** - таск-раннер для сборки
 
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Дополнительные технологии
+- **Django-allauth** - аутентификация и регистрация пользователей
+- **Django-crispy-forms** - стилизация форм
+- **Sorl-thumbnail** - генерация миниатюр
+- **Django-watson** - полнотекстовый поиск
+- **Google Analytics** - веб-аналитика
 
+## Структура проекта
 
-## Project structure:
+### Основные приложения (Django apps)
 
-BASE FOLDER APPS (`sd43.ru`):
-`crm` - main app
-`exhibition` - designers' portfolio
-`rating` - portfolio rates & reviews
-`blog` - designers' articles
-`ads` - sponsors' banners
-`designers` - designers' pages
+1. **crm/** - основное приложение конфигурации
+   - Настройки проекта (settings.py)
+   - URL-маршрутизация (urls.py)
+   - WSGI/ASGI конфигурация
 
+2. **exhibition/** - основное приложение выставки
+   - Модели: Участники, Выставки, Номинации, Портфолио, Победители и др.
+   - Представления: списки, детали, поиск
+   - Формы: загрузка портфолио, обратная связь
+   - Администрирование
 
+3. **designers/** - персональные страницы дизайнеров
+   - Модели: Страницы дизайнеров, Заказчики, Достижения
+   - Персональные сайты дизайнеров в формате subdomain.sd43.ru
 
-## Django main packages:
+4. **rating/** - система рейтингов и отзывов
+   - Модели: Рейтинги, Отзывы
+   - Формы: оценка проектов, комментарии
 
-`django-environ` - environments with main parameters for development (.env) and production (prod.env)
-`python-memcached`
-`django-uuslug`
-`python-slugify`
-`django-debug-toolbar`
-`django-static-jquery-ui`
-`django-crispy-forms` - bootstrap styles in forms
-`mysqlclient` - client for mySQL databases
-`django-smart-selects` - auto select field's values on changing value for related table in admin
-`django-tabbed-changeform-admin` - tabs structure in admin forms
-`sorl-thumbnail` - thumbnail generator (requires Pillow, Wand)
-`django-ckeditor` - html editor for text fields in admin
-`django-watson` - search through the site ( look exhibition/apps.py for adjusting included sesarching tables )
-`django-allauth` - login & register package for all users via social accounts also (needs to include 'django.contrib.sites')
+5. **blog/** - блог и статьи
+   - Модели: Статьи, Категории
+   - Управление контентом
+
+6. **ads/** - система баннеров и рекламы
+   - Модели: Баннеры партнеров
+   - Управление показами
+
+### Файловая структура
+
+```
+.
+├── crm/                    # Основное приложение конфигурации
+├── exhibition/            # Приложение выставки
+├── designers/             # Персональные страницы дизайнеров
+├── rating/                # Рейтинги и отзывы
+├── blog/                  # Блог и статьи
+├── ads/                   # Баннеры и реклама
+├── templates/             # Шаблоны Django
+│   ├── base.html          # Базовый шаблон
+│   ├── exhibition/        # Шаблоны выставки
+│   ├── designers/         # Шаблоны дизайнеров
+│   └── ...
+├── static/                # Скомпилированные статики
+├── src/                   # Исходные файлы frontend
+│   ├── sass/              # SASS стили
+│   ├── js/                # JavaScript файлы
+│   └── fonts/             # Шрифты
+├── media/                 # Загруженные пользователем файлы
+├── manage.py              # Django менеджер
+├── requirements.txt       # Python зависимости
+├── package.json          # Node.js зависимости
+└── gulpfile.js           # Gulp конфигурация
+```
+
+## Основные функции
+
+### 1. Управление выставками
+- Создание и управление выставками по годам
+- Назначение организаторов, партнеров и жюри
+- Управление мероприятиями и событиями
+- Фотогалереи с выставок
+
+### 2. Портфолио дизайнеров
+- Загрузка и управление проектами
+- Категоризация и номинации
+- Фильтрация по типам и стилям
+- Мультиязычные описания
+
+### 3. Рейтинги и отзывы
+- Система оценки проектов
+- Комментарии и обсуждения
+- Пользовательские рейтинги
+
+### 4. Персональные сайты дизайнеров
+- Индивидуальные страницы в формате subdomain.sd43.ru
+- Портфолио, достижения, заказчики
+- Контактная информация
+
+### 5. Блог и статьи
+- Публикации участников
+- Категории и теги
+- Поиск по статьям
+
+### 6. Партнерская программа
+- Баннеры и реклама
+- Управление показами
+- Генеральные партнеры
+
+## Установка и запуск
+
+### Требования
+- Python 3.8+
+- Node.js 14+
+- MySQL 5.7+
+- Redis
+
+### Шаги установки
+
+1. **Клонируйте репозиторий**
+```bash
+git clone https://github.com/Starck43/sferadesign.git
+cd sferadesign
+```
+
+2. **Установите Python зависимости**
+```bash
+pip install -r requirements.txt
+```
+
+3. **Установите Node.js зависимости**
+```bash
+npm install
+```
+
+4. **Настройте окружение**
+```bash
+cp .env.example .env
+# Отредактируйте .env файл с вашими настройками
+```
+
+5. **Выполните миграции**
+```bash
+python manage.py migrate
+```
+
+6. **Создайте суперпользователя**
+```bash
+python manage.py createsuperuser
+```
+
+7. **Соберите статику**
+```bash
+python manage.py collectstatic
+```
+
+8. **Запустите разработческий сервер**
+```bash
+python manage.py runserver
+```
+
+9. **Запустите Gulp для сборки frontend**
+```bash
+gulp default
+```
+
+### Gulp команды
+
+Доступные Gulp команды для разработки:
+
+- `gulp` - запуск всех задач разработки
+- `gulp styles` - компиляция SASS стилей
+- `gulp scripts` - обработка JavaScript
+- `gulp css-compress` - сжатие CSS
+- `gulp scripts-compress` - сжатие JavaScript
+- `gulp deploy` - деплой на хостинг
+
+## Администрирование
+
+После установки вы можете получить доступ к административной панели по адресу:
+```
+http://localhost:8000/admin/
+```
+
+В административной панели доступны:
+- Управление пользователями
+- Управление выставками и участниками
+- Управление портфолио и номинациями
+- Управление баннерами и рекламой
+- Управление статьями и комментариями
+
+## API и интеграции
+
+Проект поддерживает:
+- REST API для мобильных приложений
+- Google Sitemap для SEO
+- Google Analytics для веб-аналитки
+- Поиск по сайту (Django-watson)
+
+## Лицензия
+
+Проект распространяется под лиценз ISC. Подробности см. в файле LICENSE.
+
+## Контакты
+
+Разработчик: S.Shabalin
+Компания: Арт-Сервис
+
+© 2008-2023 Все права защищены

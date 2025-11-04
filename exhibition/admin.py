@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import ImageField
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
-from django_tabbed_changeform_admin.admin import DjangoTabbedChangeformAdmin
 from sorl.thumbnail.admin import AdminImageMixin
 
 from blog.models import Article
@@ -193,11 +192,11 @@ class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.Model
 
 class JuryAdmin(PersonAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-					(None, {
-						'classes': ('user-block',),
-						'fields': ('logo', 'name', 'slug', 'excerpt', 'description', 'sort',),
-					}),
-				) + MetaSeoFieldsAdmin.fieldsets
+		            (None, {
+			            'classes': ('user-block',),
+			            'fields': ('logo', 'name', 'slug', 'excerpt', 'description', 'sort',),
+		            }),
+	            ) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'name', 'excerpt',)
 	list_display_links = ('logo_thumb', 'name',)
@@ -247,11 +246,11 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAd
 @admin.register(Categories)
 class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-					(None, {
-						'classes': ('user-block',),
-						'fields': ('title', 'slug', 'description', 'logo', 'sort',),
-					}),
-				) + MetaSeoFieldsAdmin.fieldsets
+		            (None, {
+			            'classes': ('user-block',),
+			            'fields': ('title', 'slug', 'description', 'logo', 'sort',),
+		            }),
+	            ) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'title', 'nominations_list', 'description',)
 	list_display_links = ('logo_thumb', 'title',)
@@ -269,13 +268,13 @@ class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 @admin.register(Nominations)
 class NominationsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-					(
-						None, {
-							'classes': ('user-block',),
-							'fields': ('category', 'title', 'slug', 'description', 'sort',),
-						}
-					),
-				) + MetaSeoFieldsAdmin.fieldsets
+		            (
+			            None, {
+				            'classes': ('user-block',),
+				            'fields': ('category', 'title', 'slug', 'description', 'sort',),
+			            }
+		            ),
+	            ) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('category', 'title', 'description_html',)
 	list_display_links = ('title',)
@@ -300,20 +299,19 @@ class EventsInlineAdmin(admin.StackedInline):
 	extra = 1  # new blank record count
 	fields = ('title', 'date_event', 'time_start', 'time_end', 'lector',)
 	classes = ['events-inline-tab', ]
-	verbose_name_plural = ""
+	verbose_name_plural = "Мероприятия"
 
 
 class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
-	fieldsets = ((
-					 None, {
-						 'classes': ('user-block',),
-						 'fields': (
-							 'exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster',
-							 'lector',
-							 'description',
-						 ),
-					 }
-				 ),) + MetaSeoFieldsAdmin.fieldsets
+	fieldsets = (
+		            (None, {
+			            'classes': ('user-block',),
+			            'fields': (
+				            'exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster',
+				            'lector', 'description',
+			            ),
+		            }),
+	            ) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('title', 'date_event', 'time_event', 'hoster', 'exhibition',)
 	search_fields = ('title', 'description', 'hoster', 'lector',)
@@ -323,8 +321,6 @@ class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	save_as = True
 	ordering = ('-exhibition__slug', 'date_event', 'time_start',)
 
-	# save_on_top = True # adding save button on top bar
-
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
 
@@ -333,11 +329,11 @@ class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 
 class WinnersAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = ((
-					 None, {
-						 'classes': ('user-block',),
-						 'fields': ('exhibition', 'nomination', 'exhibitor', 'portfolio',),
-					 }
-				 ),) + MetaSeoFieldsAdmin.fieldsets
+		             None, {
+			             'classes': ('user-block',),
+			             'fields': ('exhibition', 'nomination', 'exhibitor', 'portfolio',),
+		             }
+	             ),) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('exh_year', 'nomination', 'exhibitor', 'portfolio')
 	list_display_links = list_display
@@ -428,31 +424,27 @@ class PortfolioAttributesAdmin(admin.ModelAdmin):
 @admin.register(Portfolio)
 class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	form = PortfolioForm
-	# fields = MetaSeoFieldsAdmin.meta_fields
+
 	fieldsets = ((
-					None, {
-						'classes': ('portfolio-block',),
-						'fields': (
-							'owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover',
-							'files',
-							'attributes',
-							'status',
-							'order'
-						),
-					}
-				),) + MetaSeoFieldsAdmin.fieldsets
+		             None, {
+			             'classes': ('portfolio-block',),
+			             'fields': (
+				             'owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover',
+				             'files','attributes','status','order'
+			             ),
+		             }
+	             ),) + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('owner', '__str__', 'exhibition', 'nominations_list', 'status')
 	list_display_links = ('owner', '__str__')
+	list_filter = ('nominations__category', 'nominations', 'owner', 'status')
 	search_fields = (
 		'title', 'owner__name', 'owner__user__first_name', 'owner__user__last_name', 'exhibition__title',
 		'nominations__title'
 	)
-	list_filter = ('nominations__category', 'nominations', 'owner', 'status')
 	date_hierarchy = 'exhibition__date_start'
-	ordering = ('-exhibition__date_start', '-project_id',)
 
-	list_per_page = 30
+	list_per_page = 50
 	save_on_top = True
 	save_as = True
 	view_on_site = True
@@ -542,60 +534,40 @@ class GalleryAdmin(AdminImageMixin, admin.ModelAdmin):
 
 
 @admin.register(Exhibitions)
-class ExhibitionsAdmin(DjangoTabbedChangeformAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
+class ExhibitionsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	form = ExhibitionsForm
-	list_display = ('banner_thumb', 'title', 'date_start', 'date_end',)
-	list_display_links = ('banner_thumb', 'title',)
+	list_display = ('title', 'date_start', 'date_end',)
+	list_display_links = ('title',)
 	date_hierarchy = 'date_start'
 	filter_horizontal = ('nominations', 'exhibitors',)
 	# list_select_related = ('events',)
 	# prepopulated_fields = {"slug": ('date_start',)} # adding name to slug field but not only DateFields
-	save_on_top = True  # adding save a button on top bar
-	list_per_page = 10
+	list_per_page = 20
 	view_on_site = True
-
 	inlines = [EventsInlineAdmin, GalleryInlineAdmin, ]
 
 	fieldsets = (
-		(None, {
-			'classes': ('basic-tab',),
+		("Общая информация", {
 			'fields': ('title', 'slug', 'banner', 'description', 'date_start', 'date_end', 'location',)
 		}),
-		(None, {
-			'classes': ('exhibitors-tab',),
+		("Участники", {
 			'fields': ('exhibitors',)
 		}),
-		(None, {
-			'classes': ('nominations-tab',),
+		("Номинации", {
 			'fields': ('nominations',)
 		}),
-		(None, {
-			'classes': ('jury-tab',),
+		("Жюри", {
 			'fields': ('jury',)
 		}),
-		(None, {
-			'classes': ('partners-tab',),
+		("Партнеры", {
 			'fields': ('partners',)
 		}),
-		(None, {
-			'classes': ('files-upload-tab',),
+		("Фоторепортаж", {
 			'fields': ('files',)
 		}),
-		(None, {
-			'classes': ('meta-tab', '',),
+		("СЕО", {
 			'fields': MetaSeoFieldsAdmin.meta_fields
 		}),
-	)
-
-	tabs = (
-		("Общая информация", ['basic-tab']),
-		("Участники", ['exhibitors-tab']),
-		("Номинации", ['nominations-tab']),
-		("Жюри", ['jury-tab']),
-		("Партнеры", ['partners-tab']),
-		("Мероприятия", ['events-inline-tab']),
-		("Фоторепортаж", ['files-upload-tab', 'gallery-inline-tab']),
-		("СЕО", ['meta-tab']),
 	)
 
 	# Отобразим список участников с указанием сортировки по новому полю

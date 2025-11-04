@@ -3,7 +3,7 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Field, Div, Row, HTML  # , Submit, Button
+from crispy_forms.layout import Layout, Field, Div, Row, HTML
 from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -219,10 +219,7 @@ class ExhibitionsForm(MetaSeoFieldsForm, forms.ModelForm):
 		# template_name = 'django/forms/widgets/checkbox_select.html'
 
 		widgets = {
-			"exhibitors": forms.CheckboxSelectMultiple(attrs={'class': ''}),
-			"partners": forms.CheckboxSelectMultiple(attrs={'class': ''}),
-			"jury": forms.CheckboxSelectMultiple(attrs={'class': ''}),
-			"nominations": forms.CheckboxSelectMultiple(attrs={'class': ''}),
+			# "exhibitors": forms.CheckboxSelectMultiple(attrs={'class': ''}),
 		}
 
 	def __init__(self, *args, **kwargs):
@@ -269,58 +266,99 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 		self.fields['files'].widget.attrs['multiple'] = True
 		self.css_class = 'form-control'
 
+		# Добавляем placeholders для полей
+		self.fields['title'].widget.attrs['placeholder'] = 'Название проекта'
+		self.fields['description'].widget.attrs['placeholder'] = 'Описание проекта'
+		self.fields['exhibition'].widget.attrs['placeholder'] = 'Выберите выставку'
+		self.fields['exhibition'].empty_label = 'Выберите выставку'
+		self.fields['nominations'].help_text = 'Выберите номинации для проекта'
+
 		if self.exhibitor is not None:
-			# self.fields['files'].initial = files
 			if self.exhibitor == 'staff':
-				self.fields['exhibition'].queryset = Exhibitions.objects.all()
+				# Для администратора/редактора показываем все выставки
+				from django.utils.timezone import now
+				self.fields['exhibition'].queryset = Exhibitions.objects.all().order_by('-date_start')
+				self.fields['exhibition'].help_text = 'Выберите выставку для участия проекта в конкурсе'
+				self.fields['exhibition'].required = False
+				
+				# Администратор/редактор может выбрать любого участника как автора проекта
+				self.fields['owner'].queryset = Exhibitors.objects.all().order_by('name')
+				self.fields['owner'].empty_label = 'Выберите участника'
+				self.fields['owner'].widget.attrs['placeholder'] = 'Выберите участника'
+				self.fields['owner'].required = True
 			else:
-				self.fields['categories'].widget.attrs.update({'class': 'hidden'})
+				# Для дизайнеров скрываем owner и status
 				self.fields['owner'].initial = self.exhibitor
 				self.fields['owner'].widget = forms.HiddenInput()
 				self.fields['status'].widget = forms.HiddenInput()
 
-				self.helper.layout[0].append(
-					HTML('<div>Участник выставки:<br><h2>' + self.exhibitor.name + '</h2></div>'))
-
+				# Для дизайнеров фильтруем только активные и будущие выставки
+				from django.utils.timezone import now
 				self.fields['exhibition'].queryset = Exhibitions.objects.prefetch_related('exhibitors').filter(
-					exhibitors=self.exhibitor
-				)
+					exhibitors=self.exhibitor,
+					date_end__gte=now().date()
+				).order_by('-date_start')
+				self.fields['exhibition'].help_text = 'Выберите выставку для участия проекта'
+				self.fields['exhibition'].required = True
+				self.fields['nominations'].required = True
 
 	@property
 	def helper(self):
 		helper = FormHelper()
 		helper.form_tag = False
-		helper.layout = Layout(
-			FloatingField('owner'),
-			FloatingField('exhibition'),
-			Field('categories', wrapper_class='field-categories'),
-			Field('nominations', wrapper_class='field-nominations'),
-			Field('attributes', wrapper_class='field-attributes'),
-			FloatingField('title'),
-			'description',
-			FloatingField('status'),
-			'cover',
-			'files',
-			Div(
-				HTML('<div class="card-header">СЕО описание для поисковых систем</div>'),
+		
+		# Для администратора показываем owner, для дизайнера скрываем
+		if self.exhibitor == 'staff':
+			layout_fields = [
+				FloatingField('owner'),
+				FloatingField('exhibition'),
+				Field('nominations', wrapper_class='field-nominations'),
+				FloatingField('title'),
+				'description',
+				'cover',
+				'files',
+				FloatingField('status'),
+				Field('attributes', wrapper_class='field-attributes d-none'),
+			]
+		else:
+			layout_fields = [
+				HTML('<div class="mb-3"><h5>Участник: ' + (self.exhibitor.name if hasattr(self.exhibitor, 'name') else '') + '</h5></div>'),
+				'owner',  # Hidden field
+				FloatingField('exhibition'),
+				Field('nominations', wrapper_class='field-nominations'),
+				'files',
+				FloatingField('title'),
+				'description',
+				'cover',
+				'status',  # Hidden field
+			]
+		
+		# Добавляем SEO поля только для администратора
+		if self.exhibitor == 'staff':
+			layout_fields.append(
 				Div(
-					FloatingField('meta_title'),
-					FloatingField('meta_description'),
-					FloatingField('meta_keywords'),
-					css_class='card-body'
-				),
-				css_class="card mt-3 mb-5",
+					HTML('<div class="card-header">СЕО описание для поисковых систем</div>'),
+					Div(
+						FloatingField('meta_title'),
+						FloatingField('meta_description'),
+						FloatingField('meta_keywords'),
+						css_class='card-body'
+					),
+					css_class="card mt-3 mb-5",
+				)
 			)
-		)
+		
+		helper.layout = Layout(*layout_fields)
 		return helper
 
 	def clean(self):
 		cleaned_data = super().clean()
 
 		if self.exhibitor is not None:
-			if self.cleaned_data['exhibition']:
-				self.cleaned_data['categories'] = []
-			else:
+			# Очищаем categories всегда, так как они привязаны к nominations
+			self.cleaned_data['categories'] = []
+			
+			if not self.cleaned_data.get('exhibition'):
 				self.cleaned_data['nominations'] = []
 				self.cleaned_data['attributes'] = []
 

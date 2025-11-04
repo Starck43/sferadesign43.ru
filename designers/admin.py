@@ -4,8 +4,8 @@ from exhibition.admin import MetaSeoFieldsAdmin
 from .forms import DesignerForm
 from .models import Designer, Customer, Achievement
 
-admin.site.site_title = 'Страницы дизайнеров'
-admin.site.site_header = 'Страницы дизайнеров'
+admin.site.site_title = 'Сайты дизайнеров'
+admin.site.site_header = 'Сайты дизайнеров'
 
 
 class CustomerInline(admin.StackedInline):
@@ -50,10 +50,11 @@ class DesignerAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 		js = ['/static/js/designers.min.js']
 
 	form = DesignerForm
-	# fields = ('title', 'slug', 'title')
-	list_display = ('avatar', 'logo', 'title', 'slug', 'status')
-	list_display_links = ('avatar', 'logo', 'title', 'slug')
+	list_display = ('id', 'owner', 'logo', 'slug', 'status')
+	list_display_links = ('id', 'owner')
+	filter_horizontal = ('exh_portfolio', 'add_portfolio')
 	search_fields = ('title', 'slug')
+	list_per_page = 50
 
 	inlines = [AchievementInline, CustomerInline]
 
@@ -68,14 +69,8 @@ class DesignerAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 			}
 		),
 		(
-			"Выставочные работы", {
-				'fields': ('exh_portfolio',),
-				"classes": ('',)
-			},
-		),
-		(
-			"Вневыставочные работы", {
-				'fields': ('add_portfolio',),
+			"Портфолио", {
+				'fields': ('exh_portfolio', 'add_portfolio'),
 				"classes": ('',)
 			},
 		),
@@ -93,7 +88,3 @@ class DesignerAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 		),
 	)
 
-	def name(self, obj):
-		return obj.owner.name
-
-	name.short_description = 'Дизайнер'

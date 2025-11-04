@@ -30,7 +30,7 @@
 	{{ object.name }}
 
 	{% if user.is_staff %}
-		<a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
+		<a class="admin-edit-link" href="{% url 'model_name|admin_change_url' object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
 	{% endif %}
 </h1>
 

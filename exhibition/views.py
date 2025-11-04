@@ -27,8 +27,9 @@ from watson.views import SearchMixin
 
 from blog.models import Article
 from designers.models import Designer
-from rating.forms import RatingForm
-from rating.models import Rating, Reviews
+from rating.forms import RatingForm, JuryRatingForm
+from rating.models import Rating, Reviews, JuryRating
+from rating.views import is_jury_member
 from .forms import PortfolioForm, ImageForm, ImageFormHelper, FeedbackForm, UsersListForm, DeactivateUserForm
 from .logic import SendEmail, SendEmailAsync, set_user_group
 from .mixins import ExhibitionYearListMixin, BannersMixin, MetaSeoMixin
@@ -599,6 +600,7 @@ class ProjectDetail(MetaSeoMixin, DetailView):
 			else:
 				context['parent_link'] = '/category/'
 
+		# Обычный рейтинг от пользователей
 		rate = Rating.calculate(self.object).average
 		if self.request.user.is_authenticated:
 			context['user_score'] = Rating.objects.filter(
@@ -616,10 +618,45 @@ class ProjectDetail(MetaSeoMixin, DetailView):
 			user=self.request.user,
 			score=context['user_score']
 		)
+
+		# Рейтинг жюри (только для проектов участвующих в выставках)
+		context['is_jury'] = is_jury_member(self.request.user)
+		context['jury_can_rate'] = False
+		context['jury_score'] = None
+		context['jury_average'] = 0
+		context['jury_count'] = 0
+		
+		if self.object.exhibition:
+			# Проверяем, может ли жюри выставлять оценки (выставка не завершена)
+			exhibition_active = self.object.exhibition.date_end >= now().date()
+			context['exhibition_active'] = exhibition_active
+			context['jury_can_rate'] = context['is_jury'] and exhibition_active
+			
+			# Получаем оценку жюри, если пользователь - член жюри
+			if context['is_jury']:
+				context['jury_score'] = JuryRating.objects.filter(
+					portfolio=self.object,
+					jury=self.request.user,
+					exhibition=self.object.exhibition
+				).values_list('star', flat=True).first()
+			
+			# Средняя оценка жюри для данной выставки
+			jury_stats = JuryRating.calculate_jury_average(self.object.id, self.object.exhibition.id)
+			context['jury_average'] = round(jury_stats['average'], 2)
+			context['jury_count'] = jury_stats['count']
+			
+			context['jury_rating_form'] = JuryRatingForm(
+				initial={'star': int(context['jury_average'])},
+				user=self.request.user,
+				score=context['jury_score'],
+				can_rate=context['jury_can_rate']
+			)
+
 		context['html_classes'] = ['project']
 		context['owner'] = self.kwargs['owner']
 		context['project_id'] = self.kwargs['project_id']
 		context['cache_timeout'] = 86400
+		context['today'] = now().date()
 
 		return context
 
@@ -671,23 +708,58 @@ class ProgressBarUploadHandler(FileUploadHandler):
 		...
 
 
+@login_required
+def get_nominations_for_exhibition(request):
+	""" AJAX view для получения номинаций по выбранной выставке """
+	exhibition_id = request.GET.get('exhibition_id')
+	
+	if exhibition_id:
+		try:
+			exhibition = Exhibitions.objects.get(id=exhibition_id)
+			nominations = exhibition.nominations.all().values('id', 'title')
+			return JsonResponse({'nominations': list(nominations)})
+		except Exhibitions.DoesNotExist:
+			return JsonResponse({'nominations': []})
+	
+	return JsonResponse({'nominations': []})
+
+
 @csrf_exempt
 @login_required
 def portfolio_upload(request, **kwargs):
-	""" Выгрузка нового портфолио """
+	""" Загрузка нового портфолио или редактирование существующего """
 	request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
-	# upload_file_view(request)
+	
 	pk = kwargs.pop('pk', None)
 	if pk:
 		portfolio = Portfolio.objects.get(id=pk)
 	else:
-		portfolio = None  # Portfolio()
+		portfolio = None
 
-	if not request.user.is_staff:
-		owner = Exhibitors.objects.get(user=request.user)
-	else:
+	# Проверка прав доступа
+	# Разрешено: администраторам, редакторам (is_staff) и дизайнерам (группа Exhibitors)
+	is_staff = request.user.is_staff
+	is_exhibitor = request.user.groups.filter(name='Exhibitors').exists()
+	
+	if not is_staff and not is_exhibitor:
+		from django.http import HttpResponseForbidden
+		return HttpResponseForbidden('У вас нет прав для доступа к этой странице.')
+	
+	# Определяем владельца портфолио
+	if is_staff:
 		owner = 'staff'
-	# owner = Exhibitors.objects.get(user=4)
+	else:
+		try:
+			owner = Exhibitors.objects.get(user=request.user)
+		except Exhibitors.DoesNotExist:
+			from django.http import HttpResponseForbidden
+			return HttpResponseForbidden('Профиль участника не найден.')
+	
+	# Проверка прав на редактирование существующего портфолио
+	if pk and not is_staff:
+		if portfolio.owner != owner:
+			from django.http import HttpResponseForbidden
+			return HttpResponseForbidden('Вы можете редактировать только свои портфолио.')
 
 	form = PortfolioForm(owner=owner, instance=portfolio)
 	inline_form_set = inlineformset_factory(Portfolio, Image, form=ImageForm, extra=0, can_delete=True)
@@ -695,7 +767,7 @@ def portfolio_upload(request, **kwargs):
 	formset_helper = ImageFormHelper()
 
 	if request.method == 'POST':
-		form = PortfolioForm(request.POST, request.FILES, request=request, instance=portfolio)
+		form = PortfolioForm(request.POST, request.FILES, owner=owner, request=request, instance=portfolio)
 
 		if form.is_valid():
 			formset = inline_form_set(request.POST, request.FILES, instance=portfolio)
@@ -703,7 +775,8 @@ def portfolio_upload(request, **kwargs):
 
 			if formset.is_valid():
 				images = request.FILES.getlist('files')
-				if not request.user.is_staff:
+				# Автоматически скрываем портфолио дизайнеров до модерации
+				if not is_staff:
 					portfolio.status = False
 				portfolio.save(images=images)
 				form.save_m2m()
@@ -720,22 +793,46 @@ def portfolio_upload(request, **kwargs):
 					context['changed_fields'] = form.changed_data
 					context['new'] = False
 
+				# Отправка email уведомления (раскомментировать при необходимости)
 				# template = render_to_string('account/portfolio_upload_confirm.html', context)
 				# SendEmailAsync('%s портфолио на сайте sd43.ru!' % ('Внесены изменения в' if pk else 'Добавлено новое'), template)
 
-				if not pk:
-					# MetaSEO.objects.create(
-					# 	model=form.meta_model,
-					# 	post_id=portfolio.id,
-					# 	title=form.cleaned_data['meta_title'],
-					# 	description=form.cleaned_data['meta_description'],
-					# 	keywords=form.cleaned_data['meta_keywords'],
-					# )
-					return render(request, 'success_upload.html', {'portfolio': portfolio, 'files': images})
-
-				return redirect('/account')
+				# Если это AJAX запрос, возвращаем JSON с URL для перенаправления
+				if request.headers.get('X-REQUESTED-WITH') == 'XMLHttpRequest':
+					if not pk:
+						# Для нового портфолио перенаправляем на страницу успеха
+						redirect_url = '/account'
+					else:
+						# Для редактирования возвращаем в аккаунт
+						redirect_url = '/account'
+					
+					return JsonResponse({
+						'status': 'success',
+						'location': redirect_url,
+						'message': 'Портфолио успешно сохранено'
+					})
+				else:
+					# Обычный запрос (не AJAX)
+					if not pk:
+						return render(request, 'success_upload.html', {'portfolio': portfolio, 'files': images})
+					return redirect('/account')
 			else:
+				# Если formset невалиден, возвращаем ошибки
 				print(formset.errors)
+				if request.headers.get('X-REQUESTED-WITH') == 'XMLHttpRequest':
+					return JsonResponse({
+						'status': 'error',
+						'errors': formset.errors,
+						'message': 'Ошибка при загрузке изображений'
+					}, status=400)
+		else:
+			# Если форма невалидна
+			if request.headers.get('X-REQUESTED-WITH') == 'XMLHttpRequest':
+				return JsonResponse({
+					'status': 'error',
+					'errors': form.errors,
+					'message': 'Ошибка валидации формы'
+				}, status=400)
 
 	return render(
 		request,

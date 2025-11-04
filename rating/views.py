@@ -9,13 +9,24 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader	import render_to_string
+from django.utils.timezone import now
 
 #from allauth.account.decorators import verified_email_required
 
-from .models import Rating, Reviews
-from exhibition.models import Portfolio
+from .models import Rating, Reviews, JuryRating
+from exhibition.models import Portfolio, Jury
 from exhibition.logic import delete_cached_fragment, SendEmailAsync
-from .forms import RatingForm, ReviewForm
+from .forms import RatingForm, ReviewForm, JuryRatingForm
+
+
+def is_jury_member(user):
+	"""Проверка, является ли пользователь членом жюри"""
+	if not user or not user.is_authenticated:
+		return False
+	try:
+		return Jury.objects.filter(user=user).exists()
+	except:
+		return False
 
 
 """Добавление рейтинга проекту"""
@@ -202,4 +213,93 @@ def delete_review(request, pk=None):
 		}
 
 	return JsonResponse(json, safe=False)
+
+
+"""Добавление оценки жюри проекту"""
+@csrf_exempt
+@login_required
+def add_jury_rating(request):
+	"""View для добавления оценки жюри"""
+	
+	def get_client_ip(request):
+		x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+		if x_forwarded_for:
+			ip = x_forwarded_for.split(',')[0]
+		else:
+			ip = request.META.get('REMOTE_ADDR', '')
+		return ip
+
+	# Получаем данные из POST или GET запроса
+	data = request.POST if request.method == 'POST' else request.GET
+	
+	if not data.get('star'):
+		return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+	# Проверка, что пользователь является членом жюри
+	if not is_jury_member(request.user):
+		return JsonResponse({'status': 'error', 'message': 'Только члены жюри могут выставлять оценки'}, status=403)
+
+	try:
+		score = int(data.get("star"))
+		portfolio_id = int(data.get("portfolio"))
+		exhibition_id = int(data.get("exhibition"))
+		
+		# Получаем портфолио и выставку
+		portfolio = Portfolio.objects.select_related('exhibition', 'owner').get(id=portfolio_id)
+		exhibition = portfolio.exhibition
+		
+		# Проверяем, что выставка не завершена
+		if exhibition.date_end < now().date():
+			return JsonResponse({
+				'status': 'error', 
+				'message': 'Выставка уже завершена, оценки больше не принимаются'
+			}, status=400)
+		
+		# Проверяем, что выставка соответствует переданной
+		if exhibition.id != exhibition_id:
+			return JsonResponse({'status': 'error', 'message': 'Неверная выставка'}, status=400)
+		
+		# Проверяем, не выставлял ли уже оценку
+		existing_rating = JuryRating.objects.filter(
+			portfolio_id=portfolio_id, 
+			jury=request.user,
+			exhibition_id=exhibition_id
+		).first()
+		
+		if existing_rating:
+			# Обновляем существующую оценку
+			existing_rating.star = score
+			existing_rating.save()
+			message = 'Оценка обновлена'
+		else:
+			# Создаем новую оценку
+			JuryRating.objects.create(
+				ip=get_client_ip(request),
+				jury=request.user,
+				portfolio_id=portfolio_id,
+				exhibition_id=exhibition_id,
+				star=score,
+			)
+			message = 'Оценка добавлена'
+		
+		# Очистка кэша
+		delete_cached_fragment('portfolio', portfolio_id)
+		delete_cached_fragment('project', portfolio_id)
+		
+		# Подсчет средней оценки жюри
+		jury_stats = JuryRating.calculate_jury_average(portfolio_id, exhibition_id)
+		
+		return JsonResponse({
+			'status': 'success',
+			'message': message,
+			'score': score,
+			'jury_average': round(jury_stats['average'], 2),
+			'jury_count': jury_stats['count'],
+			'author': portfolio.owner.name
+		}, safe=False)
+		
+	except Portfolio.DoesNotExist:
+		return JsonResponse({'status': 'error', 'message': 'Портфолио не найдено'}, status=404)
+	except Exception as e:
+		return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 

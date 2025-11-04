@@ -463,8 +463,8 @@ class Portfolio(models.Model):
 		verbose_name='Аттрибуты фильтра',
 		blank=True
 	)
-	status = models.BooleanField('Статус', null=True, blank=True, default=True, help_text='Видимость на сайте')
 	order = models.IntegerField('Порядок', null=True, blank=True, default=1)
+	status = models.BooleanField('Статус', null=True, blank=True, default=True, help_text='Видимость на сайте')
 
 	# Metadata
 	class Meta:
@@ -490,7 +490,7 @@ class Portfolio(models.Model):
 		if self.original_cover and self.original_cover != self.cover:
 			delete(self.original_cover)
 
-		resized_cover = image_resize(self.cover, [1500, 800])
+		resized_cover = image_resize(self.cover, [1500, 900])
 		if resized_cover and resized_cover != 'error':
 			self.cover = resized_cover
 

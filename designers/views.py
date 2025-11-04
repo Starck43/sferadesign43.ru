@@ -36,7 +36,7 @@ class MainPage(MetaSeoMixin, DetailView):
 	def get_context_data(self, **kwargs):
 		designer = self.object
 
-		exh_portfolio = self.object.exh_portfolio.annotate(
+		exh_portfolio = self.object.exh_portfolio.filter(status=True).annotate(
 			exh_year=F('exhibition__slug'),
 			win_year=Subquery(Winners.objects.filter(portfolio_id=OuterRef('pk')).values('exhibition__slug')[:1]),
 			project_cover=Case(
@@ -93,7 +93,7 @@ class PortfolioPage(MetaSeoMixin, DetailView):
 		add_ids = self.object.add_portfolio.values_list('pk', flat=True)
 		owner_portfolio_ids = list(chain(exh_ids, add_ids))
 
-		all_portfolio = Portfolio.objects.filter(pk__in=owner_portfolio_ids).prefetch_related(
+		all_portfolio = Portfolio.objects.filter(pk__in=owner_portfolio_ids, status=True).prefetch_related(
 			Prefetch('nominations', queryset=Nominations.objects.order_by('slug'), to_attr='nominations_list')
 		).prefetch_related(
 			Prefetch('categories', queryset=Categories.objects.order_by('slug'), to_attr='categories_list')
