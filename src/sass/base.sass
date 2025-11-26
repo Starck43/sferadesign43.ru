@@ -1,292 +1,112 @@
-@import "../../node_modules/bootstrap/scss/functions"
-@import "../../node_modules/bootstrap/scss/variables"
-@import "../../node_modules/bootstrap/scss/mixins"
+@use "sass:color"
 
-@import vars
-@import mixins
-@import fonts
-@import reset
-@import navigation
-@import sidebar
-@import layouts
-@import person
-@import exhibition
-@import articles
-@import preloader
-@import search
-@import account
+@use "main/mixins"
+@use "main/vars" as *
+
+@use "main/fonts"
+@use "main/reset"
+@use "main/common"
+@use "main/bootstrap-compat"
+@use "main/navigation"
+@use "main/collapse"
+@use "main/sidebar"
+@use "main/controls"
+@use "main/buttons"
+@use "main/form"
+@use "main/canvas"
+@use "main/layouts"
+@use "main/person"
+@use "main/articles"
+@use "main/preloader"
+@use "main/search"
+
+:root
+	--bs-body-font-family: "#{$font-family-text}"
+	--bs-header-font-family: "#{$font-family-header}"
+	--main-color: #{$main-color}
+	--primary-color: #{$primary-color}
+	--text-color: #{$text-color}
+	--border-color: #{$border-color}
+	--border-radius: #{$border-radius}
+	--border-thickness: #{$border-thickness}
+	--link-color: #{$link-color}
+	--link-hover-color: #{$link-hover-color}
 
 html
+	font-family: var(--bs-body-font-family), Tahoma, serif
 	font-size: 15px
-	+media-breakpoint-up(sm)
-		font-size: 16px
-	+media-breakpoint-up(lg)
-		font-size: 16px
 
-body
-	display: flex
-	flex-direction: column
-	min-height: 100vh
-	--bs-font-sans-serif: "#{$font-family-text}", Tahoma
+	+mixins.media-min(sm)
+		font-size: 16px
+	+mixins.media-min(xl)
+		font-size: 17px
+
 
 h1, h2, h3, h4, .year-text, #main-title
-	font-family: $font-family-header
-	//font-weight: bold
+	font-family: var(--bs-header-font-family), Arial, serif
 
 h1
 	color: $header-color
 	text-transform: lowercase
 	font-size: calc(1.8rem + 0.8vw)
+
 	span
 		display: block
 		font-size: .5em
 		font-style: italic
 		color: $text-color
 
-h3, h4
-	min-height: 0vw
-	font-size: calc(1.1rem + .2vw)
-	font-weight: 500
+h3
+	margin-bottom: 0.5rem
+	font-size: calc(1.2rem + .2vw)
 
 h4
+	margin: 0
 	font-size: calc(1rem + .2vw)
 
-a
-	color: $link-color
-	text-decoration: none
-	outline: none
-	cursor: pointer
-
-	&.active
-		font-weight: 500
-	&:hover
-		color: lighten($link-color, 20%)
-
-ul li
-	margin-bottom: 0.5em
-
-*:not(.description)
-	>ol, >li
-		padding-left: 0
-		list-style-type: none
-
-
-li, img
-	outline: 0
-
-p, article
-	img
-		display: block
-		max-width: 100%
-		height: auto !important
-
-	a
-		font-weight: 500
-
-form:not(.nav-search)
-	.form-group >label
-		margin-bottom: 0.5rem
-		font-weight: bold
-		text-transform: none
-	>*
-		margin-bottom: 1.5rem
-
-img, .row .logo img
-	width: 100%
-	height: auto
-	text-indent: -9999px
-	text-indent: 100%
-	white-space: nowrap
-	overflow: hidden
-	transition: all 300ms ease-in-out
-
-.ratio img
-	object-fit: contain
+h3, h4
+	min-height: 0
+	font-weight: 500
 
 .logo img
 	width: 100%
 	max-width: 300px
 	height: auto
 
-// Avoid empty images to appear as broken
-img:not([src]):not([srcset])
-	visibility: hidden
-
-img[data-sizes="auto"]
-	display: block
-
-.lazyloading,
-.lazyload
-	opacity: 0
-	~figcaption
-		@supports (backdrop-filter: blur(0))
-			backdrop-filter: blur(3px)
-
-.lazyloaded
-	opacity: 1
-	~figcaption
-		@supports (backdrop-filter: blur(0))
-			backdrop-filter: blur(0)
-
-.loading, .loaded
-	transition: opacity 500ms ease-in
-
-.loading
-	opacity: 0
-
-.loaded
-	opacity: 1 !important
-
-
-.hidden
-	display: none !important
-
-.visible
-	visibility: visible !important
-	z-index: 10000 !important
-	opacity: 1 !important
-
-.collapsing
-	transition: all 300ms ease-in-out
-
-.modal-open
-	position: static
-	overflow: hidden
-	-webkit-overflow-scrolling: auto
-
-.no-select
-	user-select: none
-	-webkit-tap-highlight-color: transparentize(black, 1)
-	-webkit-touch-callout: none
-
-
-svg.icon
-	width: 30px
-	height: 30px
-	&.arrow-icon
-		&.up
-			transform: rotate(-90deg)
-		&.down
-			transform: rotate(90deg)
-		&.left
-			transform: rotate(180deg)
-
-.message-status
-	margin-left: 1em
-	&.success
-		color: #0f5132
-	&.warning
-		color: #055160
-	&.error
-		color: #842029
-
 .controls
 	position: relative
-	display: flex
-	justify-content: space-between
-	width: 100%
+	flex: 100%
 	margin-bottom: 0.75rem
 
-.back-link
-	display: flex
-	align-items: center
-	svg
-		stroke: black
-		stroke-width: 3
-		width: 22px
-		height: 22px
-		transform: rotate(180deg)
+	.back-link
+		display: flex
+		align-items: center
 
 .filter-toggler
+	display: flex
+	gap: 4px
+
 	svg
-		height: 20px
-
-.btn
-	color: $main-color
-	background-color: #fff
-	border-color: $main-color
-	&:hover
-		box-shadow: 0 0 1px 1px white inset, 0 0 1px 1px $main-color inset
-
-.btn-primary, .btn-primary:hover
-	color: #fff
-	background-color: $main-color
-
-.btn-primary
-	&:hover
-		box-shadow: 0 0 1px 1px white inset
-	&:disabled,
-	&.disabled
-		color: transparentize(white, 0.65)
-		background-color: $main-color
-		border-color: $main-color
-
-.btn-close
-	opacity: 0.7
-	transition: 150ms all ease
-	&:hover
-		opacity: 1
-		transform: rotate(90deg) scale(120%)
-
-.social-link
-	display: inline-block
-	svg
-		fill: $main-color
-		//border-radius: 5px
-		//background-color: $main-color
-		&.vk
-			//background-color: #4D76A1
-		&.fb
-			//background-color: #1976D2
-		&.instagram
-			//background-color: #ff543e
-			stroke: white
-
+		width: 1.5rem
+		height: 1.5rem
 
 #back2top
-	position: fixed
-	bottom: $container-margin
-	right: $container-margin
-	transition: 500ms transform ease-in-out
-	opacity: 1
-	z-index: 1000
-	&.disable
-		transition: 500ms all ease-in-out
-		visibility: hidden
-		opacity: 0
-		z-index: -1
-	+media-breakpoint-up(sm)
-		bottom: $container-margin-sm
-		right: $container-margin-sm
-	+media-breakpoint-up(lg)
+	bottom: $container-margin-xs
+	right: $container-margin-xs
+
+	+mixins.media-min(sm)
+		bottom: $container-margin-md
+		right: $container-margin-md
+	+mixins.media-min(lg)
 		bottom: $container-margin-lg
 		right: $container-margin-lg
 
-.top-link
-	padding: 3px
-	opacity: 0.6
-	border: 0
-	.arrow-icon
-		padding: .25em
-		stroke: #000
-		stroke-width: 2
-		&+span
-			display: none
-	&:hover
-		opacity: 1
-
-	+media-breakpoint-up(lg)
-		padding: 0 .4em
-		font-size: 0.8em
-		.arrow-icon
-			&+span
-				display: block
-
 #main-title
 	overflow: visible
+
 	text
-		fill: $main-color
-		stroke: $main-color
+		fill: var(--main-color)
+		stroke: var(--main-color)
 		stroke-width: 6px
 		font-size: 122px
 		text-transform: uppercase
@@ -298,8 +118,14 @@ svg.icon
 	display: flex
 	flex-wrap: wrap
 	align-items: center
-	padding-top: 1.5vh !important
 	gap: calc(#{$col-width-xxl} - #{$brand-logo-width - 10px})
+	margin: 0 $container-margin-xs $container-margin-xs
+	padding-top: 1.5vh !important
+
+	+mixins.media-min(sm)
+		margin: 0 $container-margin-md
+	+mixins.media-min(lg)
+		margin: 0 $container-margin-lg
 
 	.brand-logo
 		position: relative
@@ -308,10 +134,10 @@ svg.icon
 		margin-bottom: .75em
 
 		&.loaded
-			& ~.banner-link, & ~.brand-text
+			& ~ .banner-link, & ~ .brand-text
 				opacity: 1
 
-		& ~.banner-link, & ~.brand-text
+		& ~ .banner-link, & ~ .brand-text
 			flex: 1
 			margin: 0
 			height: $brand-logo-width - 10px
@@ -319,129 +145,125 @@ svg.icon
 			opacity: 0
 			overflow: hidden
 			max-width: 100% - $col-width-xxl*2
+
 			& ~ h1
 				flex: 100%
 				text-align: center
 
 	.brand-text
-		max-width: $content-width_max /*+100px*/
+		max-width: $content-width_max
+		/*+100px*/
 		margin: -2em auto
-		//padding-right: $brand-logo-width
+	//padding-right: $brand-logo-width
 
 	.year-text
 		margin-left: 18%
 		font-size: 2.7rem
 		line-height: 0.6
-		color: $main-color !important
+		color: var(--main-color) !important
 
 
-	+media-breakpoint-down(xxl)
+	+mixins.media-max(xxl)
 		gap: $col-width-xl - $brand-logo-width + 20px
 		.brand-logo
 			width: $brand-logo-width - 20px
-			& ~.banner-link, & ~.brand-text
+
+			& ~ .banner-link, & ~ .brand-text
 				height: $brand-logo-width - 20px
 				margin-right: $col-width-xl
 				max-width: $content-width_max
 		.brand-text
 			padding-right: 0
 
-	+media-breakpoint-down(xl)
+	+mixins.media-max(xl)
 		gap: $col-width-lg - $brand-logo-width + 40px
 		.brand-logo
 			width: $brand-logo-width - 40px
-			& ~.banner-link, & ~.brand-text
+
+			& ~ .banner-link, & ~ .brand-text
 				height: $brand-logo-width - 40px
 				margin-right: $col-width-lg
 		.year-text
 			font-size: 2.1em
 
 
-	+media-breakpoint-down(lg)
+	+mixins.media-max(lg)
 		gap: $col-width-md - $brand-logo-width + 40px
 		.brand-logo
 			width: $brand-logo-width - 70px
-			& ~.banner-link, & ~.brand-text
+
+			& ~ .banner-link, & ~ .brand-text
 				height: $brand-logo-width - 70px
 
-	+media-breakpoint-down(md)
-		padding-top: $container-margin-sm
-		gap: $container-margin-sm
+	+mixins.media-max(md)
+		padding-top: $container-margin-md
+		gap: $container-margin-md
 		.brand-logo
 			width: $brand-logo-width - 100px
-			& ~.banner-link, & ~.brand-text
+
+			& ~ .banner-link, & ~ .brand-text
 				height: $brand-logo-width - 100px
 		.year-text
 			font-size: 1.4em
 
 
-	+media-breakpoint-down(sm)
-		gap: $container-margin
+	+mixins.media-max(sm)
+		gap: $container-margin-xs
 		.brand-logo
 			width: $brand-logo-width - 130px
-			& ~.banner-link, & ~.brand-text
+
+			& ~ .banner-link, & ~ .brand-text
 				height: $brand-logo-width - 130px
-				margin-right: $container-margin
+				margin-right: $container-margin-xs
 
 
 .container
 	position: relative
-	display: flex
 	flex-wrap: wrap
-	flex-direction: column
 	width: auto
 	max-width: $container-max_w
 	margin: 0
-	padding-left: $container-margin
-	padding-right: $container-margin
-	+media-breakpoint-up(sm)
-		padding-left: $container-margin-sm
-		padding-right: $container-margin-sm
-	+media-breakpoint-up(md)
+	padding-left: $container-margin-xs
+	padding-right: $container-margin-xs
+	+mixins.media-min(sm)
+		padding-left: $container-margin-md
+		padding-right: $container-margin-md
+	+mixins.media-min(md)
 		flex-direction: unset
-	+media-breakpoint-up(lg)
+	+mixins.media-min(lg)
 		padding-left: $container-margin-lg
 		padding-right: $container-margin-lg
 		margin-bottom: $container-margin-lg
 
 	header
-		padding: $container-margin*3 0 $container-margin*2
+		padding: $container-margin-xs*3 0 $container-margin-xs*2
 		flex: 100%
-		+media-breakpoint-up(sm)
-			padding: $container-margin-sm*3 0 $container-margin-sm*2
+		+mixins.media-min(sm)
+			padding: $container-margin-md*3 0 $container-margin-md*2
 
 	.content
+		justify-content: flex-start
+		gap: 2vh
 		flex: 1
-		display: flex
-		justify-content: space-between
-		flex-direction: column
-		+media-breakpoint-up(xxl)
+		+mixins.media-min(xxl)
 			width: 100% - $col-width-xxl*2
-
-#site-header
-	margin: 0 $container-margin $container-margin
-	+media-breakpoint-up(sm)
-		margin: 0 $container-margin-sm $container-margin-sm
-	+media-breakpoint-up(lg)
-		margin: 0 $container-margin-lg $container-margin-lg
 
 
 .flex-content
-	margin: $container-margin 0
-	+media-breakpoint-up(lg)
-		margin-left: $col-width-lg
-		margin-right: $col-width-lg
-	+media-breakpoint-up(xl)
-		margin-left: $col-width-xl
-		margin-right: $col-width-xl
-	+media-breakpoint-up(xxl)
-		margin-left: $col-width-xxl
-		margin-right: $col-width-xxl
+	margin: $container-margin-xs 0 !important
+	+mixins.media-min(lg)
+		margin-left: $col-width-lg !important
+		margin-right: $col-width-lg !important
+	+mixins.media-min(xl)
+		margin-left: $col-width-xl !important
+		margin-right: $col-width-xl !important
+	+mixins.media-min(xxl)
+		margin-left: $col-width-xxl !important
+		margin-right: $col-width-xxl !important
 
 .home
 	.content
 		max-width: $content-width_max
-		flex: 1
 
 	h1
 		line-height: 1
@@ -454,12 +276,9 @@ svg.icon
 	section
 		header
 			text-align: center
+
 		.person-link
 			display: block
-		.row
-			justify-content: center
-			>*
-				max-width: 150px
 
 	.person-title
 		margin-top: 0.5em
@@ -474,6 +293,7 @@ svg.icon
 
 .exh-description ul
 	padding-left: 1rem
+
 	li
 		list-style-type: inherit
 
@@ -481,16 +301,17 @@ svg.icon
 	header
 		display: flex
 		align-items: flex-start
-		+media-breakpoint-down(sm)
+		+mixins.media-max(sm)
 			flex-direction: column
+
 		h1
 			flex: 100%
 
 .participants, .exhibitions, .nominations, .project
 	h1
-		min-height: 0vw
-		//margin-bottom: 3vw
-		//font-size: calc(1.5rem + 1vw)
+		min-height: 0
+//margin-bottom: 3vw
+//font-size: calc(1.5rem + 1vw)
 
 
 .exhibition, .nominations
@@ -501,57 +322,48 @@ svg.icon
 	h2
 		font-weight: bold
 		text-transform: lowercase
+
 	h3
 		margin: 0
-
-
-.exhibitions-list
-	.exh-title
-		height: auto
-		top: 50%
-		transform: translateY(-50%)
-		text-align: center
 
 
 .winners-list
 	h4
 		font-weight: 300
 
-.categories-list
-	.grid-cell
-		img
-			padding: 10% 25% 40%
-			background-color: #fff
-			&~.img-title
-				color: $main-color
+.categories-grid .grid-cell
+	img
+		padding: 10% 25% 40%
+		background-color: #fff
+
+		& ~ .img-title
+			color: var(--main-color)
+
+	.category-title
+		position: absolute
+		display: flex
+		align-items: flex-end
+		justify-content: center
+		padding: 65% 5% 5%
+		text-align: center
+		text-transform: lowercase
+		color: var(--main-color)
+
+	&:hover
+		filter: invert(100%)
+		border-color: #fff
 
 		.category-title
-			position: absolute
-			display: flex
-			align-items: flex-end
-			justify-content: center
-			padding: 65% 5% 5%
-			text-align: center
-			text-transform: lowercase
-			color: $main-color
+			color: #000
+			backdrop-filter: unset !important
 
-		&:hover
-			filter: invert(100%)
-			border-color: #fff
-			.category-title
-				color: #000
-				backdrop-filter: unset !important
+.meta
+	> div
+		line-height: 2
 
-
-.exhibitions-list, .categories-list
-	.grid-cell
-		background-color: $main-color
-		transition: all 200ms linear
-		&:hover
-			background-color: #fff
-			color: $main-color
-			border-color: $main-color
-
+		span
+			color: #000
+			font-weight: bold
 
 .excerpt
 	font-style: italic
@@ -559,6 +371,7 @@ svg.icon
 .description
 	position: relative
 	transition: 500ms all ease
+
 	a.read-more-link
 		position: absolute
 		display: block
@@ -567,115 +380,105 @@ svg.icon
 		bottom: 0
 		text-align: center
 		cursor: pointer
+
 		&:before
 			content: 'Свернуть'
 
 	&.brief
 		height: 300px
 		overflow: hidden
+
 		a.read-more-link
 			padding-top: 80px
-			background: linear-gradient(to top, #FFF 30%, rgba(255,255,255,0.6) 80%, rgba(255,255,255,0.1) 100%)
+			background: linear-gradient(to top, #FFF 30%, rgba(255, 255, 255, 0.6) 80%, rgba(255, 255, 255, 0.1) 100%)
+
 			&:before
 				content: 'Читать далее'
 
 
+.portfolio-rate
+	margin-left: auto
+
+	.rate-star
+		position: relative
+		height: 21px
+		width: 21px
+		margin-left: 3px
+		fill: $star-on-color
+		stroke: #fff
+
+.portfolio-award
+	svg.award
+		width: 24px
+		height: 24px
+		margin: 0
+		fill: orange
+		stroke: white
+
+
+svg.award
+	width: calc(1.3rem + 1vw)
+	height: calc(1.3rem + 1vw)
+	margin-left: 9px
+	margin-bottom: 9px
+	fill: orange
+	stroke: orange
+
+.success-icon
+	color: $success-color
+
+
 .contacts
-	+push--auto
+	+mixins.push--auto
+
 	.form-container
 		max-width: 600px
 		margin: auto
 
 		.form-group
 			margin-bottom: $container-margin-lg
-			+media-breakpoint-down(sm)
-				margin-bottom: $container-margin
+			+mixins.media-max(sm)
+				margin-bottom: $container-margin-xs
+
 		.send-button
-			border-color: $main-color
-
-#alertContainer
-	position: fixed
-	left: 0
-	top: 0
-	height: 100vh
-	width: 100vw
-	background-color: transparent
-	transition: background-color 150ms linear
-	z-index: 2
-	.btn-close
-		margin-left: auto
-		padding: 0
-
-	.alert-body h3
-		border-bottom: 1px solid transparentize($text-color, 0.75)
-		margin-bottom: 2vw
-
-	>.alert
-		display: flex
-		flex-direction: column
-		padding: 1em
-		min-width: 300px
-		max-width: 90%
-		width: 100%
-		color: $text-color
-		background-color: #fff
-		border: solid $border-thickness $highlight-border-color
-		box-shadow: 0 0 1rem transparentize($main-color, 0.7)
-		transform: translateY(-50px)
-		opacity: 0
-		+media-breakpoint-up(sm)
-			width: 75%
-			padding: 2vw
-			font-size: 1.2em
-		+media-breakpoint-up(md)
-			width: 50%
-
-		&.show
-			opacity: 1
-			transform: none
-		&.fade
-			transition: all 0.15s linear
-
-.modal-open #alertContainer
-	background-color: transparentize(black, 0.5)
-
-
-.admin-edit-link
-	svg
-		width: 1rem
-		height: 1rem
-		margin-left: 5px
-		fill: deepskyblue
-		vertical-align: middle
+			border-color: var(--main-color)
 
 #site-footer
 	margin-top: auto
 	padding: 2vh
 	border-top: 1px solid $highlight-border-color
+
 	.copyright
 		text-align: center
 
 .upload-form
 	select, .django-ckeditor-widget
 		width: 100%
+
 	input[type="text"]
 		min-width: 100%
 
 	.portfolio-image
 		.form-label, .input-group-text, .upload-link .input-group
 			display: none
-		.input-group-text+div
+
+		.input-group-text + div
 			border: none
+
 		input
 			max-width: 100%
+
 		textarea
 			height: 6rem
+
 		.image
 			width: auto
 			max-width: 300px
+
 		.meta
 			flex: 1
-			>div
+
+			> div
 				width: 100%
 				line-height: 1.2
 

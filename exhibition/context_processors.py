@@ -5,7 +5,7 @@ from .models import Exhibitions
 
 def common_context(request):
 	""" Global context processor variables """
-	exh_list = Exhibitions.objects.all().only('slug', 'date_end')
+	exh_list = Exhibitions.objects.all().only('slug', 'date_start')
 	meta = {
 		'title': "Дизайнерская выставка Сфера Дизайна",
 		'description': "Выставка дизайн-проектов, где представлены портфолио дизайнеров и победители в номинациях с 2008 года",

@@ -33,14 +33,44 @@ DEFAULT_QUALITY = getattr(settings, 'DJANGORESIZED_DEFAULT_QUALITY', 85)
 DEFAULT_KEEP_META = getattr(settings, 'DJANGORESIZED_DEFAULT_KEEP_META', False)
 
 
-def get_image_html(obj):
-	# if path.isfile(os.path.join(settings.MEDIA_ROOT,obj.name)):
-	if obj and path.isfile(path.join(settings.MEDIA_ROOT, obj.name)):
-		size = '%sx%s' % (settings.ADMIN_THUMBNAIL_SIZE[0], settings.ADMIN_THUMBNAIL_SIZE[1])
-		thumb = get_thumbnail(obj.name, size, crop='center', quality=settings.ADMIN_THUMBNAIL_QUALITY)
-		return format_html('<img src="{0}" width="50"/>', thumb.url)
-	else:
-		return format_html('<img src="/media/no-image.png" width="50"/>')
+def get_image_html(obj, width=50, height=None, css_class='', crop='center'):
+
+	if not obj or not obj.name:
+		return format_html('<img src="/media/no-image.png" width="{}" class="{}"/>', width, css_class)
+
+	file_ext = path.splitext(obj.name)[1].lower()
+
+	# SVG файлы
+	if file_ext == '.svg':
+		style = f'width: {width}px; height: {height}px;' if height else f'width: {width}px; height: auto;'
+		return format_html(
+			'<div style="display: inline-block; border: 1px solid #ddd; border-radius: 4px; padding: 2px; background: white;">'
+			'<img src="{0}" style="{1}" class="{2}"/>'
+			'</div>',
+			obj.url, style, css_class
+		)
+
+	# Обычные изображения
+	try:
+		if height:
+			thumb = get_thumbnail(obj, f'{width}x{height}', crop=crop, quality=85)
+			return format_html(
+				'<img src="{0}" width="{1}" height="{2}" class="{3}"/>',
+				thumb.url, width, height, css_class
+			)
+		else:
+			thumb = get_thumbnail(obj, f'{width}', quality=85)  # auto height
+			return format_html('<img src="{0}" width="{1}" class="{2}"/>', thumb.url, width, css_class)
+
+	except Exception:
+		# Fallback
+		if height:
+			return format_html(
+				'<img src="{0}" width="{1}" height="{2}" class="{3}"/>',
+				obj.url, width, height, css_class
+			)
+		else:
+			return format_html('<img src="{0}" width="{1}" class="{2}"/>', obj.url, width, css_class)
 
 
 class MediaFileStorage(FileSystemStorage):
@@ -123,9 +153,9 @@ def image_resize(obj, size=None, uploaded_file=None):
 				fn = obj.path
 			else:
 				fn = obj
-			
+
 			image = Im.open(fn)
-			
+
 			# Конвертируем RGBA в RGB для webp
 			if image.mode in ('RGBA', 'LA', 'P'):
 				background = Im.new('RGB', image.size, (255, 255, 255))
@@ -184,7 +214,8 @@ def image_resize(obj, size=None, uploaded_file=None):
 
 def limit_file_size(file):
 	""" Image file size validator """
-	limit = settings.FILE_UPLOAD_MAX_MEMORY_SIZE if hasattr(settings, 'FILE_UPLOAD_MAX_MEMORY_SIZE') else 2.5 * 1024 * 1024
+	limit = settings.FILE_UPLOAD_MAX_MEMORY_SIZE if hasattr(settings,
+	                                                        'FILE_UPLOAD_MAX_MEMORY_SIZE') else 2.5 * 1024 * 1024
 	if path.exists(file.path) and file.size > limit:
 		raise ValidationError(
 			'Размер файла превышает лимит %s Мб. Рекомендуемый размер фото 1500x1024 пикс.' % (limit / (1024 * 1024))
@@ -195,13 +226,13 @@ class CustomClearableFileInput(ClearableFileInput):
 	template_name = 'admin/exhibition/widgets/file_input.html'
 
 
-def SendEmail(subject, template, email_ricipients=settings.EMAIL_RECIPIENTS):
+def SendEmail(subject, template, email_recipients=settings.EMAIL_RECIPIENTS):
 	""" Sending email """
 	email = EmailMessage(
 		subject,
 		template,
 		settings.EMAIL_HOST_USER,
-		email_ricipients,
+		email_recipients,
 	)
 
 	email.content_subtype = "html"
@@ -218,19 +249,20 @@ def SendEmail(subject, template, email_ricipients=settings.EMAIL_RECIPIENTS):
 
 class EmailThread(Thread):
 	""" Async email sending class """
-	def __init__(self, subject, template, email_ricipients):
+
+	def __init__(self, subject, template, email_recipients):
 		self.subject = subject
 		self.html_content = template
-		self.recipient_list = email_ricipients
+		self.recipient_list = email_recipients
 		Thread.__init__(self)
 
 	def run(self):
 		return SendEmail(self.subject, self.html_content, self.recipient_list)
 
 
-def SendEmailAsync(subject, template, email_ricipients=settings.EMAIL_RECIPIENTS):
+def SendEmailAsync(subject, template, email_recipients=settings.EMAIL_RECIPIENTS):
 	""" Sending email to recipients """
-	EmailThread(subject, template, email_ricipients).start()
+	EmailThread(subject, template, email_recipients).start()
 
 
 def portfolio_upload_confirmation(images, request, obj):

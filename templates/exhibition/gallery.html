@@ -1,11 +1,11 @@
 {% load static %}
 {% load thumbnail %}
 
-<div id="overlay" class="modal">
+<div id="gallery" class="swiper modal fade" data-swiper-type="gallery">
 
-    <div id="slides-block" class="fade">
+    <div class="slides-block swiper-wrapper">
         {% for img in portfolio.images.all %}
-            <figure class="slide-wrapper centered">
+            <figure class="swiper-slide swiper-zoom-container">
 
                 {% thumbnail img.file "576" as sm %}
                     {% thumbnail img.file "992" as md %}
@@ -25,6 +25,8 @@
                     {% endthumbnail %}
                 {% endthumbnail %}
 
+                <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+
                 {% if img.title or img.description %}
                     <figcaption class="centered">
                         {% if img.title %}
@@ -38,21 +40,28 @@
 
             </figure>
         {% endfor %}
-
     </div>
+
+    <div class="swiper-pagination"></div>
 
     <a class="controls-block no-select" href="#">
         {% if portfolio.images.count > 1 %}
-            <svg class="arrow-left arrow-icon icon">
-                <use xlink:href="#arrow-icon"></use>
-            </svg>
-            <svg class="arrow-right arrow-icon icon">
-                <use xlink:href="#arrow-icon"></use>
-            </svg>
+            <button class="btn-nav arrow-left">
+                <svg class="arrow-icon icon">
+                    <use xlink:href="#arrow-icon"></use>
+                </svg>
+            </button>
+            <button class="btn-nav arrow-right">
+                <svg class="arrow-icon icon">
+                    <use xlink:href="#arrow-icon"></use>
+                </svg>
+            </button>
         {% endif %}
-        <svg id="close-button" class="close-icon icon">
-            <use xlink:href="#close-icon"></use>
-        </svg>
+
+        <button class="btn-close btn-lg" data-dismiss="modal">
+            <svg class="close-icon icon">
+                <use xlink:href="#close-icon"></use>
+            </svg>
+        </button>
     </a>
 </div>
-

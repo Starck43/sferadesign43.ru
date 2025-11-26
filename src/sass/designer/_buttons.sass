@@ -1,0 +1,29 @@
+
+button
+	&:hover:not(.navbar-toggler)
+		opacity: 1
+		transform: scale(110%)
+
+.btn
+	padding: .75em 1.5em
+	color: var(--btn-color)
+	border: var(--border-thickness) solid
+	border-radius: var(--border-radius)
+	background-color: transparent
+
+	svg
+		fill: var(--btn-color)
+
+	&:hover
+		color: var(--link-hover-color) !important
+		border-color: var(--link-hover-color)
+//box-shadow: 0 0 1px 1px var(--main-color) inset
+
+.btn-primary
+	color: var(--bs-primary) !important
+	border-color: var(--bs-primary)
+
+	&:hover
+		color: inherit !important
+		background-color: var(--bs-primary)
+

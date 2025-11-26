@@ -45,6 +45,7 @@ urlpatterns = [
 	path('account/deactivate/',views.deactivate_user, name="deactivate-user"),
 	path('reset_password/', views.send_reset_password_email),
 	path('api/get-nominations/', views.get_nominations_for_exhibition, name='get-nominations-url'),
+	path('api/nominations-categories-mapping/', views.get_nominations_categories_mapping, name='nominations-categories-mapping-url'),
 	path('portfolio/new/', views.portfolio_upload, kwargs={'pk': None}, name='portfolio-upload-url'),
 	path('portfolio/edit/<pk>', views.portfolio_upload, name='portfolio-upload-url'),
 	re_path(r'^success/$', views.success_message, name='success-message-url'),

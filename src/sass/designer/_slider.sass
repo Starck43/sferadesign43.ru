@@ -1,0 +1,32 @@
+@use "../main/mixins"
+@use "vars" as *
+@use "../main/controls"
+
+.slider-container
+	visibility: hidden
+	display: block
+
+	figcaption
+		position: absolute
+		top: $overlay-padding
+		min-height: calc(2em + 0.3vw)
+		padding: calc(3px + 0.3vh) calc(6px + 0.3vh)
+		max-width: calc(100vw - (2em + 0.3vw + #{$overlay-padding*2}) * 2)
+		color: #fff
+		border: none !important
+
+		.slide-title,
+		.slide-description
+			margin-bottom: 0
+			font-size: calc(0.6em + .3vw)
+
+		.slide-description
+			margin: 0.5em 0 0
+
+	img
+		object-fit: contain
+		cursor: grabbing
+
+	.swiper-pagination
+		bottom: $overlay-padding
+		max-width: calc(100vw - #{$overlay-padding} * 2)

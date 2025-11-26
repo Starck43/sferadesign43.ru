@@ -1,14 +1,10 @@
-@import "../css/peppermint.css"
-
-@import "../../node_modules/bootstrap/scss/functions"
-@import "../../node_modules/bootstrap/scss/variables"
-@import "../../node_modules/bootstrap/scss/mixins"
-
-@import vars
-@import mixins
-@import controls
-@import rate
-@import comments
+@use "main/mixins"
+@use "main/vars" as *
+@use "main/modal"
+@use "main/alert"
+@use "main/gallery"
+@use "main/rate"
+@use "main/comments"
 
 
 figure
@@ -18,6 +14,7 @@ figure
 	max-width: 100%
 	margin: 0
 	line-height: 1
+
 	img
 		height: 100%
 		max-width: 100%
@@ -27,23 +24,25 @@ figure
 .portfolio .brand-logo
 	max-width: 300px
 	mix-blend-mode: difference
-	margin-bottom: calc(-0.75em - 2w)
+	margin-bottom: calc(-0.75em - 2vw)
 
 // Portfolio grid
-
-.portfolio-list
+.portfolio-grid
 	display: flex
 	flex-flow: row wrap
 	justify-content: space-around
 	width: inherit
 	margin: 0 -1%
 	overflow: hidden
-	>figure
+
+	> figure
 		flex: 100%
 		width: 100%
 		margin-bottom: 2%
+
 		&:last-child
 			margin-bottom: 0
+
 		img
 			position: relative
 
@@ -51,6 +50,7 @@ figure
 		margin: 0.8%
 		transition: all 150ms linear
 		overflow: hidden
+
 		&:hover
 			transform: scale(1.03)
 
@@ -60,6 +60,7 @@ figure
 
 	figure
 		background-color: #ddd
+
 		img
 			left: 0
 			right: 0
@@ -79,8 +80,9 @@ figure
 				font-size: 0.8em
 				text-align: center
 				text-shadow: 0 0 1px #000
-				+blur-background(9, $overlay-color, 0.6)
+				+mixins.blur-background(9, $overlay-color, 0.6)
 				z-index: 1
+
 			.portfolio-image-title
 				font-size: 1.2rem
 				word-break: break-word
@@ -99,23 +101,26 @@ figure
 		&-landscape
 			width: 50%
 			min-width: 50%
+
 		&-portrait
 			width: 25%
 			min-width: 25%
 
 
-	+media-breakpoint-down(sm)
+	+mixins.media-max(sm)
 		.image-link
 			cursor: default
+
 			&:hover
 				transform: unset
 		.grid-item
 			flex: 100%
 
-.mobile .portfolio-list
+.mobile .portfolio-grid
 	.image-wrapper
-		+responsive-ratio
+		+mixins.responsive-ratio
 		margin-bottom: 1.5em
+
 		img
 			max-height: unset
 
@@ -123,8 +128,10 @@ figure
 	header
 		padding-bottom: 0
 		margin-bottom: 0
+
 	h1
 		display: table
+
 		.sub-title
 			font-size: 0.6em
 			text-transform: lowercase
@@ -137,8 +144,9 @@ figure
 		.content
 			width: 100%
 			max-width: unset
-			+push--auto
+			+mixins.push--auto
 			flex: auto
+
 		.sidebar
 			flex: 0
 
@@ -151,115 +159,26 @@ figure
 			border-radius: $border-radius
 			padding: 1rem
 			background: $highlight-block-bg
+
 		a
 			font-weight: 500
 
-
-// Slider
-#overlay
-	background-color: $overlay-color
-	transition: all 300ms linear
-
-	#slides-block
-		height: 100%
-		transition: transform 0ms ease
-
-	>*
-		transition: opacity 150ms linear
-		opacity: 0
-
-	&.show
-		display: block
-		visibility: visible
-		>*, img
-			opacity: 1
-	ul,
-	svg,
-	figcaption
-		+blur-background(9, $overlay-color, 0.6)
-		//border-radius: 7px
-		//border: 1px solid transparentize(#fff, 0.5)
-
-	.controls-block svg
-		height: calc(2em + 0.3vw)
-		width: calc(2em + 0.3vw)
-		&.arrow-icon
-			height: calc(4em + 0.3vw)
-
-.slider-container
-	visibility: hidden
-	display: block
-	img
-		object-fit: contain
-		cursor: grabbing
-
-	figcaption
-		position: absolute
-		top: $overlay-padding
-		min-height: calc(2em + 0.3vw)
-		padding: calc(3px + 0.3vh) calc(6px + 0.3vh)
-		max-width: calc(100vw - (2em + 0.3vw + #{$overlay-padding*2}) * 2)
-		color: #fff
-		border: none !important
-		.slide-title,
-		.slide-description
-			margin-bottom: 0
-			font-size: calc(0.6em + .3vw)
-		.slide-description
-			margin: 0.5em 0 0
-
-
-	ul.peppermint-dots
-		bottom: $overlay-padding
-		margin-bottom: 0
-		max-width: calc(100vw - #{$overlay-padding} * 2)
-		padding: calc(5px + 0.15vw) calc(10px + 0.15vw)
-		> li
-			flex: 1 1 100%
-			width: calc(5px + .1vw)
-			height: calc(5px + .1vw)
-			margin: calc(2px + .1vw)
-			+media-breakpoint-down(sm)
-				margin: auto 3px
-
-		+media-breakpoint-down(md)
-			padding: calc(5px + .3vh) calc(10px + .3vh)
-			> li
-				width: 4px
-				height: 4px
-				&.peppermint-active-dot
-					height: inherit
-					box-shadow: 0 0 3px 2px white
-
-.controls-block
-	+push--absolute($overlay-padding)
-
-	#close-button
-		position: absolute
-		top: 0
-		right: 0
-
-
 @media (max-width: 575.98px) and (orientation: landscape)
-	#banners-block
+	.banners-block
 		display: flex
 		align-items: center
 		max-height: calc(100vh - 100px)
 
 
-.banner-container
+.banners-container
 	figure
 		img
-			+push--absolute
+			+mixins.push--absolute
 
 	.controls-block
 		svg
 			border-radius: 5px
-			//background-color: transparentize($overlay-color, 0.7)
 
 
-.pinch-zoom-container
-	width: 100vw
-	height: 100%
 
 

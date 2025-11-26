@@ -2,82 +2,115 @@
 
 <div class="container-fluid">
 
-	<div class="navbar-search me-auto">
-		<a class="nav-search-link" href="#"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
-	</div>
+    <div class="navbar-search me-auto">
+        <div class="nav-search-link navbar-button">
+            <svg class="search-icon icon">
+                <use xlink:href="#search-icon"></use>
+            </svg>
+        </div>
+    </div>
 
-	<div id="searchContainer">
-		<form class="nav-search centered" action="{% block search-action %}{% url 'exhibition:search-results' %}{% endblock %}" method="GET">
-			<input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск" aria-label="Search">
-			<button type="submit">Найти</button>
-			<button class="clear-input btn-close btn-sm fade" type="button" aria-label="Close"></button>
-		</form>
-	</div>
+    <div id="searchContainer">
+        <form class="nav-search centered"
+              action="{% block search-action %}{% url 'exhibition:search-results' %}{% endblock %}" method="GET">
+            <input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Поиск"
+                   aria-label="Search">
+            <button type="submit">Найти</button>
+            <button class="clear-input btn-close btn-sm" type="button" aria-label="Close">
+                <svg class="close-icon icon">
+                    <use xlink:href="#close-icon"></use>
+                </svg>
+            </button>
+        </form>
+    </div>
 
-	<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown">
-		<svg class="icon burger-icon"><use xlink:href="#burger-icon"></use></svg>
-	</button>
+    <button
+            type="button"
+            class="navbar-toggler btn-lg navbar-button"
+            data-toggle="offcanvas"
+            data-target="#navbarMenu"
+            aria-controls="navbarMenu"
+    >
+        <svg class="icon burger-icon">
+            <use xlink:href="#burger-icon"></use>
+        </svg>
+    </button>
 
-	<div id="navbarNavDropdown" class="navbar-collapse offcanvas offcanvas-end">
-		<button type="button" class="btn-close btn-lg btn-close-white" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
-		<ul class="navbar-nav align-items-center">
+    <div id="navbarMenu" class="navbar-menu navbar-collapse offcanvas offcanvas-end">
+        <button type="button" class="btn-close btn-lg" data-dismiss="offcanvas" aria-label="Закрыть">
+            <svg class="close-icon icon">
+                <use xlink:href="#close-icon"></use>
+            </svg>
+        </button>
 
-			{% cache 2592000 navbar %}
+        <ul class="navbar-items align-center">
 
-			<li class="nav-item dropdown exh-nav-item">
-				<a class="nav-link hidden" href="/exhibitions/">Выставки</a>
-				{% if exhibitions_list %}
-					<a id="exhibitionsMenuLink" class="nav-link dropdown-toggle" href="#dropdownYearsList" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="dropdownYearsList">Выставки</a>
+            {% cache 2592000 navbar %}
 
-					<ul id="dropdownYearsList" class="dropdown-menu navbar-dark collapse" aria-labelledby="exhibitionsMenuLink">
-						{% for e in exhibitions_list %}
-						<li><a class="dropdown-item" href="{{ e.get_absolute_url }}">
-							{{ e.date_start|date:"Y" }}
-						</a></li>
-						{% endfor %}
-					</ul>
-				{% endif %}
-			</li>
+                <li class="nav-item dropdown exh-nav-item bg-dark collapsed">
+                    {% if exhibitions_list %}
+                        <a id="exhibitionsMenuLink" class="nav-link dropdown-toggle" href="/exhibitions/" role="button"
+                           aria-expanded="false" aria-controls="dropdownYearsList">Выставки</a>
 
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'exhibition:exhibitors-list-url' %}">Участники</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'exhibition:category-list-url' %}">Работы</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'exhibition:winners-list-url' %}">Победители</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'exhibition:jury-list-url' %}">Жюри</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'exhibition:partners-list-url' %}">Партнеры</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'blog:article-list-url' %}">Статьи</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'exhibition:contacts-url' %}">Обратная связь</a>
-			</li>
+                        <ul id="dropdownYearsList" class="dropdown-menu" aria-labelledby="exhibitionsMenuLink">
+                            {% for e in exhibitions_list %}
+                                <li><a class="dropdown-item" href="{{ e.get_absolute_url }}">
+                                    {{ e.date_start|date:"Y" }}
+                                </a></li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <a class="nav-link" href="/exhibitions/">Выставки</a>
+                    {% endif %}
+                </li>
 
-			{% endcache %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'exhibition:exhibitors-list-url' %}">Участники</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'exhibition:category-list-url' %}">Работы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'exhibition:winners-list-url' %}">Победители</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'exhibition:jury-list-url' %}">Жюри</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'exhibition:partners-list-url' %}">Партнеры</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blog:article-list-url' %}">Статьи</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'exhibition:contacts-url' %}">Обратная связь</a>
+                </li>
 
-			<li class="nav-item">
-				<a class="nav-link account-link" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin/{% elif user.is_authenticated %}/account/{% else %}/accounts/login/{% endif %}" rel="nofollow">
-					{% if user.is_authenticated %}{{ request.user.username }}{% else %}Войти{% endif %}
-				</a>
-			</li>
-		</ul>
+            {% endcache %}
 
-		<div class="nav-item social-block">
-			<a class="nav-social-link" href="https://vk.com/sfera43design" target="_blank"><svg class="icon vk"><use xlink:href="#logo-vk"></use></svg></a>
-		</div>
+            <li class="nav-item">
+                <a class="nav-link account-link" aria-current="page"
+                   href="{% if user.is_authenticated and user.is_staff %}/admin/{% elif user.is_authenticated %}/account/{% else %}/accounts/login/{% endif %}"
+                   rel="nofollow">
+                    {% if user.is_authenticated %}{{ request.user.username }}{% else %}Войти{% endif %}
+                </a>
+            </li>
+        </ul>
 
-		<div class="nav-item">
-			<a class="nav-search-link" href="#" rel="nofollow"><svg class="search-icon icon"><use xlink:href="#search-icon"></use></svg></a>
-		</div>
+        <div class="nav-item social-block">
+            <a class="nav-social-link navbar-button" href="https://vk.com/sfera43design" target="_blank">
+                <svg class="icon vk">
+                    <use xlink:href="#logo-vk"></use>
+                </svg>
+            </a>
+        </div>
 
-	</div>
+        <div class="nav-item nav-search-link navbar-button">
+            <svg class="search-icon icon">
+                <use xlink:href="#search-icon"></use>
+            </svg>
+        </div>
+
+    </div>
 </div>
 

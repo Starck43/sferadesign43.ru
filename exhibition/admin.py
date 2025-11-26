@@ -4,12 +4,13 @@ from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import ImageField
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from sorl.thumbnail.admin import AdminImageMixin
 
 from blog.models import Article
 from rating.admin import RatingInline, ReviewInline
-from .forms import ExhibitionsForm, PortfolioForm, ImageForm, MetaSeoFieldsForm, MetaSeoForm
+from .forms import ExhibitionsForm, PortfolioForm, ImageForm, MetaSeoFieldsForm, MetaSeoForm, CategoriesAdminForm
 from .logic import delete_cached_fragment, CustomClearableFileInput
 from .models import (
 	Person, Profile, Categories, Exhibitors, Organizer, Jury, Partners, Events, Nominations, Exhibitions, Winners,
@@ -159,6 +160,7 @@ class ProfileAdmin(admin.ModelAdmin):
 	list_display = ('phone',)
 
 
+@admin.register(Exhibitors)
 class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	# prepopulated_fields = {"slug": ('name',)} # adding name to slug field
@@ -190,13 +192,9 @@ class ExhibitorsAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.Model
 		super().save_model(request, obj, form, change)
 
 
+@admin.register(Jury)
 class JuryAdmin(PersonAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
-	fieldsets = (
-		            (None, {
-			            'classes': ('user-block',),
-			            'fields': ('logo', 'name', 'slug', 'excerpt', 'description', 'sort',),
-		            }),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+	fieldsets = PersonAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('logo_thumb', 'name', 'excerpt',)
 	list_display_links = ('logo_thumb', 'name',)
@@ -211,6 +209,7 @@ class JuryAdmin(PersonAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 		super().save_model(request, obj, form, change)
 
 
+@admin.register(Organizer)
 class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'description_html',)
@@ -227,6 +226,7 @@ class OrganizerAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelA
 		super().save_model(request, obj, form, change)
 
 
+@admin.register(Partners)
 class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = PersonAdmin.fieldsets + ProfileAdmin.fieldsets + MetaSeoFieldsAdmin.fieldsets
 	list_display = ('logo_thumb', 'name', 'phone',)
@@ -245,15 +245,21 @@ class PartnersAdmin(PersonAdmin, ProfileAdmin, MetaSeoFieldsAdmin, admin.ModelAd
 
 @admin.register(Categories)
 class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
-	fieldsets = (
-		            (None, {
-			            'classes': ('user-block',),
-			            'fields': ('title', 'slug', 'description', 'logo', 'sort',),
-		            }),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+	list_display = ('logo_thumb', 'title', 'nominations_list', 'description')
+	list_display_links = ('logo_thumb', 'title')
+	readonly_fields = ['logo_preview']
 
-	list_display = ('logo_thumb', 'title', 'nominations_list', 'description',)
-	list_display_links = ('logo_thumb', 'title',)
+	fieldsets = (
+		(None, {
+			'fields': ('title', 'slug', 'description', 'logo', 'sort')
+		}),
+		('Превью логотипа', {
+			'classes': ('collapse',),
+			'fields': ('logo_preview',)
+		}),
+	)
+
+	fieldsets += MetaSeoFieldsAdmin.fieldsets
 
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations_set.all().values_list('title', flat=True))
@@ -268,13 +274,12 @@ class CategoriesAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 @admin.register(Nominations)
 class NominationsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-		            (
-			            None, {
-				            'classes': ('user-block',),
-				            'fields': ('category', 'title', 'slug', 'description', 'sort',),
-			            }
-		            ),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+		(None, {
+			'classes': ('user-block',),
+			'fields': ('category', 'title', 'slug', 'description', 'sort',),
+		}),
+	)
+	fieldsets += MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('category', 'title', 'description_html',)
 	list_display_links = ('title',)
@@ -304,14 +309,15 @@ class EventsInlineAdmin(admin.StackedInline):
 
 class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	fieldsets = (
-		            (None, {
-			            'classes': ('user-block',),
-			            'fields': (
-				            'exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster',
-				            'lector', 'description',
-			            ),
-		            }),
-	            ) + MetaSeoFieldsAdmin.fieldsets
+		(None, {
+			'classes': ('user-block',),
+			'fields': (
+				'exhibition', 'title', 'date_event', 'time_start', 'time_end', 'location', 'hoster',
+				'lector', 'description',
+			),
+		}),
+	)
+	fieldsets += MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('title', 'date_event', 'time_event', 'hoster', 'exhibition',)
 	search_fields = ('title', 'description', 'hoster', 'lector',)
@@ -328,12 +334,13 @@ class EventsAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 
 
 class WinnersAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
-	fieldsets = ((
-		             None, {
-			             'classes': ('user-block',),
-			             'fields': ('exhibition', 'nomination', 'exhibitor', 'portfolio',),
-		             }
-	             ),) + MetaSeoFieldsAdmin.fieldsets
+	fieldsets = (
+		(None, {
+			'classes': ('user-block',),
+			'fields': ('exhibition', 'nomination', 'exhibitor', 'portfolio',),
+		}),
+	)
+	fieldsets += MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('exh_year', 'nomination', 'exhibitor', 'portfolio')
 	list_display_links = list_display
@@ -425,15 +432,16 @@ class PortfolioAttributesAdmin(admin.ModelAdmin):
 class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	form = PortfolioForm
 
-	fieldsets = ((
-		             None, {
-			             'classes': ('portfolio-block',),
-			             'fields': (
-				             'owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover',
-				             'files','attributes','status','order'
-			             ),
-		             }
-	             ),) + MetaSeoFieldsAdmin.fieldsets
+	fieldsets = (
+		(None, {
+			'classes': ('portfolio-block',),
+			'fields': (
+				'owner', 'exhibition', 'categories', 'nominations', 'title', 'description', 'cover',
+				'files', 'attributes', 'status', 'order'
+			),
+		}),
+	)
+	fieldsets += MetaSeoFieldsAdmin.fieldsets
 
 	list_display = ('owner', '__str__', 'exhibition', 'nominations_list', 'status')
 	list_display_links = ('owner', '__str__')
@@ -449,6 +457,9 @@ class PortfolioAdmin(MetaSeoFieldsAdmin, admin.ModelAdmin):
 	save_as = True
 	view_on_site = True
 	inlines = [ImagesInline, RatingInline, ReviewInline]
+
+	class Media:
+		js = ('admin/js/portfolio_admin.js',)
 
 	def nominations_list(self, obj):
 		return ', '.join(obj.nominations.values_list('title', flat=True))
@@ -625,11 +636,6 @@ class MetaAdmin(admin.ModelAdmin):
 
 	root.short_description = 'Запись'
 
-
-admin.site.register(Exhibitors, ExhibitorsAdmin)
-admin.site.register(Jury, JuryAdmin)
-admin.site.register(Partners, PartnersAdmin)
-admin.site.register(Organizer, OrganizerAdmin)
 
 admin.site.register(Events, EventsAdmin)
 admin.site.register(Winners, WinnersAdmin)

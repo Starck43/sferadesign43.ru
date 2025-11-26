@@ -67,6 +67,13 @@ class AccountSignupForm(SignupForm):
 		return user
 
 
+class CategoriesAdminForm(forms.ModelForm):
+	class Meta:
+		widgets = {
+			'logo': forms.FileInput(attrs={'accept': '.svg'})
+		}
+
+
 class CustomSocialSignupForm(SocialSignupForm):
 	""" Форма регистрации """
 	first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'placeholder': 'Ваше имя'}))
@@ -280,7 +287,7 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 				self.fields['exhibition'].queryset = Exhibitions.objects.all().order_by('-date_start')
 				self.fields['exhibition'].help_text = 'Выберите выставку для участия проекта в конкурсе'
 				self.fields['exhibition'].required = False
-				
+
 				# Администратор/редактор может выбрать любого участника как автора проекта
 				self.fields['owner'].queryset = Exhibitors.objects.all().order_by('name')
 				self.fields['owner'].empty_label = 'Выберите участника'
@@ -299,14 +306,14 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 					date_end__gte=now().date()
 				).order_by('-date_start')
 				self.fields['exhibition'].help_text = 'Выберите выставку для участия проекта'
-				self.fields['exhibition'].required = True
-				self.fields['nominations'].required = True
+				self.fields['exhibition'].required = False
+				self.fields['nominations'].required = False
 
 	@property
 	def helper(self):
 		helper = FormHelper()
 		helper.form_tag = False
-		
+
 		# Для администратора показываем owner, для дизайнера скрываем
 		if self.exhibitor == 'staff':
 			layout_fields = [
@@ -322,7 +329,8 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 			]
 		else:
 			layout_fields = [
-				HTML('<div class="mb-3"><h5>Участник: ' + (self.exhibitor.name if hasattr(self.exhibitor, 'name') else '') + '</h5></div>'),
+				HTML('<div class="mb-3"><h5>Участник: ' + (
+					self.exhibitor.name if hasattr(self.exhibitor, 'name') else '') + '</h5></div>'),
 				'owner',  # Hidden field
 				FloatingField('exhibition'),
 				Field('nominations', wrapper_class='field-nominations'),
@@ -332,7 +340,7 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 				'cover',
 				'status',  # Hidden field
 			]
-		
+
 		# Добавляем SEO поля только для администратора
 		if self.exhibitor == 'staff':
 			layout_fields.append(
@@ -344,10 +352,10 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 						FloatingField('meta_keywords'),
 						css_class='card-body'
 					),
-					css_class="card mt-3 mb-5",
+					css_class="card mt-2 mb-4",
 				)
 			)
-		
+
 		helper.layout = Layout(*layout_fields)
 		return helper
 
@@ -357,7 +365,7 @@ class PortfolioForm(MetaSeoFieldsForm, forms.ModelForm):
 		if self.exhibitor is not None:
 			# Очищаем categories всегда, так как они привязаны к nominations
 			self.cleaned_data['categories'] = []
-			
+
 			if not self.cleaned_data.get('exhibition'):
 				self.cleaned_data['nominations'] = []
 				self.cleaned_data['attributes'] = []
@@ -421,7 +429,7 @@ class ImageFormHelper(FormHelper):
 					),
 					css_class="card-body flex-column flex-md-row",
 				),
-				css_class="portfolio-image card mb-5"
+				css_class="portfolio-image card mb-4"
 			)
 		)
 

@@ -1,0 +1,76 @@
+@use "vars"
+@use "mixins"
+
+.rating-form
+    text-align: right
+
+    > div
+        justify-content: flex-end
+        align-items: center
+
+    &.disabled .rating label
+        pointer-events: none
+        cursor: not-allowed
+
+    // Общие стили для активной и неактивной формы
+    .rating
+        position: relative
+        flex-direction: row-reverse
+        background-color: white
+        padding-bottom: 3px
+        overflow: hidden
+
+        > input
+            position: absolute
+            opacity: 0
+            margin-left: -20px
+
+        > label
+            position: relative
+            float: right
+            cursor: pointer
+
+            .rect
+                fill: vars.$star-off-color
+
+            &:before
+                content: ''
+                position: absolute
+                display: block
+                width: 100%
+                height: 100%
+                opacity: 0
+                transition: background-color 0.3s linear
+
+            > span
+                +mixins.push--absolute
+                background-color: vars.$star-off-color
+                opacity: 0
+                transition: background-color 0.2s linear
+
+    // Стили для активной формы
+    &:not(.disabled) .rating
+        > label:hover:before,
+        > label:hover ~ label:before,
+        &:not(:hover) > :checked ~ label:before,
+        &:not(:hover) > label span
+            opacity: 1
+            background-color: vars.$star-on-color
+            mix-blend-mode: color
+
+    // Стили для disabled формы (кроме жюри)
+    &.disabled:not([data-is-jury="true"]) .rating
+        > label:hover:before,
+        > label:hover ~ label:before,
+        &:not(:hover) > :checked ~ label:before,
+        &:not(:hover) > label span
+            opacity: 1
+            background-color: vars.$star-off-color
+            mix-blend-mode: color
+
+.summary-score
+    font-weight: bold
+
+.comment-block-datetime
+    font-size: 0.8em
+    font-weight: bold

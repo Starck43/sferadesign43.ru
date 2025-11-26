@@ -1,0 +1,121 @@
+@use "sass:color"
+@use "mixins"
+@use "vars" as *
+
+// ===========================
+// Base modal / overlay styles
+// ===========================
+
+// Общие стили для модалок и оверлеев
+.modal
+	position: fixed !important
+	inset: 0
+	display: flex
+	width: 100vw
+	height: 100vh
+	margin: auto
+	background-color: $overlay-color
+	transition: opacity 0.3s linear, visibility 0.3s linear
+	opacity: 0
+	visibility: hidden
+	overflow-x: hidden
+	overflow-y: auto
+	outline: 0
+	z-index: 1080 !important
+	pointer-events: none
+
+	&.show
+		opacity: 1
+		visibility: visible
+		pointer-events: auto
+
+
+// ===========================
+// Fade animation (общая)
+// ===========================
+
+.fade
+	transition: opacity 0.3s ease, visibility 0.3s ease
+
+	&:not(.show)
+		opacity: 0
+		visibility: hidden
+
+// ===========================
+// Modal-specific
+// ===========================
+
+.modal-dialog
+	position: relative
+	width: min-content
+	max-width: 100%
+	min-width: 100%
+	margin: 1.75rem auto
+	pointer-events: none
+	+mixins.media-min(sm)
+		max-width: 600px
+		min-width: 400px
+	+mixins.media-min(md)
+		max-width: 700px
+		min-width: 500px
+
+.modal-content
+	position: relative
+	display: flex
+	flex-direction: column
+	width: 100%
+	pointer-events: auto
+	background-color: #fff
+	background-clip: padding-box
+	border: 1px solid var(--border-color)
+	border-radius: var(--border-radius)
+	outline: 0
+	box-shadow: $box-shadow
+
+
+// ===========================
+// Common parts
+// ===========================
+
+.modal-header
+	display: flex
+	flex-shrink: 0
+	align-items: center
+	justify-content: space-between
+	gap: 1rem
+	padding: 1rem
+	border-bottom: 1px solid $highlight-border-color
+	border-top-left-radius: var(--border-radius)
+	border-top-right-radius: var(--border-radius)
+
+	.modal-title
+		margin: 0
+		line-height: 1.25
+
+	.btn-close
+		padding: 0.5rem
+		margin: -0.5rem -0.5rem -0.5rem auto
+
+.modal-body
+	position: relative
+	flex: 1 1 auto
+	padding: 1rem
+
+.modal-footer
+	display: flex
+	flex-wrap: wrap
+	flex-shrink: 0
+	align-items: center
+	gap: 1rem
+	justify-content: space-between
+	padding: 1rem
+	// border-top: 1px solid #dee2e6
+	border-bottom-right-radius: var(--border-radius)
+	border-bottom-left-radius: var(--border-radius)
+
+	*:first-child:not(button)
+		flex: 1
+	button:first-child
+		margin-left: auto
+
+

@@ -1,0 +1,53 @@
+@use "sass:color"
+@use "../main/mixins"
+@use "vars" as *
+
+/* Masonry styles */
+.masonry-portfolio
+	.grid-sizer,
+	.grid-item
+		width: 100%
+		//padding: 1vw
+		+mixins.media-min(sm)
+			width: calc(100% / 2 - var(--gap))
+		+mixins.media-min(lg)
+			width: calc(100% / 3 - var(--gap))
+		+mixins.media-min(xxl)
+			width: calc(100% / 4 - var(--gap))
+
+	a.grid-item
+		float: left
+		margin: calc(var(--gap) / 2) 0
+		figure
+			border-radius: var(--border-radius)
+			overflow: hidden
+
+		figcaption
+			background-color: inherit
+			transition: all .3s ease-in-out
+
+		&:hover
+			outline: var(--border-thickness) solid var(--highlight-border-color)
+			color: var(--light-color) !important
+			figcaption
+				background-color: var(--dark-color)
+
+		img
+			display: block
+			max-width: 100%
+			&:hover
+				transform: scale(1.05)
+
+		+mixins.media-min(sm)
+			margin: calc(var(--gap) / 2)
+
+	+mixins.media-min(sm)
+		margin: calc(var(--gap) / -2)
+
+
+.add-portfolio
+	position: fixed
+	top: 1rem
+	left: var(--gap)
+
+

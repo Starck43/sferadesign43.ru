@@ -5,88 +5,98 @@
 {% load thumbnail %}
 
 
-{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}Выставка-конкурс реализованных проектов {{ object.title }} в Кирове{% endif %}{% endblock %}
+{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}Выставка-конкурс реализованных
+    проектов {{ object.title }} в Кирове{% endif %}{% endblock %}
 
-{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Выставка {{ object.title }}{% endif %}{% endblock %}
-{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}Выставка-конкурс реализованных проектов {{ object.title }} в Кирове{% endif %}{% endblock %}
+{% block meta_og_title %}{% if meta.title %}{{ meta.title }}{% else %}Выставка {{ object.title }}
+{% endif %}{% endblock %}
+{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}Выставка-конкурс реализованных
+    проектов {{ object.title }} в Кирове{% endif %}{% endblock %}
 
-{% block meta_og_image %}{{site_url}}{% get_media_prefix %}{{ banner_slider.0 }}{% endblock %}
+{% block meta_og_image %}{{ site_url }}{% get_media_prefix %}{{ banner_slider.0 }}{% endblock %}
 
-{% block title %}{{ block.super }} {{separator}} {{object.title}}{% endblock %}
+{% block title %}{{ block.super }} {{ separator }} {{ object.title }}{% endblock %}
 
 {% block styles %}
-<link href="{% md5url 'css/portfolio.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+    <link href="{% md5url 'css/exhibition.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+    <link href="{% md5url 'css/swiper.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 {% endblock %}
 
 
 {% block script %}
-
-<script type="text/javascript">
-{% if is_mobile %}
-var is_mobile = true;
-{% else %}
-var is_mobile = false;
-{% endif %}
-</script>
-
-{% if is_mobile %}
-<script type="text/javascript" src="{% static 'js/pinchzoom.min.js' %}" defer></script>
-{% endif %}
-
-<script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}" defer ></script>
-
+    {#    <script type="text/javascript" src="{% md5url 'js/exhibition.min.js' %}" defer></script>#}
+    <script type="text/javascript" src="{% md5url 'js/swiper.min.js' %}"></script>
 {% endblock script %}
 
 
 {% block site_title %}
 
-	<svg class="brand-text"><use xlink:href="#main-title"></use></svg>
+    <svg class="brand-text">
+        <use xlink:href="#main-title"></use>
+    </svg>
 
-	{% cache cache_timeout exhibition_banner exh_year %}
+    {% cache cache_timeout exhibition_banner exh_year %}
 
-	{% if banner_slider %}
+        {% if banner_slider %}
 
-	<div class="banner-container flex-content">
-		<div id="banners-block">
-			{% for img in banner_slider %}
-			<figure class="slide-wrapper centered">
-				<div class="image-ratio" style="{% if banner_height %}padding-bottom: {{banner_height}}{% endif %}">
-				{% thumbnail img "320" as xs %}
-				{% thumbnail img "576" as sm %}
-				{% thumbnail img "768" as md %}
-				<img class="slide-img lazyload"
-					data-src="{% get_media_prefix %}{{ img }}"
-					data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w"
-					data-sizes="auto"
-					data-expand="-50"
-					loading="lazy">
-				{% empty %}
-				{% endthumbnail %}
-				{% endthumbnail %}
-				{% endthumbnail %}
-				</div>
-			</figure>
-			{% endfor %}
-		</div>
-		<div class="controls-block no-select">
-			{% if banner_slider|length > 1 %}
-			<svg class="arrow-left arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
-			<svg class="arrow-right arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
-			{% endif %}
-		</div>
-	</div>
+            <div class="banners-container flex-content swiper fade" data-swiper-type="banner">
+                <div class="banners-block swiper-wrapper">
+                    {% for img in banner_slider %}
+                        <figure class="swiper-slide">
+                            <div class="image-ratio"
+                                 style="{% if banner_height %}padding-bottom: {{ banner_height }}{% endif %}"
+                            >
+                                {% thumbnail img "320" as xs %}
+                                    {% thumbnail img "576" as sm %}
+                                        {% thumbnail img "768" as md %}
+                                            <img class="slide-img lazyload"
+                                                 data-src="{% get_media_prefix %}{{ img }}"
+                                                 data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w"
+                                                 data-sizes="auto"
+                                                 data-expand="-50"
+                                                 loading="lazy">
+                                        {% empty %}
+                                        {% endthumbnail %}
+                                    {% endthumbnail %}
+                                {% endthumbnail %}
+                            </div>
+                        </figure>
+                    {% endfor %}
+                </div>
 
-	{% endif %}
+                <div class="swiper-pagination"></div>
 
-	{% endcache %}
+                <div class="controls-block no-select">
+                    {% if banner_slider|length > 1 %}
+                        <button class="btn-nav arrow-left">
+                            <svg class="arrow-icon icon">
+                                <use xlink:href="#arrow-icon"></use>
+                            </svg>
+                        </button>
+                        <button class="btn-nav arrow-right">
+                            <svg class="arrow-icon icon">
+                                <use xlink:href="#arrow-icon"></use>
+                            </svg>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
 
-<h1>
-{{ object.title }}
+        {% endif %}
 
-{% if user.is_staff %}
-<a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}"><svg><use xlink:href="#edit-icon"></use></svg></a>
-{% endif %}
-</h1>
+    {% endcache %}
+
+    <h1>
+        {{ object.title }}
+
+        {% if user.is_staff %}
+            <a class="admin-edit-link" href="{% url model_name|admin_change_url object.id %}">
+                <svg>
+                    <use xlink:href="#edit-icon"></use>
+                </svg>
+            </a>
+        {% endif %}
+    </h1>
 {% endblock site_title %}
 
 
@@ -94,251 +104,302 @@ var is_mobile = false;
 
 
 {% block content %}
-	<div class="exhibition-container">
-		{% cache cache_timeout exhibition_content exh_year %}
+    <div class="exhibition-container">
+        <div class="exhibition-details">
+            <div class="exhibition-description description">{{ object.description|safe }}</div>
 
-		<div class="exhibition-details">
-			<div class="exhibition-description description">{{ object.description|safe }}</div>
+            <div class="details-block meta">
+                <div>Начало: <span>{{ object.date_start }}</span></div>
+                <div>Окончание: <span>{{ object.date_end }}</span></div>
+                <div>Адрес площадки: <span>{{ object.location }}</span></div>
+            </div>
+        </div>
 
-			<div class="meta mt-3">
-				<div>Начало: <span>{{ object.date_start }}</span></div>
-				<div>Окончание: <span>{{ object.date_end }}</span></div>
-				<div>Адрес площадки: <span>{{ object.location }}</span></div>
-			</div>
-		</div>
+        {% if general_banner %}
+            {% with general_banner as banner %}
+                <div class="ads-block">{% include "ads/banner_horizontal.html" %}</div>
+            {% endwith %}
+        {% endif %}
 
+        <div id="nominations" class="nominations-block">
+            {% if exhibition_status == 'finished' and win_nominations %}
+                <h2 class="nominations-title exh-title">
+                    Победители в номинациях
+                </h2>
+                <ol>
+                    {% for item in win_nominations %}
+                        <li>
+                            <a class="nomination-link"
+                               href="{% url 'exhibition:winner-detail-url' exh_year item.slug %}">
+                                <h3 class="exh-title subtitle">{{ item.title }}</h3>
+                            </a>
+                            {% if item.exhibitor_name %}
+                                <a class="exhibitor-link"
+                                   href="{% url 'exhibition:exhibitor-detail-url' item.exhibitor_slug %}">
+                                    {{ item.exhibitor_name }}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
 
-		{% if general_banner %}
-		{% with general_banner as banner %}
-		<div class="ads-block">{% include "ads/banner_horizontal.html" %}</div>
-		{% endwith %}
-		{% endif %}
+            {% else %}
+                <h2 class="nominations-title exh-title">
+                    Номинации
+                </h2>
+                <ol class="d-flex-column gap-1">
+                    {% for nomination in object.nominations.all %}
+                        <li class="nomination-item {% if show_projects %}collapsed{% endif %}">
+                            <h3 class="exh-title subtitle">{{ nomination.title }}</h3>
 
+                            {% if show_projects %}
+                                <ul class="projects-list nomination-projects">
+                                    {% with nomination_projects=projects_by_nomination|get_item:nomination.id %}
+                                        {% if nomination_projects %}
+                                            {% for project in nomination_projects %}
+                                                <li>
+                                                    <a href="{% url 'exhibition:project-detail-url' project.owner_slug project.project_id %}"
+                                                       class="project-link">
+                                                        {{ project.title|default:"Без названия" }}
+                                                        ({{ project.owner_name }})
+                                                    </a>
+                                                </li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li class="text-muted">Пока нет проектов в этой номинации</li>
+                                        {% endif %}
+                                    {% endwith %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+        </div>
 
-		<div id="nominations" class="nominations-block">
-			{% if win_nominations %}
-			<h2 class="nominations-title exh-title">
-				Победители в номинациях
-			</h2>
-			<ol>
-				{% for item in win_nominations %}
-				<li><a class="nomination-link" href="{% url 'exhibition:winner-detail-url' exh_year item.slug %}">
-					<h3 class="exh-title subtitle">{{ item.title }}</h3>
-					{% if item.exhibitor_name %}</a><a class="exhibitor-link" href="{% url 'exhibition:exhibitor-detail-url' item.exhibitor_slug %}">{{ item.exhibitor_name }}
-					{% endif %}
-				</a></li>
-				{% endfor %}
-			</ol>
-			{% else %}
-			<h2 class="nominations-title exh-title">
-				Номинации
-			</h2>
-			<ol>
-				{% for item in object.nominations.all %}
-					<li><h3 class="exh-title subtitle">{{ item.title }}</h3></li>
-				{% endfor %}
-			</ol>
-			{% endif %}
-		</div>
+        {% if object.exhibitors.count %}
 
+            <div id="exhibitors" class="exhibitors-block">
+                <h2 class="exhibitors-title exh-title">{{ object.exhibitors.first|verbose_name_plural }}</h2>
+                <ol>
+                    {% for item in object.exhibitors.all %}
+                        <li>
+                            <a href="{{ item.get_absolute_url }}">
+                                <h3 class="exh-title subtitle">{{ item.name }}</h3>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
 
-		{% if object.exhibitors.count %}
-
-			<div id="exhibitors" class="exhibitors-block">
-				<h2 class="exhibitors-title exh-title collapsed">{{ object.exhibitors.first|verbose_name_plural }}</h2>
-				<ol>
-					{% for item in object.exhibitors.all %}
-					<li><a href="{{ item.get_absolute_url }}"><h3 class="exh-title subtitle">{{ item.name }}</h3></a></li>
-					{% endfor %}
-				</ol>
-			</div>
-
-		{% endif %}
-
-
-		{% if object.jury.count %}
-
-			<div id="jury" class="jury-block">
-				<h2 class="exhibitors-title exh-title {% if object.date_end < today %}collapsed{% else %}expanded{% endif %}">{{ object.jury.first|verbose_name_plural }}</h2>
-				<ol class="jury-list">
-					{% for item in object.jury.all %}
-					<li>
-						<div class="collapsed">
-							<h3 class="subtitle exh-title"><a href="{{ item.get_absolute_url }}">{{ item.name }}</a></h3>
-							{% if item.excerpt  %}
-							<p class="excerpt">{{item.excerpt}}</p>
-							{% endif %}
-						</div>
-						{% if item.description %}
-						<div class="jury-description description">{{ item.description|safe }}</div>
-						{% endif %}
-					</li>
-					{% endfor %}
-				</ol>
-			</div>
-
-		{% endif %}
-
-
-		{% if object.partners.count %}
-
-		<div id="partners" class="partners-block">
-			{% if exh_year == last_exh %}
-
-			<h2 class="partners-title exh-title">{{ object.partners.first|verbose_name_plural }}</h2>
-			<div class="grid-container row">
-				{% for item in object.partners.all %}
-				<a class="grid-cell col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3" href="{{ item.get_absolute_url }}">
-					<div class="partner-logo ratio ratio-1x1">
-						{% if item.logo %}
-						{% thumbnail item.logo "150x150" as xs %}
-						{% thumbnail item.logo "300x300" as sm %}
-						<img class="lazyload"
-							data-src="{{ sm.url }}"
-							data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
-							data-sizes="auto"
-							loading="lazy" title="{{ item.name }}" alt="{{ item.name }}">
-						{% endthumbnail %}
-						{% endthumbnail %}
-						{% endif %}
-					</div>
-				</a>
-				{% endfor %}
-			</div>
-
-			{% else %}
-
-			<h2 class="partners-title exh-title collapsed">{{ object.partners.first|verbose_name_plural }}</h2>
-			<ul>
-				{% for item in object.partners.all %}
-				<li><h3 class="subtitle exh-title brand-title">{{ item.name }}</h3></li>
-				{% endfor %}
-			</ul>
-
-			{% endif %}
-		</div>
-
-		{% endif %}
-
-		{% endcache %}
+        {% endif %}
 
 
-		{% cache 86400 exhibition_events exh_year %}
+        {% if object.jury.count %}
 
-		{% if object.events.count %}
+            <div id="jury" class="jury-block">
+                <h2 class="exhibitors-title exh-title">{{ object.jury.first|verbose_name_plural }}</h2>
+                <ol class="d-flex-column gap-1">
+                    {% for item in object.jury.all %}
+                        <li class="collapsed">
+                            <h3 class="subtitle exh-title">
+                                <a href="{{ item.get_absolute_url }}">{{ item.name }}</a>
+                            </h3>
+                            {% if item.excerpt %}
+                                <p class="excerpt">{{ item.excerpt }}</p>
+                            {% endif %}
+                            {% if item.description %}
+                                <div class="jury-description description">{{ item.description|safe }}</div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
 
-		<div id="events" class="events-block">
-			<h2 class="events-title exh-title {% if object.date_end < today %}collapsed{% else %}expanded{% endif %}">{{ events_title }}</h2>
-			<ol>
-				{% for item in object.events.all %}
-				<li>
-					<div class="collapsed">
-						<h3 class="subtitle exh-title">{{item.title}}</h3>
-						<div class="event-datetime excerpt">
-							<p>{{ item.date_event }}</p>
-							<p>{{ item.time_event }}</p>
-						</div>
-					</div>
-					<div class="event-details">
-						{% if item.description %}<div class="event-details-description description">{{ item.description|safe }}</div>{% endif %}
-						{% if item.location %}<p><span>Площадка: </span>{{ item.location }}</p>{% endif %}
-						{% if item.hoster %}<p><span>Организатор: </span>{{ item.hoster }}</p>{% endif %}
-						{% if item.lector %}<p><span>Ведущий: </span>{{ item.lector }}</p>{% endif %}
-					</div>
-				</li>
-				{% endfor %}
-			</ol>
-		</div>
-
-		{% endif %}
-
-		{% endcache %}
+        {% endif %}
 
 
-		{% cache cache_timeout exhibition_gallery exh_year %}
+        {% if object.partners.count %}
 
-		{% if object.gallery.count %}
+            <div id="partners" class="partners-block">
+                {% if exh_year == last_exh %}
 
-		<div class="gallery-block">
-			<h2 class="gallery-title exh-title">{{ gallery_title }}</h2>
-			<div class="gallery-grid grid my-4">
-				{% for e in object.gallery.all %}
-				<a class="gallery-photo image-link" href="{% get_media_prefix %}{{ e.file }}">
-					{% thumbnail e.file "150x150" crop="center" as photo %}
-					<img class="lazyload" data-src="{{ photo.url }}">
-					{% empty %}
-					<img src="{% get_media_prefix %}no-image.png">
-					{% endthumbnail %}
-				</a>
-				{% endfor %}
-			</div>
-		</div>
+                    <h2 class="partners-title exh-title">{{ object.partners.first|verbose_name_plural }}</h2>
+                    <div class="grid partners-list">
+                        {% for item in object.partners.all %}
+                            <a class="grid-cell" href="{{ item.get_absolute_url }}">
+                                <div class="partner-logo ratio ratio-1x1">
+                                    {% if item.logo %}
+                                        {% thumbnail item.logo "150x150" as xs %}
+                                            {% thumbnail item.logo "300x300" as sm %}
+                                                <img class="lazyload"
+                                                     src="{{ xs.url }}"
+                                                     data-src="{{ sm.url }}"
+                                                     data-srcset="{{ xs.url }} {{ xs.x }}w, {{ sm.url }} {{ sm.x }}w"
+                                                     data-sizes="auto"
+                                                     loading="lazy"
+                                                     title="{{ item.name }}"
+                                                     alt="{{ item.name }}"
+                                                >
+                                            {% endthumbnail %}
+                                        {% endthumbnail %}
+                                    {% endif %}
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
 
-		{% endif %}
+                {% else %}
 
-		{% endcache %}
+                    <h2 class="partners-title exh-title collapsed">{{ object.partners.first|verbose_name_plural }}</h2>
+                    <ul>
+                        {% for item in object.partners.all %}
+                            <li><h3 class="subtitle exh-title brand-title">{{ item.name }}</h3></li>
+                        {% endfor %}
+                    </ul>
 
-	</div>
+                {% endif %}
+            </div>
+
+        {% endif %}
+
+
+
+        {% if object.events.count %}
+
+            <div id="events" class="events-block">
+                <h2 class="events-title exh-title {% if object.date_end < today %}collapsed{% else %}expanded{% endif %}">{{ events_title }}</h2>
+                <ol class="d-flex-column gap-1">
+                    {% for item in object.events.all %}
+                        <li>
+                            <div class="collapsed">
+                                <h3 class="subtitle exh-title">{{ item.title }}</h3>
+                                <div class="event-datetime excerpt">
+                                    {% if item.description %}
+                                        <div class="event-details-description description">{{ item.description|safe }}</div>
+                                    {% endif %}
+                                    {% if item.location %}<p><span>Площадка: </span>{{ item.location }}</p>{% endif %}
+                                    {% if item.hoster %}<p><span>Организатор: </span>{{ item.hoster }}</p>{% endif %}
+                                    {% if item.lector %}<p><span>Ведущий: </span>{{ item.lector }}</p>{% endif %}
+                                </div>
+                            </div>
+                            <div class="event-details">
+                                <p>{{ item.date_event }}</p>
+                                <p>{{ item.time_event }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+
+        {% endif %}
+
+
+
+        {% cache cache_timeout exhibition_gallery exh_year %}
+
+            {% if object.gallery.count %}
+
+                <div class="gallery-block">
+                    <h2 class="gallery-title exh-title">{{ gallery_title }}</h2>
+                    <ol class="grid gallery-grid">
+                        {% for e in object.gallery.all %}
+                            <a class="gallery-photo image-link"
+                               href="{% get_media_prefix %}{{ e.file }}"
+                               data-toggle="modal"
+                               data-target="#gallery"
+                               data-slide-index="{{ forloop.counter0 }}"
+                            >
+                                {% thumbnail e.file "150x150" crop="center" as photo %}
+                                    <img class="lazyload" data-src="{{ photo.url }}">
+                                {% empty %}
+                                    <img src="{% get_media_prefix %}no-image.png">
+                                {% endthumbnail %}
+                            </a>
+                        {% endfor %}
+                    </ol>
+                </div>
+
+            {% endif %}
+
+        {% endcache %}
+
+    </div>
 
 {% endblock content %}
 
-
 {% block extra_container %}
 
-	<div id="overlay" class="modal">
+    <div id="gallery" class="swiper modal fade" data-swiper-type="gallery">
 
-	{% cache cache_timeout exhibition_overlay exh_year %}
+        {% cache cache_timeout exhibition_overlay exh_year %}
 
-		{% if object.gallery.count %}
+            {% if object.gallery.count %}
+                <div class="slides-block swiper-wrapper">
+                    {% for img in object.gallery.all %}
+                        <figure class="swiper-slide">
+                            <div class="swiper-zoom-container">
+                                {% thumbnail img.file "576" as sm %}
+                                    {% thumbnail img.file "992" as md %}
+                                        {% thumbnail img.file "1200" as xl %}
+                                            <img class="slide-img lazyload"
+                                                 data-src="{{ img.file.url }}"
+                                                 data-srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w, {{ img.file.url }} {{ img.file.width }}w"
+                                                 data-sizes="auto"
+                                                 data-expand="-50"
+                                                 loading="lazy"
+                                                 style="max-width: {{ img.file.width }}px"
+                                                 title="{% if img.title %}{{ img.title }}{% endif %}">
+                                        {% empty %}
+                                            <img src="{% get_media_prefix %}no-image.png">
+                                        {% endthumbnail %}
+                                    {% endthumbnail %}
+                                {% endthumbnail %}
 
-		<div id="slides-block">
-			{% for img in object.gallery.all %}
-			<figure class="slide-wrapper centered">
+                                <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                            </div>
 
-				{% thumbnail img.file "576" as sm %}
-				{% thumbnail img.file "992" as md %}
-				{% thumbnail img.file "1200" as xl %}
-				<img class="slide-img lazyload"
-					data-src="{{ img.file.url }}"
-					data-srcset="{{ sm.url }} {{ sm.x }}w, {{ md.url }} {{ md.x }}w, {{ xl.url }} {{ xl.x }}w, {{ img.file.url }} {{ img.file.width }}w"
-					data-sizes="auto"
-					data-expand="-50"
-					loading="lazy"
-					style="max-width: {{ img.file.width }}px"
-					title="{% if img.title %}{{ img.title }}{% endif %}">
-				{% empty %}
-				<img src="{% get_media_prefix %}no-image.png">
-				{% endthumbnail %}
-				{% endthumbnail %}
-				{% endthumbnail %}
-				{% if img.title or img.description %}
-				<figcaption class="centered">
-					{% if img.title %}
-					<h3 class="slide-title">{{ img.title }}</h3>
-					{% endif %}
-					{% if img.description %}
-					<p class="slide-description">{{ img.description }}</p>
-					{% endif %}
-				</figcaption>
-				{% endif %}
+                            {% if img.title or img.description %}
+                                <figcaption class="centered">
+                                    {% if img.title %}
+                                        <h3 class="slide-title">{{ img.title }}</h3>
+                                    {% endif %}
+                                    {% if img.description %}
+                                        <p class="slide-description">{{ img.description }}</p>
+                                    {% endif %}
+                                </figcaption>
+                            {% endif %}
 
-			</figure>
-			{% endfor %}
+                        </figure>
+                    {% endfor %}
+                </div>
 
-		</div>
+                <div class="swiper-pagination"></div>
 
-		<a class="controls-block no-select" href="#">
-			{% if object.gallery.count > 1 %}
-			<svg class="arrow-left arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
-			<svg class="arrow-right arrow-icon icon"><use xlink:href="#arrow-icon"></use></svg>
-			{% endif %}
-			<svg id="close-button" class="close-icon icon"><use xlink:href="#close-icon"></use></svg>
-		</a>
+                <a class="controls-block no-select" href="#">
+                    {% if object.gallery.count > 1 %}
+                        <button class="btn-nav arrow-left">
+                            <svg class="arrow-icon icon">
+                                <use xlink:href="#arrow-icon"></use>
+                            </svg>
+                        </button>
+                        <button class="btn-nav arrow-right">
+                            <svg class="arrow-icon icon">
+                                <use xlink:href="#arrow-icon"></use>
+                            </svg>
+                        </button>
+                    {% endif %}
 
-		{% endif %}
+                    <button class="btn-close btn-lg" data-dismiss="modal">
+                        <svg class="close-icon icon">
+                            <use xlink:href="#close-icon"></use>
+                        </svg>
+                    </button>
+                </a>
+            {% endif %}
 
-	{% endcache %}
+        {% endcache %}
 
-	</div>
+    </div>
 
 {% endblock extra_container %}

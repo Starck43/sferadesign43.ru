@@ -1,0 +1,138 @@
+@use "sass:math"
+@use "vars" as *
+@use "mixins"
+
+
+.sidebar
+	max-width: $col-width-lg
+	> *
+		margin: $container-margin-sm
+
+	+mixins.media-min(lg)
+		position: relative
+		flex: auto
+		width: 100%
+		height: 100%
+		padding: $container-margin-xs
+		background-color: transparent
+		transform: unset
+		visibility: visible !important
+
+		&.right-side .sidebar-inner
+			padding-left: $container-margin-lg
+
+		&.left-side .sidebar-inner
+			padding-right: $container-margin-lg
+
+
+	+mixins.media-min(xl)
+		max-width: $col-width-xl
+		padding: $container-margin-sm
+
+	+mixins.media-min(xxl)
+		max-width: $col-width-xxl
+		padding: $container-margin-md
+		flex: 100%
+
+	&-inner
+		width: 100%
+		height: 100%
+		overflow-y: auto
+		margin: $container-margin-sm 0
+
+		ul.nav
+			margin: 0
+			padding: 0
+
+			li
+				+mixins.push--auto
+				display: table
+				margin-bottom: 0.8rem
+
+		+mixins.media-min(lg)
+			margin: 0
+
+	.banner-link
+		display: block
+		height: auto
+		margin-bottom: 2vw
+
+
+	&-title
+		margin-top: 0.5em
+		margin-bottom: $container-margin-md
+		//text-transform: uppercase
+		+mixins.media-max(lg)
+			font-size: calc(1.4em + .2vw)
+
+	form
+		font-size: 0.9rem
+		+mixins.media-min(lg)
+			font-size: 0.8em
+			button
+				font-size: 1em
+
+		.form-check-input:checked
+			background-color: $main-color
+			border-color: $main-color
+
+		.filters-group
+			padding-left: 0
+			+mixins.media-min(lg)
+				color: $light-text-color
+
+		.filter-attributes-block
+			li
+				margin: 5px 0
+
+		button
+			color: $main-color
+			border-color: $main-color
+
+#projectsFilter.sidebar-inner
+	margin-left: -0.7rem
+	padding: 0 0.5rem
+
+.home .sidebar
+	max-width: calc($brand-logo-width)
+	+mixins.media-max(xxl)
+		max-width: $brand-logo-width - 20px
+	+mixins.media-max(xl)
+		max-width: $brand-logo-width - 40px
+	+mixins.media-max(lg)
+		max-width: $brand-logo-width - 70px
+
+
+.articles .sidebar-primary
+	transform: none
+	visibility: visible !important
+	+mixins.media-max(lg)
+		//z-index: 1000
+		.sidebar-inner
+			padding: $container-margin-md
+
+
+.sidebar-toggler
+	display: inline-flex
+	justify-content: flex-end
+
+	svg
+		height: 20px
+		stroke: $main-color
+		stroke-width: 0.3px
+
+
+.nav-title
+	color: $main-color
+	border-bottom: 1px dotted $main-color
+	transition: all 150ms ease-in-out
+	cursor: pointer
+
+	&.active
+		font-weight: bold
+
+	&.active, &:hover
+		border-bottom: 1px solid $main-color
+
+.form-switch .form-check-input:hover
+	border: 1px solid $main-color !important

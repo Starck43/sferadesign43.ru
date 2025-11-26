@@ -1,38 +1,107 @@
+import re
 
-from django.shortcuts import render, redirect
-from django.views.generic.base import View
-from django.http import HttpResponse, JsonResponse
-from django.core.exceptions import ValidationError
-from django.core.cache import cache
-from django.utils.cache import get_cache_key
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.template.loader	import render_to_string
-from django.utils.timezone import now
+from django.views.generic.base import View
 
-#from allauth.account.decorators import verified_email_required
-
-from .models import Rating, Reviews, JuryRating
-from exhibition.models import Portfolio, Jury
-from exhibition.logic import delete_cached_fragment, SendEmailAsync
-from .forms import RatingForm, ReviewForm, JuryRatingForm
+from exhibition.models import Portfolio
+from .models import Rating, Reviews
+from .utils import is_jury_member
 
 
-def is_jury_member(user):
-	"""Проверка, является ли пользователь членом жюри"""
-	if not user or not user.is_authenticated:
-		return False
-	try:
-		return Jury.objects.filter(user=user).exists()
-	except:
-		return False
-
-
-"""Добавление рейтинга проекту"""
 @method_decorator(csrf_exempt, name='dispatch')
-class add_rating(View):
-	def get_client_ip(self, request):
+class AddRating(View):
+	"""Добавление рейтинга проекту"""
+
+	def post(self, request):
+		try:
+			score = int(request.POST.get("star"))
+			portfolio_id = int(request.POST.get("portfolio"))
+			portfolio = Portfolio.objects.get(id=portfolio_id)
+
+			# Проверяем базовые возможности оценки
+			can_rate, message = Rating.can_user_rate(request.user, portfolio)
+			if not can_rate:
+				return JsonResponse({'status': 'error', 'message': message}, status=403)
+
+			# Дополнительные проверки для выставки
+			if portfolio.exhibition:
+				# Проверяем сроки выставки
+				from django.utils.timezone import now
+				from datetime import timedelta
+
+				rating_deadline = portfolio.exhibition.date_end - timedelta(days=1)
+				is_jury = is_jury_member(request.user)
+
+				# Если выставка активна, оценивать могут только жюри
+				if now().date() <= rating_deadline and not is_jury:
+					return JsonResponse({
+						'status': 'error',
+						'message': 'Во время выставки оценивать могут только члены жюри'
+					}, status=403)
+
+				# Если срок оценки истек, никто не может оценивать
+				if now().date() > rating_deadline:
+					return JsonResponse({
+						'status': 'error',
+						'message': 'Срок выставления оценок завершен'
+					}, status=403)
+
+			# Создаем или обновляем оценку
+			is_jury = is_jury_member(request.user)
+			rating, created = Rating.objects.update_or_create(
+				user=request.user,
+				portfolio=portfolio,
+				defaults={
+					'star': score,
+					'is_jury_rating': is_jury,
+					'ip': self.get_client_ip(request)
+				}
+			)
+
+			return self._build_success_response(portfolio, score, is_jury, created)
+
+		except (ValueError, TypeError) as e:
+			return JsonResponse({
+				'status': 'error',
+				'message': f'Неверные данные: {str(e)}'
+			}, status=400)
+		except Portfolio.DoesNotExist:
+			return JsonResponse({
+				'status': 'error',
+				'message': 'Работа не найдена'
+			}, status=404)
+		except Exception as e:
+			return JsonResponse({
+				'status': 'error',
+				'message': f'Ошибка сервера: {str(e)}'
+			}, status=500)
+
+	def _build_success_response(self, portfolio, score, is_jury, created):
+		"""Формирует успешный ответ"""
+		from exhibition.logic import delete_cached_fragment
+		delete_cached_fragment('portfolio', portfolio.id)
+		delete_cached_fragment('project', portfolio.id)
+
+		# Пересчитываем статистику
+		stats = Rating.objects.filter(portfolio=portfolio).first().calculate()
+
+		response_data = {
+			'score': score,
+			'score_avg': stats.average,
+			'author': portfolio.owner.name,
+			'is_jury': is_jury,
+			'is_new': created,
+			'jury_count': stats.jury_count,
+			'jury_avg': stats.jury_average
+		}
+
+		return JsonResponse(response_data, safe=False)
+
+	@staticmethod
+	def get_client_ip(request):
 		x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 		if x_forwarded_for:
 			ip = x_forwarded_for.split(',')[0]
@@ -41,265 +110,129 @@ class add_rating(View):
 		return ip
 
 
-	def get(self, request):
-		form = RatingForm(user=request.user)
-
-	def post(self, request):
-		score = int(request.GET.get("star"))
-		portfolio_id = int(request.GET.get("portfolio"))
-		rating_exists = Rating.objects.filter(portfolio_id=portfolio_id, user=request.user).first()
-		if not rating_exists:
-		# 	raise ValidationError('Оценка уже выставлена!')
-		# 	return HttpResponse(status=400)
-			Rating.objects.create(
-				ip=self.get_client_ip(request),
-				user=request.user,
-				portfolio_id=portfolio_id,
-				star=score,
-			)
-
-		delete_cached_fragment('portfolio', portfolio_id)
-		delete_cached_fragment('project', portfolio_id)
-
-		if request.is_ajax():
-			portfolio = Portfolio.objects.get(id=portfolio_id)
-			score_avg = Rating.calculate(portfolio).average
-			# round_rate = math.ceil(score_avg)
-			return JsonResponse({
-				'score': score,
-				'score_avg': score_avg,
-				#'round_rate': round_rate,
-				'author': portfolio.owner.name
-			}, safe=False)
-		else:
-			form = RatingForm(request.POST, user=request.user)
-			if form.is_valid():
-				form.save();
-				return HttpResponse(status=201)
-			else:
-				return HttpResponse(status=400)
-
-
-"""Комментарии"""
 @csrf_exempt
 def add_review(request, pk):
-	parent = request.GET.get("parent", None)
-	group = request.GET.get("group", None)
-	if request.is_ajax():
-		new_comment = {};
-		message = request.GET.get("message", None)
-		if message:
+	"""Комментарии"""
+
+	try:
+		if request.method == 'POST':
+			parent = request.POST.get("parent")
+			group = request.POST.get("group")
+			message = request.POST.get("message")
+
+			if not message:
+				return JsonResponse({'error': 'Empty message'}, status=400)
+
+			# Проверяем авторизацию
+			if not request.user.is_authenticated:
+				return JsonResponse({'error': 'Authentication required'}, status=403)
+
+			# Создаем комментарий
 			instance = Reviews.objects.create(
 				user=request.user,
 				portfolio_id=pk,
-				parent_id=parent,
-				group_id=group,
+				parent_id=parent if parent else None,
+				group_id=group if group else None,
 				message=message,
 			)
 
-			# Асинхронная отправка письма с ответом на комментарий
-			if parent:
-				portfolio = Portfolio.objects.get(id=pk)
-				reply_review = Reviews.objects.get(id=parent)
-
-				protocol = 'https' if request.is_secure() else 'http'
-				project_link = "{0}://{1}/{2}".format(protocol, request.get_host(), portfolio.get_absolute_url().strip("/"))
-				reply_link = "{0}://{1}/{2}#{3}".format(protocol, request.get_host(), portfolio.get_absolute_url().strip("/"), reply_review.id)
-				subject = 'Ответ на ваш комментарий на сайте Сфера Дизайна'
-				template = render_to_string('rating/reply_notification.html', {
-					'project': portfolio,
-					'project_link': project_link,
-					'reply_link': reply_link,
-					'comment': reply_review.message,
-					'reply_name': '%s %s' % (request.user.first_name, request.user.last_name),
-					'reply_comment': message,
-				})
-				SendEmailAsync(subject, template, [reply_review.user.email])
-
-			#delete_cached_fragment('portfolio_review', pk)
-
-			# Подсчитаем количество подкомментариев у родителя
+			# Подсчет количества ответов
+			reply_count = 0
 			if instance.parent_id:
-				reply_count = Reviews.objects.get(id=instance.parent_id).reply_count()
-			else:
-				reply_count = 0
+				reply_count = Reviews.objects.filter(parent_id=instance.parent_id).count()
 
+			# Формируем ответ
 			new_comment = {
 				'id': instance.pk,
 				'parent': instance.parent_id,
 				'group': instance.group_id,
 				'author': instance.fullname,
-				'message': message,
+				'message': instance.message,
+				'posted_date': instance.posted_date.strftime('%d.%m.%Y'),
 				'reply_count': reply_count,
 			}
 
-		return JsonResponse(new_comment, safe=False)
+			return JsonResponse(new_comment, safe=False)
 
-	else:
-		form = ReviewForm(request.POST)
-		portfolio = Portfolio.objects.get(id=pk)
-		if form.is_valid():
-			review = form.save(commit=False)
-			review.user = request.user
-			review.portfolio = portfolio
+		else:
+			return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-			if parent and group:
-				review.parent_id = int(parent)
-				review.group_id = int(group)
-
-			# сохраним комментарий, если это или корневой комментарий или подкоментарий где есть и parent и group ids
-			if (parent and group) or (not parent and not group):
-				delete_cached_fragment('portfolio_review', pk)
-				review.save()
-
-		return redirect(portfolio)
+	except Exception as e:
+		return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
 
 
 @csrf_exempt
 @login_required
 def edit_review(request, pk=None):
-	message = request.GET.get("message", None)
-	if message:
+	print(f"✏️ Edit review called: pk={pk}, method={request.method}")
+
+	if request.method == 'GET':
 		try:
 			instance = Reviews.objects.get(pk=pk, user=request.user)
-			instance.message=message
-			#instance.message=unicode_emoji(message)
-			instance.save()
-			#delete_cached_fragment('portfolio_review', instance.portfolio_id)
+			print(f"✅ Found review: {instance.message}")
 
-			if request.method == 'GET':
-				return HttpResponse('<h1>Комментарий успешно изменен!</h1><br/><p>%s</p>' % instance.message)
-			else:
-				json = {
-					'status': 'success',
-					'message': 'Комментарий изменен!',
-				}
+			return JsonResponse({
+				'action': f'/review/edit/{pk}/',
+				'form':
+					f'''
+						<div class="form-group">
+							<textarea name="message" class="form-control" rows="5" placeholder="Введите ваш комментарий...">
+								{re.sub(r"\s+", " ", instance.message.strip())}
+							</textarea>
+						</div>
+						<input type="hidden" name="csrfmiddlewaretoken" value="{request.META['CSRF_COOKIE']}">
+					''',
+				'author_reply': instance.parent.fullname if instance.parent else ''
+			})
+
 		except Reviews.DoesNotExist:
-			json = {
+			print(f"❌ Review not found: {pk}")
+			return JsonResponse({
 				'status': 'error',
-				'message': 'Комментарий не существует! (ID:'+str(pk)+')',
-			}
-	else:
-		json = {
-			'status': 'warning',
-			'message': 'Пустое сообщение!',
-		}
+				'message': 'Комментарий не существует!'
+			}, status=404)
 
-	return JsonResponse(json, safe=False)
+	elif request.method == 'POST':
+		message = request.POST.get("message")
+
+		try:
+			instance = Reviews.objects.get(pk=pk, user=request.user)
+			instance.message = re.sub(r"\s+", " ", message.strip())
+			instance.save()
+
+			return JsonResponse({
+				'status': 'success',
+				'id': instance.pk,
+				'message': instance.message
+			})
+
+		except Reviews.DoesNotExist:
+			return JsonResponse({
+				'status': 'error',
+				'message': 'Комментарий не существует!'
+			}, status=404)
+
+	return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @csrf_exempt
 @login_required
 def delete_review(request, pk=None):
+	"""Удаление комментария - только POST запросы"""
+	if request.method == 'POST':
+		try:
+			instance = Reviews.objects.get(pk=pk, user=request.user)
+			instance.delete()
 
-	try:
-		instance = Reviews.objects.get(pk=pk, user=request.user)
-		message = instance.message
-		instance.delete()
-		delete_cached_fragment('portfolio_review', instance.portfolio_id)
-
-		if request.method == 'GET':
-			return HttpResponse('<h1>Комментарий успешно удален!</h1><br/><p>%s</p>' % message)
-		else:
-			json = {
-				'status': 'success',
-				'message': 'Комментарий удален',
-			}
-
-	except Reviews.DoesNotExist:
-		json = {
-			'status': 'error',
-			'message': 'Комментарий не существует! (ID:'+str(pk)+')',
-		}
-
-	return JsonResponse(json, safe=False)
-
-
-"""Добавление оценки жюри проекту"""
-@csrf_exempt
-@login_required
-def add_jury_rating(request):
-	"""View для добавления оценки жюри"""
-	
-	def get_client_ip(request):
-		x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-		if x_forwarded_for:
-			ip = x_forwarded_for.split(',')[0]
-		else:
-			ip = request.META.get('REMOTE_ADDR', '')
-		return ip
-
-	# Получаем данные из POST или GET запроса
-	data = request.POST if request.method == 'POST' else request.GET
-	
-	if not data.get('star'):
-		return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
-
-	# Проверка, что пользователь является членом жюри
-	if not is_jury_member(request.user):
-		return JsonResponse({'status': 'error', 'message': 'Только члены жюри могут выставлять оценки'}, status=403)
-
-	try:
-		score = int(data.get("star"))
-		portfolio_id = int(data.get("portfolio"))
-		exhibition_id = int(data.get("exhibition"))
-		
-		# Получаем портфолио и выставку
-		portfolio = Portfolio.objects.select_related('exhibition', 'owner').get(id=portfolio_id)
-		exhibition = portfolio.exhibition
-		
-		# Проверяем, что выставка не завершена
-		if exhibition.date_end < now().date():
 			return JsonResponse({
-				'status': 'error', 
-				'message': 'Выставка уже завершена, оценки больше не принимаются'
-			}, status=400)
-		
-		# Проверяем, что выставка соответствует переданной
-		if exhibition.id != exhibition_id:
-			return JsonResponse({'status': 'error', 'message': 'Неверная выставка'}, status=400)
-		
-		# Проверяем, не выставлял ли уже оценку
-		existing_rating = JuryRating.objects.filter(
-			portfolio_id=portfolio_id, 
-			jury=request.user,
-			exhibition_id=exhibition_id
-		).first()
-		
-		if existing_rating:
-			# Обновляем существующую оценку
-			existing_rating.star = score
-			existing_rating.save()
-			message = 'Оценка обновлена'
-		else:
-			# Создаем новую оценку
-			JuryRating.objects.create(
-				ip=get_client_ip(request),
-				jury=request.user,
-				portfolio_id=portfolio_id,
-				exhibition_id=exhibition_id,
-				star=score,
-			)
-			message = 'Оценка добавлена'
-		
-		# Очистка кэша
-		delete_cached_fragment('portfolio', portfolio_id)
-		delete_cached_fragment('project', portfolio_id)
-		
-		# Подсчет средней оценки жюри
-		jury_stats = JuryRating.calculate_jury_average(portfolio_id, exhibition_id)
-		
-		return JsonResponse({
-			'status': 'success',
-			'message': message,
-			'score': score,
-			'jury_average': round(jury_stats['average'], 2),
-			'jury_count': jury_stats['count'],
-			'author': portfolio.owner.name
-		}, safe=False)
-		
-	except Portfolio.DoesNotExist:
-		return JsonResponse({'status': 'error', 'message': 'Портфолио не найдено'}, status=404)
-	except Exception as e:
-		return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+				'status': 'success',
+				'message': 'Комментарий удален'
+			})
 
+		except Reviews.DoesNotExist:
+			return JsonResponse({
+				'status': 'error',
+				'message': 'Комментарий не существует!'
+			}, status=404)
+
+	return JsonResponse({'error': 'Method not allowed'}, status=405)

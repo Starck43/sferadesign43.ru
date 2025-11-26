@@ -4,48 +4,56 @@
 {% load cache %}
 {% load thumbnail %}
 
-
-{% block title %}{{ block.super }} {{separator}} {{ page_title }}{% endblock %}
-
+{% block title %}{{ block.super }} {{ separator }} {{ page_title }}{% endblock %}
 
 {% block site_title %}
-
-	{% if general_banner %}
-	{% with general_banner as banner %}
-		{% include "ads/banner_horizontal.html" %}
-	{% endwith %}
-	{% endif %}
-	<h1>{{ page_title }}</h1>
-
+    {% if general_banner %}
+        {% with general_banner as banner %}
+            {% include "ads/banner_horizontal.html" %}
+        {% endwith %}
+    {% endif %}
+    <h1>{{ page_title }}</h1>
 {% endblock site_title %}
-
 
 {% block sidebar %}{% include "ads/sidebar_banners_list.html" %}{% endblock sidebar %}
 
-
 {% block content %}
-
-	{% cache cache_timeout categories_list %}
-
-	<div class="categories-list grid">
-		{% for e in object_list %}
-		<a class="grid-cell ratio ratio-1x1 centered" href="{{ e.get_absolute_url }}" title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
-			{% if e.logo %}
-			{% thumbnail e.logo "320" crop="center" as xs %}
-			<img class="category-cover lazyload"
-				src="{{ xs.url }}"
-				loading="lazy"
-				title="Раздел {{ e.title }}"
-				alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}">
-			{% endthumbnail %}
-			{% endif %}
-			<h3 class="category-title">{{ e }}</h3>
-		</a>
-		{% empty %}
-			<h2>Список пустой</h2>
-		{% endfor %}
-	</div>
-
-	{% endcache %}
-
-{% endblock content%}
+    {% cache cache_timeout categories_list %}
+        <div class="grid categories-grid">
+            {% for e in object_list %}
+                <a class="grid-cell ratio ratio-1x1 centered" href="{{ e.get_absolute_url }}"
+                   title="{% if e.description %}{{ e.description }}{% else %}{{ e.title }}{% endif %}">
+                    {% if e.logo %}
+                        {# Для SVG файлов используем прямое подключение #}
+                        {% with e.logo.url as logo_url %}
+                            {% if logo_url|lower|slice:'-4:' == '.svg' %}
+                                <div class="category-svg-container">
+                                    <img class="category-cover lazyload"
+                                         src="{{ logo_url }}"
+                                         loading="lazy"
+                                         title="Раздел {{ e.title }}"
+                                         alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}"
+                                         style="width: 100%; height: 100%; object-fit: contain;"
+                                    >
+                                </div>
+                            {% else %}
+                                {# Для обычных изображений оставляем thumbnail #}
+                                {% thumbnail e.logo "320" crop="center" as xs %}
+                                    <img class="category-cover lazyload"
+                                         src="{{ xs.url }}"
+                                         loading="lazy"
+                                         title="Раздел {{ e.title }}"
+                                         alt="Номинация {% for item in e.nominations_set.all %}{{ item|join:' / ' }}{% endfor %}"
+                                    >
+                                {% endthumbnail %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                    <h3 class="category-title">{{ e }}</h3>
+                </a>
+            {% empty %}
+                <h2>Список пустой</h2>
+            {% endfor %}
+        </div>
+    {% endcache %}
+{% endblock content %}

@@ -1,0 +1,130 @@
+@use "sass:color"
+@use "vars" as *
+@use "mixins"
+
+.comments-container
+	margin-bottom: 2vw
+
+	.cloned-instance-links
+		display: none
+
+.portfolio-comment
+	display: flex
+	flex-wrap: wrap
+	align-items: flex-start
+	margin-bottom: 4vh
+	position: relative
+
+	> a
+		margin-left: 1em
+		display: inline-flex
+		align-items: center
+		text-decoration: none
+		color: inherit
+
+		&:hover
+			opacity: 0.7
+
+		&.reply-link
+			margin-left: 0
+			margin-right: auto
+
+			span
+				display: inline-block
+				padding-left: 5px
+				vertical-align: middle
+				text-decoration: underline dotted
+				+mixins.media-max(sm)
+					display: none
+
+		svg
+			fill: currentColor
+			width: 16px
+			height: 16px
+			transition: opacity 0.2s ease
+
+	&.subcomment
+		margin-left: 2em
+		+mixins.media-max(sm)
+			margin-left: 1em
+
+	&.deleted
+		font-style: italic
+		color: $light-text-color
+
+.review-form
+	display: flex
+	flex-direction: column
+	width: 100%
+	gap: 1em
+
+	button
+		margin-left: auto
+		align-self: flex-end
+
+	.form-group
+		width: 100%
+		+mixins.media-min(sm)
+			width: 450px
+		+mixins.media-min(xl)
+			width: 600px
+
+	textarea
+		width: 100%
+		min-height: 38px
+		max-height: 300px
+		margin: 0
+		transition: height 0.2s ease
+		overflow-y: auto
+		resize: none
+
+.comment-block
+	flex: 1 1 100%
+	position: relative
+	color: $comment-text
+	background-color: $comment-bg
+	border-radius: 2px
+	padding: 1em
+	margin-bottom: 0.5em
+	word-break: break-word
+
+	&-author
+		font-size: 1em
+		margin: 0 0 0.5em 0
+		font-weight: bold
+
+	&-datetime
+		font-size: 0.85em
+		color: $light-text-color
+		margin-bottom: 0.5em
+
+	&-text
+		margin: 0
+		line-height: 1.4
+
+
+.modal-content
+	.sub-title
+		font-style: italic
+		margin-bottom: 1em
+		color: $light-text-color
+
+	.message-status
+		margin-right: auto
+
+		&.success
+			color: green
+
+		&.error
+			color: red
+
+
++mixins.media-max(sm)
+	.portfolio-comment
+		margin-bottom: 2vh
+
+		> a
+			margin-left: 0.5em
+
+	.comment-block
+		padding: 0.75em

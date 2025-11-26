@@ -1,0 +1,81 @@
+@use "main/mixins"
+@use "main/vars" as *
+@use "main/form"
+@use "main/alert"
+
+.socialaccount_providers
+	gap: 0.75rem
+	margin: 0
+	padding: 0
+	list-style-type: none
+
+.login-link-block
+	input
+		max-width: 600px
+
+	.btn
+		margin-top: 1rem
+
+.account-form .alert
+	opacity: 1
+
+.account-form .form-group
+	label:not(:last-child)
+		display: none
+
+.user-ratings
+	margin-top: 1rem
+
+	li.user-rating
+		display: flex
+		flex-flow: row wrap
+		align-items: center
+		width: 100%
+		padding: 0 0.5em
+		transition: all 150ms ease
+
+		&:hover
+			background-color: $highlight-block-bg
+	//border: 1px solid $highlight-border-color
+
+	.rating-counter
+		min-width: 26px
+		+mixins.media-max(sm)
+			display: none
+
+	.rated-owner
+		margin-right: 10px
+		flex: auto
+		font-weight: bold
+
+	.stars-block
+		.star
+			position: relative
+			height: 18px
+			width: 18px
+			fill: $star-off-color
+
+			&.filled
+				fill: orange
+
+.user-ratings, .user-reviews
+	ol, ul
+		list-style-type: none
+		padding: 0
+
+.user-reviews
+	margin-top: 1rem
+
+	.comment-block
+		margin-bottom: 2vw
+		border-radius: 3px
+
+	.user-comment-title
+		margin-bottom: 0
+
+	.comment-block-datetime
+		font-size: 0.8em
+
+	p
+		margin-top: 1rem
+		font-style: italic

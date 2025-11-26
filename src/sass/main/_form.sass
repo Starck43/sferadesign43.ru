@@ -1,0 +1,94 @@
+@use "sass:color"
+@use "sass:math"
+@use "mixins"
+
+// ============ FORMS ============
+.form-control
+	display: block
+	width: 100%
+	font-weight: 400
+	color: var(--text-color)
+	outline: 1px solid #ced4da
+	border-radius: var(--border-radius)
+	transition: border-color 0.15s ease-in-out, box-shadow 0.2s ease-in-out
+	
+	&::placeholder
+		font-size: 0.875rem
+
+	&:focus
+		color: #212529
+		background-color: #fff
+
+	&:active
+		box-shadow: 0 0 0 0.25rem rgba(var(--main-color), 0.25)
+
+.form-check
+	display: block
+	min-height: 1.5rem
+	padding-left: 1.5em
+	margin-bottom: 0.125rem
+
+.form-check-input
+	width: 1em
+	height: 1em
+	padding: 0.5em
+	margin-top: 0.25em
+	vertical-align: top
+	background-repeat: no-repeat
+	background-position: center
+	background-size: contain
+	border: 1px solid var(--border-color)
+	appearance: none
+	float: left
+	margin-left: -1.5em
+
+	&[type="checkbox"]
+		border-radius: 0.25em
+
+	&[type="radio"]
+		border-radius: 50%
+
+	&:checked
+		background-color: var(--main-color)
+		border-color: var(--main-color)
+
+	&:focus
+		border-color: var(--main-color)
+		outline: 0
+		box-shadow: 0 0 0 0.25rem rgba(var(--main-color), 0.25)
+
+
+.form-switch
+	padding-left: 2.5em
+
+	.form-check-input
+		width: 2em
+		margin-left: -2.5em
+		background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(0,0,0,0.25)'/%3e%3c/svg%3e")
+		background-position: left center
+		border-radius: 2em
+		transition: background-position 0.15s ease-in-out
+
+		&:checked
+			background-position: right center
+			background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e")
+
+.form-label
+	margin-bottom: 0.5rem
+	font-weight: 500
+
+.form-text
+	margin-top: 0.25rem
+	font-size: 0.875em
+	color: #6c757d
+
+.form-actions
+	display: flex
+	gap: 0.5rem
+	margin-top: 1rem
+
+.form-row
+	display: flex
+	flex-wrap: wrap
+	margin-right: -0.5rem
+	margin-left: -0.5rem

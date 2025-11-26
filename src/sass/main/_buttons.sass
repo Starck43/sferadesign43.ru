@@ -1,0 +1,129 @@
+@use "sass:color"
+@use "sass:math"
+@use "mixins"
+@use "vars" as *
+
+
+// ============ BUTTONS ============
+.btn
+	display: inline-block
+	color: $main-color
+	background-color: #fff
+	border: 1px solid $main-color
+	padding: 0.5rem 0.75rem
+	border-radius: $border-radius
+	transition: all 200ms ease-in-out
+
+	&:hover
+		opacity: 1
+		box-shadow: 0 0 1px 1px white inset, 0 0 8px 2px color.adjust($main-color, $alpha: -0.7)
+
+	&:disabled,
+	&.disabled
+		pointer-events: none
+		opacity: 0.6
+
+// Button variants
+.btn-primary
+	color: white
+	background-color: $main-color
+
+	&:disabled,
+	&.disabled
+		color: color.adjust(white, $alpha: -0.65)
+		background-color: $main-color
+
+.btn-secondary
+	color: $main-color
+	background-color: white
+
+
+	&:hover
+		background-color: $main-color
+		color: white !important
+
+.btn-outline
+	color: $main-color
+	border-color: $main-color
+	background-color: transparent
+
+	&:hover
+		color: #fff !important
+		background-color: $main-color
+
+.btn-outline-primary
+	color: $main-color
+	border-color: $main-color
+	background-color: transparent
+
+	&:hover
+		color: #fff !important
+		background-color: $main-color
+		border-color: $main-color
+
+.btn-link
+	font-weight: 400
+	color: $link-color
+	text-decoration: underline
+	background-color: transparent
+	border: none
+
+	&:hover
+		color: color.adjust($link-color, $lightness: -15%)
+
+.btn-cancel
+	color: #6c757d
+	background-color: transparent
+	border-color: #6c757d
+
+	&:hover
+		color: #fff !important
+		background-color: #6c757d
+		border-color: #6c757d
+
+// Button toggle/checkbox
+.btn-check
+	position: absolute
+	clip: rect(0, 0, 0, 0)
+	pointer-events: none
+
+.btn-close
+	position: relative
+	display: flex
+	align-items: center
+	justify-content: center
+	width: 2rem
+	height: 2rem
+	color: $main-color
+	background: transparent
+	border: none
+	opacity: 0.7
+	transition: 150ms all ease
+	z-index: 1000
+	cursor: pointer
+
+	&:hover
+		opacity: 1
+		transform: scale(110%)
+
+
+// Button sizes
+.btn-xs
+	width: 1rem !important
+	height: 1rem !important
+	font-size: 0.875rem
+
+.btn-sm
+	width: 1.5rem !important
+	height: 1.5rem !important
+	font-size: 1rem
+
+.btn-md
+	width: 2.2rem !important
+	height: 2.2rem !important
+	font-size: 1.1rem
+
+.btn-lg
+	width: 3rem !important
+	height: 3rem !important
+	font-size: 1.25rem

@@ -1,5 +1,6 @@
 import re
 from os import path, rename, rmdir, listdir
+
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.conf import settings
@@ -10,12 +11,15 @@ from django.db.models import F
 from django.db.models.functions import Coalesce
 # from django.utils.text import slugify
 from django.urls import reverse  # Used to generate URLs by reversing the URL patterns
+from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 from smart_selects.db_fields import ChainedForeignKey, ChainedManyToManyField
 # from django.core.files.base import ContentFile
 from sorl.thumbnail import delete
 from uuslug import uuslug
 
 from crm import models
+from crm.validators import svg_validator
 from .logic import (
 	MediaFileStorage, get_image_html, image_resize, portfolio_upload_to, cover_upload_to, gallery_upload_to,
 	limit_file_size, update_google_sitemap
@@ -193,7 +197,7 @@ class Jury(Person):
 
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
-		#update_google_sitemap()  # обновим карту сайта Google
+		update_google_sitemap()  # обновим карту сайта Google
 
 	def get_absolute_url(self):
 		return reverse('exhibition:jury-detail-url', kwargs={'slug': self.slug})
@@ -222,12 +226,20 @@ class Categories(models.Model):
 	title = models.CharField('Категория', max_length=150)
 	slug = models.SlugField('Ярлык', max_length=150, unique=True)
 	description = models.TextField('Описание категории', blank=True)
-	logo = models.ImageField('Логотип', upload_to=LOGO_FOLDER, storage=MediaFileStorage(), null=True, blank=True)
+	logo = models.FileField(
+		'Логотип',
+		upload_to=LOGO_FOLDER,
+		storage=MediaFileStorage(),
+		validators=[svg_validator],  # Добавляем валидатор
+		null=True,
+		blank=True,
+		help_text='Загрузите SVG файл'
+	)
 	sort = models.IntegerField('Индекс сортировки', null=True, blank=True)
 
 	# Metadata
 	class Meta:
-		ordering = ['sort', 'title']  # '-' for DESC ordering
+		ordering = ['sort', 'title']
 		verbose_name = 'Категория'
 		verbose_name_plural = 'Категории'
 		db_table = 'categories'
@@ -236,18 +248,24 @@ class Categories(models.Model):
 		if not self.slug:
 			self.slug = uuslug(self.title.lower(), instance=self)
 		super().save(*args, **kwargs)
-		update_google_sitemap()  # обновим карту сайта Google
+		update_google_sitemap()
 
 	def __str__(self):
-		if self.title:
-			return self.title
-		else:
-			return '<без категории>'
+		return self.title if self.title else '<без категории>'
 
 	def logo_thumb(self):
-		return get_image_html(self.logo)
+		"""Маленькое превью для списка в админке"""
+		return get_image_html(self.logo, width=50, height=50, css_class='admin-thumb')
 
 	logo_thumb.short_description = 'Логотип'
+	logo_thumb.allow_tags = True
+
+	def logo_preview(self):
+		"""Большое превью для формы редактирования"""
+		return get_image_html(self.logo, width=200, height=200, css_class='admin-preview')
+
+	logo_preview.short_description = 'Превью логотипа'
+	logo_preview.allow_tags = True
 
 	def get_absolute_url(self):
 		return reverse('exhibition:projects-list-url', kwargs={'slug': self.slug})
@@ -416,6 +434,26 @@ class PortfolioAttributes(models.Model):
 		return f"{self.get_group_display()} / {self.name}"
 
 
+class PortfolioManager(models.Manager):
+	def get_visible_projects(self, user=None):
+		"""Возвращает видимые проекты в зависимости от прав пользователя"""
+
+		queryset = self.get_queryset()
+
+		# Staff и жюри видят все проекты
+		if user and (user.is_staff or hasattr(user, 'jury')):
+			return queryset
+
+		# Обычные пользователи видят только:
+		# - проекты без выставки
+		# - проекты с завершенной выставкой (после даты окончания)
+		today = now().date()
+		return queryset.filter(
+			models.Q(exhibition__isnull=True) |
+			models.Q(exhibition__date_end__lt=today)
+		)
+
+
 class Portfolio(models.Model):
 	project_id = models.IntegerField(null=True)
 	owner = models.ForeignKey(Exhibitors, on_delete=models.CASCADE, verbose_name='Участник')
@@ -465,6 +503,8 @@ class Portfolio(models.Model):
 	)
 	order = models.IntegerField('Порядок', null=True, blank=True, default=1)
 	status = models.BooleanField('Статус', null=True, blank=True, default=True, help_text='Видимость на сайте')
+
+	objects = PortfolioManager()
 
 	# Metadata
 	class Meta:
@@ -789,7 +829,8 @@ class MetaSEO(models.Model):
 	def get_content_models():
 		return ContentType.objects.filter(
 			model__in=[
-				'article', 'portfolio', 'exhibitions', 'categories', 'winners', 'exhibitors', 'partners', 'jury', 'events'
+				'article', 'portfolio', 'exhibitions', 'categories', 'winners', 'exhibitors', 'partners', 'jury',
+				'events'
 			]
 		)
 

@@ -4,124 +4,136 @@
 {% load crispy_forms_tags %}
 
 {% block meta %}
-{{ block.super }}
-<meta name="robots" content="noindex">
+    {{ block.super }}
+    <meta name="robots" content="noindex">
 {% endblock meta %}
 
-{% block page_title %}{% if user.is_authenticated %}{% if portfolio_id %}Изменить{% else %}Добавить новое{% endif %} портфолио{% else %}Доступ закрыт{% endif %}{% endblock page_title %}
+{% block page_title %}{% if user.is_authenticated %}{% if portfolio_id %}Изменить{% else %}Добавить новое{% endif %}
+    портфолио{% else %}Доступ закрыт{% endif %}{% endblock page_title %}
+
+
+{% block styles %}
+    <link href="{% md5url 'css/upload.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+{% endblock styles %}
 
 
 {% block content %}
 
-	{% if user.is_authenticated %}
-	<p>Вы вошли как: <i><b>{{user.username}}</b> ({{user.first_name}} {{user.last_name}})</i></p>
-	<form id="portfolio_form" class="upload-form" autocomplete="off" enctype="multipart/form-data" method="post">
-		{% csrf_token %}
-		{% crispy form %}
-		{% crispy formset formset_helper %}
+    {% if user.is_authenticated %}
+        <p>Вы вошли как: <i><b>{{ user.username }}</b> ({{ user.first_name }} {{ user.last_name }})</i></p>
+        <form id="uploadProjectForm" class="upload-form" autocomplete="off" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            {% crispy form %}
+            {% crispy formset formset_helper %}
 
-		<div class="form-actions">
-			<button type="submit" class="btn btn-primary">Сохранить</button>
-			<a href="/account" class="btn btn-outline" type="button">Назад</a>
-		</div>
-	</form>
-	{% else %}
-		<p>Для выгрузки портфолио на сайт Вы должны быть зарегистрированы как участник выставки и пройти модерацию.</p>
-		<a href="{{ signup_url }}">Зарегистрироваться</a>
-	{% endif %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/account" class="btn btn-outline" type="button">Назад</a>
+            </div>
+        </form>
+    {% else %}
+        <p>Для выгрузки портфолио на сайт Вы должны быть зарегистрированы как участник выставки и пройти модерацию.</p>
+        <a href="{{ signup_url }}">Зарегистрироваться</a>
+    {% endif %}
 
 {% endblock content %}
 
 {% block extra_container %}
-	<div class="modal fade" id="progressModal" aria-hidden="true" aria-labelledby="progressModalTitle" tabindex="-1">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h4 class="modal-title" id="progressModalTitle">
-						Загрузка фото...
-						<span class="file-counter"></span>
-					</h4>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<div class="modal-message"></div>
-					<div class="progress" style="height:2em;">
-						<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div id="progressModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="progressModalTitle">
+                        Загрузка фото...
+                        <span class="file-counter"></span>
+                    </h4>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+                        <svg class="close-icon icon">
+                            <use xlink:href="#close-icon"></use>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-message"></div>
+                    <div class="progress" style="height:2em;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock extra_container %}
 
 
 {% if user.is_authenticated %}
 
-{% block script %}
-	<script src="{% md5url 'js/project-upload.min.js' %}"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// Зависимость nominations от exhibition
-			const exhibitionSelect = document.querySelector('select[name="exhibition"]');
-			const nominationsSelect = document.querySelector('select[name="nominations"]');
-			
-			if (exhibitionSelect && nominationsSelect) {
-				// Сохраняем изначально выбранные номинации (для режима редактирования)
-				const initialNominations = Array.from(nominationsSelect.selectedOptions).map(opt => opt.value);
-				
-				exhibitionSelect.addEventListener('change', function() {
-					const exhibitionId = this.value;
-					
-					if (!exhibitionId) {
-						// Очищаем список номинаций если выставка не выбрана
-						nominationsSelect.innerHTML = '';
-						return;
-					}
-					
-					// Загружаем номинации для выбранной выставки
-					fetch('/api/get-nominations/?exhibition_id=' + exhibitionId)
-						.then(response => response.json())
-						.then(data => {
-							nominationsSelect.innerHTML = '';
-							
-							if (data.nominations && data.nominations.length > 0) {
-								data.nominations.forEach(nom => {
-									const option = document.createElement('option');
-									option.value = nom.id;
-									option.textContent = nom.title;
-									
-									// Восстанавливаем выбранные опции при редактировании
-									if (initialNominations.includes(String(nom.id))) {
-										option.selected = true;
-									}
-									
-									nominationsSelect.appendChild(option);
-								});
-							} else {
-								const option = document.createElement('option');
-								option.value = '';
-								option.textContent = 'Нет доступных номинаций';
-								option.disabled = true;
-								nominationsSelect.appendChild(option);
-							}
-						})
-						.catch(error => {
-							console.error('Ошибка загрузки номинаций:', error);
-							nominationsSelect.innerHTML = '<option value="" disabled>Ошибка загрузки</option>';
-						});
-				});
-				
-				// Загружаем номинации при загрузке страницы, если выставка уже выбрана
-				if (exhibitionSelect.value) {
-					exhibitionSelect.dispatchEvent(new Event('change'));
-				}
-			}
-		});
-	</script>
-{% endblock script %}
+    {% block script %}
+        <script src="{% md5url 'js/project-upload.min.js' %}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Зависимость nominations от exhibition
+                const exhibitionSelect = document.querySelector('select[name="exhibition"]');
+                const nominationsSelect = document.querySelector('select[name="nominations"]');
+
+                if (exhibitionSelect && nominationsSelect) {
+                    // Сохраняем изначально выбранные номинации (для режима редактирования)
+                    const initialNominations = Array.from(nominationsSelect.selectedOptions).map(opt => opt.value);
+
+                    exhibitionSelect.addEventListener('change', function () {
+                        const exhibitionId = this.value;
+
+                        if (!exhibitionId) {
+                            // Очищаем список номинаций если выставка не выбрана
+                            nominationsSelect.innerHTML = '';
+                            return;
+                        }
+
+                        // Загружаем номинации для выбранной выставки
+                        fetch('/api/get-nominations/?exhibition_id=' + exhibitionId)
+                            .then(response => response.json())
+                            .then(data => {
+                                nominationsSelect.innerHTML = '';
+
+                                if (data.nominations && data.nominations.length > 0) {
+                                    data.nominations.forEach(nom => {
+                                        const option = document.createElement('option');
+                                        option.value = nom.id;
+                                        option.textContent = nom.title;
+
+                                        // Восстанавливаем выбранные опции при редактировании
+                                        if (initialNominations.includes(String(nom.id))) {
+                                            option.selected = true;
+                                        }
+
+                                        nominationsSelect.appendChild(option);
+                                    });
+                                } else {
+                                    const option = document.createElement('option');
+                                    option.value = '';
+                                    option.textContent = 'Нет доступных номинаций';
+                                    option.disabled = true;
+                                    nominationsSelect.appendChild(option);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка загрузки номинаций:', error);
+                                nominationsSelect.innerHTML = '<option value="" disabled>Ошибка загрузки</option>';
+                            });
+                    });
+
+                    // Загружаем номинации при загрузке страницы, если выставка уже выбрана
+                    if (exhibitionSelect.value) {
+                        exhibitionSelect.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        </script>
+    {% endblock script %}
 
 {% endif %}
 

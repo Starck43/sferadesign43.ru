@@ -1,68 +1,85 @@
-
-
 <div class="container-fluid">
-	<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown">
-		<svg class="icon burger-icon"><use xlink:href="#burger-icon"></use></svg>
-	</button>
+    <button
+            type="button"
+            class="navbar-toggler"
+            data-toggle="offcanvas"
+            data-target="#navbarMenu"
+            aria-controls="navbarMenu"
+    >
+        <svg class="icon burger-icon">
+            <use xlink:href="#burger-icon"></use>
+        </svg>
+    </button>
 
-	<div id="navbarNavDropdown" class="navbar-collapse offcanvas offcanvas-end">
-		<button type="button" class="btn-close btn-lg btn-close-white" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
-		<ul class="navbar-nav align-items-center">
+    <div id="navbarMenu" class="navbar-menu navbar-collapse offcanvas offcanvas-end">
+        <button type="button" class="btn-close" data-dismiss="offcanvas" aria-label="Закрыть">
+            <svg class="close-icon icon">
+                <use xlink:href="#close-icon"></use>
+            </svg>
+        </button>
 
-			{% if object.avatar or about %}
-			<li class="nav-item">
-				<a class="nav-link" href="#designerAbout">О себе</a>
-			</li>
-			{% endif %}
+        <ul class="navbar-items navbar-nav align-center">
 
-			{% if portfolio_list %}
-			<li class="nav-item">
-				<a class="nav-link" href="portfolio">Портфолио</a>
-			</li>
-			{% endif %}
+            {% if object.avatar or about %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#designerAbout">О себе</a>
+                </li>
+            {% endif %}
 
-			{% if object.partners.count %}
-			<li class="nav-item">
-				<a class="nav-link" href="#designerPartners">Сотрудничество</a>
-			</li>
-			{% endif %}
+            {% if portfolio_list %}
+                <li class="nav-item">
+                    <a class="nav-link" href="portfolio">Портфолио</a>
+                </li>
+            {% endif %}
 
-			{% if exh_victories_list or competitions or publications %}
-			<li class="nav-item">
-				<a class="nav-link" href="#designerAchievements">Достижения</a>
-			</li>
-			{% endif %}
+            {% if object.partners.count %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#designerPartners">Сотрудничество</a>
+                </li>
+            {% endif %}
 
-			{% if object.customers.count %}
-			<li class="nav-item">
-				<a class="nav-link" href="#designerCustomers">Клиенты</a>
-			</li>
-			{% endif %}
+            {% if exh_victories_list or competitions or publications %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#designerAchievements">Достижения</a>
+                </li>
+            {% endif %}
 
-			<li class="nav-item">
-				<a class="nav-link" href="#designerContacts">Контакты</a>
-			</li>
+            {% if object.customers.count %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#designerCustomers">Клиенты</a>
+                </li>
+            {% endif %}
 
-			<li class="nav-item">
-				<a class="nav-link" href="/">Сфера Дизайна</a>
-			</li>
+            <li class="nav-item">
+                <a class="nav-link" href="#designerContacts">Контакты</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/">Сфера Дизайна</a>
+            </li>
 
 
-			<li class="nav-item">
-				<a class="nav-link account-link" aria-current="page" href="{% if user.is_authenticated and user.is_staff %}/admin/{% elif user.is_authenticated %}/account/{% else %}/accounts/login/{% endif %}" rel="nofollow">
-					{% if user.is_authenticated %}{{ request.user.username }}{% else %}Личный кабинет{% endif %}
-				</a>
-			</li>
-		</ul>
+            <li class="nav-item">
+                <a class="nav-link account-link" aria-current="page"
+                   href="{% if user.is_authenticated and user.is_staff %}/admin/{% elif user.is_authenticated %}/account/{% else %}/accounts/login/{% endif %}"
+                   rel="nofollow">
+                    {% if user.is_authenticated %}{{ request.user.username }}{% else %}Личный кабинет{% endif %}
+                </a>
+            </li>
+        </ul>
 
-		<div class="nav-item social-block">
-		{% for name, label, value, link in object.owner %}
-			{% if not label and link %}
-			<a class="nav-social-link" href="{{ link }}" target="_blank"><svg class="icon {{name}}-icon"><use xlink:href="#logo-{{name}}"></use></svg></a>
-			{% endif %}
-		{% endfor %}
-		</div>
+        <div class="nav-item social-block">
+            {% for name, label, value, link in object.owner %}
+                {% if not label and link %}
+                    <a class="nav-social-link" href="{{ link }}" target="_blank">
+                        <svg class="icon {{ name }}-icon">
+                            <use xlink:href="#logo-{{ name }}"></use>
+                        </svg>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
 
-	</div>
+    </div>
 </div>
 

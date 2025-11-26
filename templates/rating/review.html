@@ -2,124 +2,233 @@
 {% load custom_tags %}
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="display:none">
-<symbol id="reply-icon" viewBox="0 0 384 384">
-	<path d="M149.333,117.333V32L0,181.333l149.333,149.333V243.2C256,243.2,330.667,277.333,384,352
-	C362.667,245.333,298.667,138.667,149.333,117.333z"/>
-</symbol>
-<symbol id="trash-icon" viewBox="0 0 384 384">
-	<path d="M64,341.333C64,364.907,83.093,384,106.667,384h170.667C300.907,384,320,364.907,320,341.333v-256H64V341.333z"/>
-	<polygon points="266.667,21.333 245.333,0 138.667,0 117.333,21.333 42.667,21.333 42.667,64 341.333,64 341.333,21.333"/>
-</symbol>
+    <symbol id="reply-icon" viewBox="0 0 384 384">
+        <path d="M149.333,117.333V32L0,181.333l149.333,149.333V243.2C256,243.2,330.667,277.333,384,352
+	C362.667,245.333,298.667,138.667,149.333,117.333z"></path>
+    </symbol>
+    <symbol id="trash-icon" viewBox="0 0 384 384">
+        <path d="M64,341.333C64,364.907,83.093,384,106.667,384h170.667C300.907,384,320,364.907,320,341.333v-256H64V341.333z"></path>
+        <polygon
+                points="266.667,21.333 245.333,0 138.667,0 117.333,21.333 42.667,21.333 42.667,64 341.333,64 341.333,21.333"></polygon>
+    </symbol>
 </svg>
 
 
 {% block comments %}
 
-<section id="comments-container" class="flex-content">
-	<header class="comments-title"><h2>Комментарии</h2></header>
-	<div class="comments-counter">
-		Всего: <span class="sub-title">{{ portfolio.comments_portfolio.count }}</span>
-	</div>
+    <section id="commentsContainer" class="comments-container flex-content">
+        <header class="comments-title"><h2>Комментарии</h2></header>
+        <div class="comments-counter">
+            Всего: <span class="sub-title">{{ portfolio.comments_portfolio.count }}</span>
+        </div>
 
-	{% if user.is_authenticated %}
-	<div class="cloned-instance-links" style="display:none">
-		<a class="edit-instance-link" href="/review/edit/" data-author-reply="" data-bs-toggle="modal" data-bs-target="#editCommentContainer" title="Редактировать комментарий">
-			<svg><use xlink:href="#edit-icon"></use></svg>
-		</a>
-		<a class="delete-instance-link" href="/review/delete/" data-bs-toggle="modal" data-bs-target="#editCommentContainer" title="Удалить комментарий">
-			<svg><use xlink:href="#trash-icon"></use></svg>
-		</a>
-	</div>
+        {% if user.is_authenticated %}
+            <div class="cloned-instance-links" style="display:none">
+                <a
+                        class="edit-instance-link"
+                        href="/review/edit/"
+                        data-author-reply=""
+                        data-toggle="modal"
+                        data-target="#editCommentContainer"
+                        title="Редактировать комментарий"
+                >
+                    <svg class="btn-xs">
+                        <use xlink:href="#edit-icon"></use>
+                    </svg>
+                </a>
 
-	<form class="review-form mt-4" action="{% url 'rating:add-review' portfolio.id %}" method="post" name="review">
+                <a
+                        class="delete-instance-link"
+                        href="/review/delete/"
+                        data-toggle="modal"
+                        data-target="#deleteCommentContainer"
+                        title="Удалить комментарий"
+                >
+                    <svg class="btn-xs">
+                        <use xlink:href="#trash-icon"></use>
+                    </svg>
+                </a>
+            </div>
 
-		{% csrf_token %}
-		<input class="parent-control" type="hidden" name="parent" value>
-		<input class="group-control" type="hidden" name="group" value>
+            <form class="review-form mt-4" action="{% url 'rating:add-review' portfolio.id %}" method="post"
+                  name="review">
 
-		<textarea class="form-control" name="message" placeholder="Ваш комментарий..." cols="1" rows="1"></textarea>
-		<button class="btn btn-primary" type="submit">Отправить</button>
-	</form>
-	{% endif %}
+                {% csrf_token %}
+                <input class="parent-control" type="hidden" name="parent" value>
+                <input class="group-control" type="hidden" name="group" value>
 
-	{% for review in portfolio.root_comments %}
-	<article id="{{review.id}}" class="porfolio-comment">
-		<div class="comment-block">
-			<h3 class="comment-block-author">{{ review.fullname }}</h3>
-			<div class="comment-block-datetime">{{ review.posted_date|date:"d b Y" }}</div>
-			<p class="comment-block-text">{{ review.message|decode_emoji }}</p>
-		</div>
+                <textarea
+                        class="form-control"
+                        name="message"
+                        placeholder="Ваш комментарий..."
+                        cols="1"
+                        rows="1"
+                ></textarea>
+                <button class="btn btn-primary" type="submit">Отправить</button>
+            </form>
+        {% endif %}
 
-		{% if user.is_authenticated %}
-		<a class="reply-link" data-id="{{review.id}}" data-group="{{review.id}}" data-author="{{review.fullname}}" title="Ответить {{review.fullname}}"><svg><use xlink:href="#reply-icon"></use></svg><span>Ответить</span></a>
-		{% endif %}
+        {% for review in portfolio.root_comments %}
+            <article id="{{ review.id }}" class="portfolio-comment">
+                <div class="comment-block">
+                    <h3 class="comment-block-author">{{ review.fullname }}</h3>
+                    <div class="comment-block-datetime">{{ review.posted_date|date:"d b Y" }}</div>
+                    <p class="comment-block-text">{{ review.message|decode_emoji }}</p>
+                </div>
 
-		{% if user.is_authenticated and review.user.id == request.user.id %}
-		<a class="edit-link" href="{% url 'rating:edit-review' review.id %}" data-author-reply="" data-bs-toggle="modal" data-bs-target="#editCommentContainer" title="Редактировать комментарий">
-			<svg><use xlink:href="#edit-icon"></use></svg>
-		</a>
+                {% if user.is_authenticated %}
+                    <a class="reply-link" data-id="{{ review.id }}" data-group="{{ review.id }}"
+                       data-author="{{ review.fullname }}" title="Ответить {{ review.fullname }}"
+                    >
+                        <svg class="btn-xs">
+                            <use xlink:href="#reply-icon"></use>
+                        </svg>
+                        <span>Ответить</span>
+                    </a>
+                {% endif %}
 
-		{% if review.reply_count == 0 %}
-		<a class="delete-link" href="{% url 'rating:delete-review' review.id %}" data-bs-toggle="modal" data-bs-target="#editCommentContainer" title="Удалить комментарий">
-			<svg><use xlink:href="#trash-icon"></use></svg>
-		</a>
-		{% endif %}
+                {% if user.is_authenticated and review.user.id == request.user.id %}
+                    <a class="edit-link"
+                       href="{% url 'rating:edit-review' review.id %}" data-author-reply=""
+                       data-toggle="modal"
+                       data-target="#editCommentContainer"
+                       title="Редактировать комментарий"
+                    >
+                        <svg class="btn-xs">
+                            <use xlink:href="#edit-icon"></use>
+                        </svg>
+                    </a>
 
-		{% endif %}
+                    {% if review.reply_count == 0 %}
+                        <a class="delete-link"
+                           href="{% url 'rating:delete-review' review.id %}"
+                           data-toggle="modal"
+                           data-target="#deleteCommentContainer"
+                           title="Удалить комментарий"
+                        >
+                            <svg class="btn-xs">
+                                <use xlink:href="#trash-icon"></use>
+                            </svg>
+                        </a>
+                    {% endif %}
 
-	</article>
+                {% endif %}
 
-		{% for subreview in review.group_comments.all|dictsort:"posted_date" %}
-		<article id="{{subreview.id}}" class="porfolio-comment subcomment">
+            </article>
 
-			<div class="comment-block">
-				<h3 class="comment-block-author">{{ subreview.fullname }}</h3>
-				<div class="comment-block-datetime">{{ subreview.posted_date|date:"d b Y" }}</div>
-				<p class="comment-block-text">{{ subreview.message|decode_emoji }}</p>
-			</div>
+            {% for subreview in review.group_comments.all|dictsort:"posted_date" %}
+                <article id="{{ subreview.id }}" class="portfolio-comment subcomment">
 
-			{% if user.is_authenticated %}
-			<a class="reply-link" data-id="{{subreview.id}}" data-parent="{% if subreview.parent_id %}{{subreview.parent_id}}{% endif %}" data-group="{{review.id}}" data-author="{{subreview.fullname}}" title="Ответить {{subreview.fullname}}"><svg><use xlink:href="#reply-icon"></use></svg><span>Ответить</span></a>
-			{% endif %}
+                    <div class="comment-block">
+                        <h3 class="comment-block-author">{{ subreview.fullname }}</h3>
+                        <div class="comment-block-datetime">{{ subreview.posted_date|date:"d b Y" }}</div>
+                        <p class="comment-block-text">{{ subreview.message|decode_emoji }}</p>
+                    </div>
 
-			{% if user.is_authenticated and subreview.user.id == request.user.id %}
-			<a class="edit-link" href="{% url 'rating:edit-review' subreview.id %}" data-author-reply="{{ subreview.parent.fullname }}" data-bs-toggle="modal" data-bs-target="#editCommentContainer" title="Редактировать комментарий">
-				<svg><use xlink:href="#edit-icon"></use></svg>
-			</a>
+                    {% if user.is_authenticated %}
+                        <a class="reply-link" data-id="{{ subreview.id }}"
+                           data-parent="{% if subreview.parent_id %}{{ subreview.parent_id }}{% endif %}"
+                           data-group="{{ review.id }}" data-author="{{ subreview.fullname }}"
+                           title="Ответить {{ subreview.fullname }}">
+                            <svg class="btn-xs">
+                                <use xlink:href="#reply-icon"></use>
+                            </svg>
+                            <span>Ответить</span>
+                        </a>
+                    {% endif %}
 
-			{% if subreview.reply_count == 0 %}
-			<a class="delete-link" href="{% url 'rating:delete-review' subreview.id %}" data-bs-toggle="modal" data-bs-target="#editCommentContainer"  title="Удалить комментарий">
-				<svg><use xlink:href="#trash-icon"></use></svg>
-			</a>
-			{% endif %}
+                    {% if user.is_authenticated and subreview.user.id == request.user.id %}
+                        <a class="edit-link"
+                           href="{% url 'rating:edit-review' subreview.id %}"
+                           data-author-reply="{{ subreview.parent.fullname }}"
+                           data-toggle="modal"
+                           data-target="#editCommentContainer"
+                           title="Редактировать комментарий"
+                        >
+                            <svg class="btn-xs">
+                                <use xlink:href="#edit-icon"></use>
+                            </svg>
+                        </a>
 
-			{% endif %}
+                        {% if subreview.reply_count == 0 %}
+                            <a class="delete-link"
+                               href="{% url 'rating:delete-review' subreview.id %}"
+                               data-toggle="modal"
+                               data-target="#deleteCommentContainer"
+                               title="Удалить комментарий"
+                            >
+                                <svg class="btn-xs">
+                                    <use xlink:href="#trash-icon"></use>
+                                </svg>
+                            </a>
+                        {% endif %}
 
-		</article>
-		{% endfor %}
+                    {% endif %}
 
-	{% endfor %}
-</section>
+                </article>
+            {% endfor %}
+
+        {% endfor %}
+    </section>
 
 {% endblock comments %}
 
 
 {% if user.is_authenticated %}
-<div id="editCommentContainer" class="modal fade" tabindex="-1" data-bs-backdrop="static" aria-labelledby="commentTitle" aria-hidden="true">
-	<div class="modal-dialog modal-xl modal-fullscreen-sm-down">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3 id="commentTitle" class="modal-title"></h3>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-			</div>
-			<div class="modal-body">
-			</div>
-			<div class="modal-footer">
-				<span class="message-status"></span>
-				<button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Отменить</button>
-				<button type="submit" class="btn btn-primary">Сохранить</button>
-			</div>
-		</div>
-	</div>
-</div>
+    <div
+            id="editCommentContainer"
+            class="modal fade"
+            tabindex="-1"
+            data-backdrop-static
+            aria-hidden="true"
+    >
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="commentTitle" class="modal-title"></h3>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Закрыть">
+                        <svg class="close-icon icon">
+                            <use xlink:href="#close-icon"></use>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <span class="message-status status"></span>
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary" id="editCommentSave" form="editCommentForm">
+                        Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+            id="deleteCommentContainer"
+            class="modal fade"
+            tabindex="-1"
+            data-backdrop="static"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Удаление комментария</h3>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Закрыть">
+                        <svg class="close-icon icon">
+                            <use xlink:href="#close-icon"></use>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить этот комментарий?</p>
+                </div>
+                <div class="modal-footer">
+                    <span class="message-status status"></span>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отменить</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endif %}

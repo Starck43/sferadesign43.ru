@@ -1,44 +1,42 @@
-@import "../../../node_modules/bootstrap/scss/functions"
-@import "../../../node_modules/bootstrap/scss/variables"
-@import "../../../node_modules/bootstrap/scss/mixins"
+@use "sass:color"
 
+$breakpoints: (xs: 320,sm: 576px,md: 768px,lg: 992px,xl: 1200px,xxl: 1400px)
+$font-family-text: "OrchideaPro"
+$base-font-size: 16px
 
 // Default variable overrides
-$grid-breakpoints: (xs: 320,sm: 576px,md: 768px,lg: 992px,xl: 1200px,xxl: 1400px)
 $container-max_w: 1800px
 $content-width_max: 1000px
-$col-max_w: 300px
 $content-margin: 250px
 
-$container-margin: 0.75rem
+$container-margin-xs: 0.75rem
 $container-margin-sm: 1rem
 $container-margin-lg: 2vw
-$col-width-xxl: 20%  //1400+
-$col-width-xl: 220px //1200+
 $col-width-lg: 180px //992+
-$col-width-md: 0 //991-
+$col-width-xl: 220px //1200+
+$col-width-xxl: 20%  //1400+
 
-$font-family-header: "OrchideaPro", Arial
-$font-family-text: "OrchideaPro", Arial
 $body-bg: #fff
 $body-color: #55504a
 $main-color: #a60832
 $header-color: $main-color
 $text-color: #333
-$link-color: #000
+$white: white
+$link-color: #071527
 $nav-link-color: $main-color
-$link-hover-color: $main-color
+$link-hover-color: color.adjust($main-color, $lightness: 20%)
 $menu-bg: $main-color
 $menu-text-color: #fff
-$dark-color: lighten($body-color, 30%)
-$light-color: lighten($body-color, 65%)
+$dark-color: color.adjust($body-color, $lightness: 30%)
+$light-color: color.adjust($body-color, $lightness: 65%)
 $btn-color: #fff
 $border-color: $body-color
 $border-light-color: $white
-$border-dark-color: darken($light-color, 10%)
+$border-dark-color: color.adjust($light-color, $lightness: -10%)
 $border-thickness: 3px
 $border-radius: 0
 $highlight-border-color: $main-color
 $cover-overlay-bg: transparent
-$overlay-color: #000
+$overlay-padding: 2vw
+$overlay-color: color.scale(#000, $alpha: -60%)
 $icon-color: $body-color

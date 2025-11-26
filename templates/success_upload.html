@@ -10,17 +10,17 @@
 		<div><b>Владелец:</b> {{portfolio.owner}}</div>
 		<div><b>Название портфолио:</b> {{portfolio.title}}</div>
 		{% if portfolio.description %}
-		<div><b>Описание портфолио:</b><div class="alert alert-light border">{{portfolio.description|safe}}</div></div>
+		<div><b>Описание портфолио:</b><div class="alert-light border">{{portfolio.description|safe}}</div></div>
 		{% endif %}
 
 		{% if portfolio.exhibition %}
-			<div class="alert alert-primary" role="alert"><b>Заявленная выставка:</b>{{portfolio.exhibition}}</div>
+			<div class="alert-primary" role="alert"><b>Заявленная выставка:</b>{{portfolio.exhibition}}</div>
 			{% if portfolio.nominations.count %}
 				<div class="my-3">
 					<b>Номинации:</b>
-					<ul class="list-group alert alert-success">
+					<ul class="list-group alert-success">
 					{% for nom in portfolio.nominations.all %}
-					<li class="d-flex align-items-center">
+					<li class="d-flex align-center">
 						<svg class="icon"><use xlink:href="#check-icon"></use></svg>
 						<span>{{nom.title}}</span>
 					</li>
@@ -32,9 +32,9 @@
 			{% if portfolio.categories.count %}
 			<div class="my-3">
 				<b>Выбранные категории:</b>
-				<ul class="list-group alert alert-success">
+				<ul class="list-group alert-success">
 				{% for cat in portfolio.categories.all %}
-					<li class="d-flex align-items-center">
+					<li class="d-flex align-center">
 						<svg class="icon"><use xlink:href="#check-icon"></use></svg>
 						<span>{{cat.title}}</span>
 					</li>
@@ -45,12 +45,12 @@
 		{% endif %}
 
 		{% if portfolio.cover  %}<div><b>Обложка:</b> {{portfolio.cover.name}}</div>{% endif %}
-		<div class="my-3">
+		<div class="my-2">
 			<b>Список загруженных файлов:</b>
 			{% if files %}
-				<ul class="list-group alert alert-light">
+				<ol class="list-group alert-light">
 				{% for file in files %}
-					<li class="d-flex align-items-center">
+					<li class="d-flex align-center">
 						<svg class="icon success-icon"><use xlink:href="#check-icon"></use></svg>
 						<span>{{file.name}}</span>
 					</li>
@@ -60,7 +60,7 @@
 				<span class="alert-danger">Пусто!</span>
 			{% endif %}
 		</div>
-		<p class="alert alert-warning">Важно!!! Информация будет модерироваться администратором сайта и появится на сайте позже.</p>
+		<p class="alert-warning">Важно!!! Информация будет модерироваться администратором сайта и появится на сайте позже.</p>
 		<div class="controls-block mt-5">
 			<a href="/account" class="btn btn-primary">В личный кабинет</a>
 			<a href="/portfolio/edit/{{portfolio.id}}" class="btn btn-outline-primary">Изменить</a>

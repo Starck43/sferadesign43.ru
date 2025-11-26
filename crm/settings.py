@@ -207,8 +207,8 @@ DJANGORESIZED_DEFAULT_QUALITY = 90
 DJANGORESIZED_DEFAULT_SIZE = [1500, 1080]
 DJANGORESIZED_DEFAULT_KEEP_META = False
 
-CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 CKEDITOR_UPLOAD_PATH = 'attachments/'
 CKEDITOR_IMAGE_BACKEND = 'pillow'
@@ -234,7 +234,7 @@ CKEDITOR_CONFIGS = {
 		],
 		'font_names': 'Corbel;Calibri;Arial;Tahoma;Sans serif;Helvetica;Symbol',
 		'width': '100%',
-		'height': 400,
+		'height': 200,
 		'tabSpaces': 4,
 		'removePlugins': 'flash,iframe',
 		# 'toolbarCanCollapse': True,

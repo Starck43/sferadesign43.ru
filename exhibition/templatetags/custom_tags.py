@@ -6,8 +6,9 @@ import threading
 from os import path
 from django.conf import settings
 
-
 from django import template
+from django.utils.safestring import mark_safe
+
 register = template.Library()
 
 
@@ -46,7 +47,7 @@ def decode_emoji(obj):
 	return re.sub(r':([^a-z]+?):', lambda y: unicodedata.lookup(y.group(1)), obj)
 
 
-#return unique query list
+# return unique query list
 @register.filter
 def distinct(items, attr_name):
 	return set([getattr(i, attr_name) for i in items])
@@ -54,7 +55,12 @@ def distinct(items, attr_name):
 
 @register.filter
 def count_range(value, start_index=0):
-	return range(start_index, value+start_index)
+	return range(start_index, value + start_index)
+
+
+@register.filter
+def get_item(dictionary, key):
+	return dictionary.get(key, [])
 
 
 class UrlCache(object):
@@ -97,7 +103,6 @@ def md5url(model_object):
 	return UrlCache.get_md5(model_object)
 
 
-
 @register.filter('input_type')
 def input_type(ob):
 	'''
@@ -110,12 +115,11 @@ def input_type(ob):
 
 @register.filter(name='add_classes')
 def add_classes(value, arg):
-	'''
-	Add provided classes to form field
-	:param value: form field
+	"""
+	Add provided classes to form field	:param value:
 	:param arg: string of classes seperated by ' '
 	:return: edited field
-	'''
+	"""
 	css_classes = value.field.widget.attrs.get('class', '')
 	# check if class is set or empty and split its content to list (or init list)
 	if css_classes:
@@ -131,3 +135,27 @@ def add_classes(value, arg):
 	return value.as_widget(attrs={'class': ' '.join(css_classes)})
 
 
+@register.filter
+def is_svg(file):
+	"""Проверяет, является ли файл SVG"""
+	if not file:
+		return False
+	return file.name.lower().endswith('.svg')
+
+
+@register.filter
+def get_image_html(file, size="100px"):
+	"""Улучшенная версия для работы с SVG"""
+	if not file:
+		return ""
+
+	if file.name.lower().endswith('.svg'):
+		return mark_safe(
+			f'<img src="{file.url}" style="max-width: {size}; max-height: {size};" />'
+		)
+	else:
+		# Для обычных изображений
+		from django.utils.html import escape
+		return mark_safe(
+			f'<img src="{file.url}" style="max-width: {size}; max-height: {size};" />'
+		)

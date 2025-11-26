@@ -80,7 +80,7 @@
 			<div class="modified-date">{{article.modified_date|date:"d.m.Y"}}</div>
 			<div class="article-text">
 				{{article.content|safe|truncatechars_html:350}}
-				<span>[<u><i><a href="{% url 'blog:article-detail-url' article_id %}" class="link-dark">читать полностью</a></i></u>]</span>
+				<span class="d-flex">[<u><i><a href="{% url 'blog:article-detail-url' article_id %}" class="link-dark">читать полностью</a></i></u>]</span>
 			</div>
 			<div class="article-ads-block">
 				{% for banner in ads_banners %}

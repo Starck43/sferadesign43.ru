@@ -5,183 +5,177 @@
 <!DOCTYPE html>
 <html lang="ru" class="sd43 {{ html_classes|to_string }}{% if is_mobile %} mobile{% else %} desktop{% endif %}">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
-	<meta name="description" content="{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
-	<meta name="keywords" content="{% block meta_keywords %}{% if meta.keywords %}{{ meta.keywords }}{% else %}{{ default_meta.keywords }}{% endif %}{% endblock %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
+    <meta name="description" content="{% block meta_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{% if meta.keywords %}{{ meta.keywords }}{% else %}{{ default_meta.keywords }}{% endif %}{% endblock %}">
 
-	<meta property="og:locale" content="ru_RU">
-	<meta property="og:url" content="{{ site_url }}{{ request.path }}">
-	<meta property="og:site_name" content="{{ main_title }}">
-	<meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
-	<meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
-	<meta property="og:image" content="{% block meta_og_image %}{{site_url}}{% get_media_prefix %}sd-logo-2.png{% endblock %}">
-	<meta property="og:description" content="{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:url" content="{{ site_url }}{{ request.path }}">
+    <meta property="og:site_name" content="{{ main_title }}">
+    <meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
+    <meta property="og:image" content="{% block meta_og_image %}{{ site_url }}{% get_media_prefix %}sd-logo-2.png{% endblock %}">
+    <meta property="og:description" content="{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
 
-	<link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
-	<link rel="preload" href="{% static 'fonts/corbel.woff2' %}" as="font" type="font/woff2" crossorigin>
-	<link rel="preload" href="{% static 'fonts/corbelb.woff2' %}" as="font" type="font/woff2" crossorigin>
-	<link rel="preload" href="{% static 'fonts/calibri.woff2' %}" as="font" type="font/woff2" crossorigin>
-	<link rel="preload" href="{% static 'fonts/calibrib.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
+    <link rel="preload" href="{% static 'fonts/corbel.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'fonts/corbelb.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'fonts/calibri.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'fonts/calibrib.woff2' %}" as="font" type="font/woff2" crossorigin>
 
-	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicons/apple-touch-icon.png' %}">
-	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicons/favicon-32x32.png' %}">
-	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicons/favicon-16x16.png' %}">
-	<link rel="manifest" href="{% static 'favicons/site.webmanifest' %}">
-	<link rel="mask-icon" href="{% static 'favicons/safari-pinned-tab.svg' %}" color="#160d32">
-	<link rel="shortcut icon" href="{% static 'favicons/favicon.ico' %}">
-	<meta name="apple-mobile-web-app-title" content="Выставка Сфера Дизайна">
-	<meta name="application-name" content="Выставка Сфера дизайна">
-	<meta name="msapplication-TileColor" content="#160d32">
-	<meta name="msapplication-TileImage" content="{% static 'favicons/mstile-144x144.png' %}">
-	<meta name="msapplication-config" content="{% static 'favicons/browserconfig.xml' %}">
-	<meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicons/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicons/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'favicons/site.webmanifest' %}">
+    <link rel="mask-icon" href="{% static 'favicons/safari-pinned-tab.svg' %}" color="#160d32">
+    <link rel="shortcut icon" href="{% static 'favicons/favicon.ico' %}">
+    <meta name="apple-mobile-web-app-title" content="Выставка Сфера Дизайна">
+    <meta name="application-name" content="Выставка Сфера дизайна">
+    <meta name="msapplication-TileColor" content="#160d32">
+    <meta name="msapplication-TileImage" content="{% static 'favicons/mstile-144x144.png' %}">
+    <meta name="msapplication-config" content="{% static 'favicons/browserconfig.xml' %}">
+    <meta name="theme-color" content="#ffffff">
 
 
-	<!-- CSS only -->
-	<link href="{% md5url 'css/vendors.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
-	<link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
+    <!-- CSS only -->
+    <link href="{% md5url 'css/base.min.css' %}" rel="stylesheet" type="text/css" media="screen"/>
 
-	{% block styles %}{% endblock styles%}
+    {% block styles %}{% endblock styles %}
 
-	<title>{% block title %}{{ main_title }}{% endblock title %}</title>
+    <title>{% block title %}{{ main_title }}{% endblock title %}</title>
 </head>
 
 <body>
 
-	<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="display:none">
-	{% block svg_icons %}
-		<symbol id="arrow-icon" viewBox="0 0 24 24" fill="transparent" stroke-linejoin="round" stroke-linecap="round">
-			<path d="M7 2 L17 12 L7 22"/>
-		</symbol>
-		<symbol id="close-icon" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round">
-			<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-		</symbol>
-		<symbol id="close2-icon" height="30" viewBox="0 0 24 24">
-			<path d="M1 1 L23 23 M23 1 L1 23"/>
-		</symbol>
-		<symbol id="search-icon" width="100%" height="100%" viewBox="0 0 30 30" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="transparent">
-			<circle cx="13" cy="13" r="10"/><path d="M20 20 L27 27"/>
-		</symbol>
-		<symbol id="burger-icon" height="30" viewBox="0 0 24 24">
-			<path d="M1 4 h22 M1 12 h22 M1 20 h22"/>
-		</symbol>
-		<symbol id="login-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
-			<path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="12" r="10"/>
-		</symbol>
-		<symbol id="filter-icon" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-			<path d="M14 10.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0 0 1h11a.5.5 0 0 0 .5-.5z"/>
-		</symbol>
-		<symbol id="check-icon" width="100%" height="100%" fill="currentColor" viewBox="0 0 16 16">
-			<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-		</symbol>
-		<symbol id="edit-icon" viewBox="0 0 384 384">
-			<polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"/>
-			<path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"/>
-		</symbol>
-		<symbol id="star-icon" width="20" height="20" viewBox="2 2 22 22">
-			<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-		</symbol>
-		<symbol id="main-title" width="100%" height="100%" viewBox="0 -110 1000 140">
-			<text>{{ main_title }}</text>
-		</symbol>
-		<symbol id="logo-instagram" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
-			<rect x="0" y="0" rx="5" ry="5" width="24" height="24" stroke-width="0"/>
-			<circle cx="19" cy="5" r="2" stroke-width="1.5"/>
-			<circle cx="12" cy="12" r="5" stroke-width="2" fill="transparent"/>
-		</symbol>
-		<symbol id="logo-vk" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
-			<path d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"/>
-		</symbol>
-		<symbol id="logo-fb" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512">
-			<path d="M384,176h-96v-64c0-17.664,14.336-32,32-32h32V0h-64l0,0c-53.024,0-96,42.976-96,96v80h-64v80h64v256h96V256h64L384,176z"/>
-		</symbol>
-	{% endblock svg_icons %}
-	</svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none">
+    {% block svg_icons %}
+        <symbol id="arrow-icon" width="100%" height="100%" viewBox="0 0 24 24" fill="transparent" stroke-width="2"
+                stroke="currentColor" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M7 2 L17 12 L7 22"></path>
+        </symbol>
+        <symbol id="close-icon" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="2" stroke-linejoin="round"
+                stroke-linecap="round" stroke="currentColor">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </symbol>
+        <symbol id="close2-icon" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path d="M1 1 L23 23 M23 1 L1 23"></path>
+        </symbol>
+        <symbol id="search-icon" width="100%" height="100%" viewBox="0 0 30 30" fill="transparent" stroke="currentColor"
+                stroke-linejoin="round" stroke-linecap="round" stroke-width="2">
+            <circle cx="13" cy="13" r="10"></circle>
+            <path d="M20 20 L27 27"></path>
+        </symbol>
+        <symbol id="burger-icon" width="100%" height="100%" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M1 4 h22 M1 12 h22 M1 20 h22"></path>
+        </symbol>
+        <symbol id="login-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+            <path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+            <circle cx="12" cy="12" r="10"></circle>
+        </symbol>
+        <symbol id="filter-icon" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M14 10.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5zm0-3a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0 0 1h11a.5.5 0 0 0 .5-.5z"></path>
+        </symbol>
+        <symbol id="check-icon" width="100%" height="100%" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+        </symbol>
+        <symbol id="edit-icon" viewBox="0 0 384 384">
+            <polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893"></polygon>
+            <path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04 C386.027,77.92,386.027,64.373,377.707,56.053z"></path>
+        </symbol>
+        <symbol id="star-icon" width="24" height="24" viewBox="2 2 22 22">
+            <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </symbol>
+        <symbol id="main-title" width="100%" height="100%" viewBox="0 -110 1000 140">
+            <text>{{ main_title }}</text>
+        </symbol>
+        <symbol id="logo-instagram" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
+            <rect x="0" y="0" rx="5" ry="5" width="24" height="24" stroke-width="0"></rect>
+            <circle cx="19" cy="5" r="2" stroke-width="1.5"></circle>
+            <circle cx="12" cy="12" r="5" stroke-width="2" fill="transparent"></circle>
+        </symbol>
+        <symbol id="logo-vk" x="0" y="0" width="100%" height="100%" viewBox="0 0 24 24">
+            <path d="m19.915 13.028c-.388-.49-.277-.708 0-1.146.005-.005 3.208-4.431 3.538-5.932l.002-.001c.164-.547 0-.949-.793-.949h-2.624c-.668 0-.976.345-1.141.731 0 0-1.336 3.198-3.226 5.271-.61.599-.892.791-1.225.791-.164 0-.419-.192-.419-.739v-5.105c0-.656-.187-.949-.74-.949h-4.126c-.419 0-.668.306-.668.591 0 .622.945.765 1.043 2.515v3.797c0 .832-.151.985-.486.985-.892 0-3.057-3.211-4.34-6.886-.259-.713-.512-1.001-1.185-1.001h-2.625c-.749 0-.9.345-.9.731 0 .682.892 4.073 4.148 8.553 2.17 3.058 5.226 4.715 8.006 4.715 1.671 0 1.875-.368 1.875-1.001 0-2.922-.151-3.198.686-3.198.388 0 1.056.192 2.616 1.667 1.783 1.749 2.076 2.532 3.074 2.532h2.624c.748 0 1.127-.368.909-1.094-.499-1.527-3.871-4.668-4.023-4.878z"></path>
+        </symbol>
+        <symbol id="logo-fb" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512">
+            <path d="M384,176h-96v-64c0-17.664,14.336-32,32-32h32V0h-64l0,0c-53.024,0-96,42.976-96,96v80h-64v80h64v256h96V256h64L384,176z"></path>
+        </symbol>
+    {% endblock svg_icons %}
+</svg>
 
-	<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
-		{% include "navbar.html" %}
-	</nav>
+<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
+    {% include "navbar.html" %}
+</nav>
 
-	<div id="site-header">
-		{# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
-		<a id="branding" class="brand-logo ratio ratio-1x1 loading" href="/">
-			<img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{main_title}}">
-		</a>
-		{% block site_title %}{% endblock site_title %}
-		{% block link %}{% endblock link %}
+<div id="site-header">
+    {# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
+    <a id="branding" class="brand-logo ratio ratio-1x1 loading" href="/">
+        <img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{ main_title }}">
+    </a>
+    {% block site_title %}{% endblock site_title %}
+    {% block link %}{% endblock link %}
 
-	</div>
-
-
-	<div class="container loading">
-
-		<aside id="sidebarPrimary" class="sidebar sidebar-primary left-side offcanvas offcanvas-start">
-			<button type="button" class="btn-close btn-lg d-lg-none" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
-			{% block sidebar %}{% endblock sidebar %}
-		</aside>
-
-		<div class="content">
-			{% block content %}{% endblock content %}
-		</div>
-
-		<aside class="sidebar sidebar-secondary right-side">
-			{% block sidebar_secondary %}{% endblock sidebar_secondary %}
-		</aside>
-
-	</div>
+</div>
 
 
-	{% block extra_container %}
-	<!-- Контейнер для диалоговых окон -->
-	<div id="alertContainer" class="hidden centered"></div>
-	{% endblock extra_container %}
+<div class="container d-flex-column loading">
 
+    <aside id="sidebarPrimary" class="sidebar sidebar-primary left-side offcanvas offcanvas-start">
+        <button type="button" class="btn-close btn-md d-lg-none" data-dismiss="offcanvas" aria-label="Закрыть">
+            <svg class="close-icon icon">
+                <use xlink:href="#close-icon"></use>
+            </svg>
+        </button>
+        {% block sidebar %}{% endblock sidebar %}
+    </aside>
 
-	<div id="site-footer">
-		<div id="copyright" class="centered">
-			{% now "Y" as current_year %}
-			<small>{% blocktranslate %}2008-{{ current_year }} © Права принадлежат компании Арт-Сервис{% endblocktranslate %}</small>
-		</div>
-		<div id="back2top" class="disable">
-			<button class="top-link">
-				<svg class="icon arrow-icon up"><use xlink:href="#arrow-icon"></use></svg>
-				<span>вверх</span>
-			</button>
-		</div>
-	</div>
+    <div class="content d-flex">
+        {% block content %}{% endblock content %}
+    </div>
 
-	<script>
-		(async () => {
-			if ('loading' in HTMLImageElement.prototype) {
-				const images = document.querySelectorAll("img.lazyload");
-				images.forEach(img => {
-					if (img.dataset.src) 	img.src = img.dataset.src;
-					if (img.dataset.srcset) img.srcset = img.dataset.srcset;
-					if (! img.hasAttribute('loading')) img.setAttribute('loading','lazy');
-				});
+    <aside class="sidebar sidebar-secondary right-side">
+        {% block sidebar_secondary %}{% endblock sidebar_secondary %}
+    </aside>
 
-			} else {
-				const lazySizesLib = await import("{% static 'js/lazysizes.min.js' %}");
-				lazySizes.init();
-			}
-		})();
-	</script>
+</div>
 
-	<script src="{% md5url 'js/base.min.js' %}"></script>
-	<script src="{% md5url 'js/vendors.min.js' %}"></script>
+<div id="site-footer">
+    <div id="copyright" class="centered">
+        {% now "Y" as current_year %}
+        <small>{% blocktranslate %}2008-{{ current_year }} © Права принадлежат компании
+            Арт-Сервис{% endblocktranslate %}</small>
+    </div>
+    <div id="back2top" class="disable">
+        <button class="top-link arrow-up d-flex-column align-center">
+            <svg class="arrow-icon icon ">
+                <use xlink:href="#arrow-icon"></use>
+            </svg>
+            <span>вверх</span>
+        </button>
+    </div>
+</div>
 
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q63J4DDV30"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
-		gtag('js', new Date());
-		gtag('config', 'G-Q63J4DDV30');
-	</script>
+{% block extra_container %}{% endblock extra_container %}
 
-	{% block script %}{% endblock script %}
+<script src="{% md5url 'js/base.min.js' %}"></script>
 
+{% block script %}{% endblock script %}
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q63J4DDV30"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', 'G-Q63J4DDV30');
+</script>
 
 </body>
 </html>

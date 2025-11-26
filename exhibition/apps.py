@@ -43,4 +43,3 @@ class NominationsAdapter(watson.SearchAdapter):
 class PortfolioAdapter(watson.SearchAdapter):
 	def get_description(self, obj):
 		return '<p><b>Автор проекта:</b> %s</p>%s' % (obj.owner.name, obj.description)
-

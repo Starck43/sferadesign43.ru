@@ -12,9 +12,9 @@
 	<section class="partners-container">
 
 		{% if not exh_year or exhibitions_list.first.slug == exh_year %}
-		<div class="grid-container row">
+		<div class="grid partners-list">
 			{% for partner in exhibitions_list.first.partners.all %}
-			<a class="grid-cell col-6 col-sm-4 col-md-3 col-lg-4 col-xl-3" href="{{ partner.get_absolute_url }}">
+			<a class="grid-cell" href="{{ partner.get_absolute_url }}">
 
 				<div class="partner-logo ratio ratio-1x1">
 					{% thumbnail partner.logo "150x150" as logo_1x %}

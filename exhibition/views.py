@@ -1,5 +1,6 @@
 import math
 from collections import defaultdict
+from datetime import timedelta
 
 from allauth.account.models import EmailAddress
 from allauth.account.signals import user_signed_up
@@ -9,7 +10,7 @@ from allauth.socialaccount.signals import social_account_removed
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadhandler import FileUploadHandler
-from django.db.models import Q, OuterRef, Subquery, Avg, CharField, Case, When
+from django.db.models import Q, OuterRef, Subquery, Avg, CharField, Case, When, Count
 from django.dispatch import receiver
 from django.forms import inlineformset_factory
 from django.http import HttpResponse, JsonResponse
@@ -27,9 +28,9 @@ from watson.views import SearchMixin
 
 from blog.models import Article
 from designers.models import Designer
-from rating.forms import RatingForm, JuryRatingForm
-from rating.models import Rating, Reviews, JuryRating
-from rating.views import is_jury_member
+from rating.forms import RatingForm
+from rating.models import Rating, Reviews
+from rating.utils import is_jury_member
 from .forms import PortfolioForm, ImageForm, ImageFormHelper, FeedbackForm, UsersListForm, DeactivateUserForm
 from .logic import SendEmail, SendEmailAsync, set_user_group
 from .mixins import ExhibitionYearListMixin, BannersMixin, MetaSeoMixin
@@ -221,15 +222,14 @@ class ProjectsList(MetaSeoMixin, BannersMixin, ListView):
 			self.object = self.model.objects.get(slug=self.slug)
 
 	def get_queryset(self):
-		# Текущая страница для получения диапазона выборки записей (см.функцию get ниже)
+		# Текущая страница для получения диапазона выборки записей
 		self.page = int(self.page) if self.page else 1
-
-		start_page = (self.page - 1) * self.PAGE_SIZE  # начало диапазона
-		end_page = self.page * self.PAGE_SIZE  # конец диапазона
+		start_page = (self.page - 1) * self.PAGE_SIZE
+		end_page = self.page * self.PAGE_SIZE
 
 		query = Q(nominations__category__slug=self.slug)
 
-		# Если выбраны опции фильтра, то найдем все номинации в текущей категории "self.slug"
+		# Если выбраны опции фильтра
 		if self.filters_group and self.filters_group[0] != '0':
 			query.add(Q(attributes__in=self.filters_group), Q.AND)
 
@@ -239,14 +239,16 @@ class ProjectsList(MetaSeoMixin, BannersMixin, ListView):
 		subquery2 = Subquery(Winners.objects.filter(
 			portfolio_id=OuterRef('pk'),
 			nomination__category__slug=self.slug
-		).values('exhibition__slug')[:1])  # Подзапрос для получения статуса победителя
+		).values('exhibition__slug')[:1])
 
-		posts = Portfolio.objects.filter(
-			Q(exhibition__isnull=False) & Q(project_id__isnull=False) & query
-		).distinct().prefetch_related('rated_portfolio').annotate(
+		# Используем кастомный менеджер для фильтрации видимых проектов
+		base_queryset = Portfolio.objects.get_visible_projects(self.request.user)
+
+		posts = base_queryset.filter(
+			Q(project_id__isnull=False) & query
+		).distinct().prefetch_related('ratings').annotate(
 			last_exh_year=F('exhibition__slug'),
-			# cat_title=F('nominations__category__title'),
-			average=Avg('rated_portfolio__star'),
+			average=Avg('ratings__star'),
 			win_year=subquery2,
 			project_cover=Case(
 				When(Q(cover__exact='') | Q(cover__isnull=True), then=subquery),
@@ -258,10 +260,10 @@ class ProjectsList(MetaSeoMixin, BannersMixin, ListView):
 			'project_cover'
 		).order_by(
 			'-last_exh_year', '-win_year', '-average'
-		)[start_page:end_page]  # +1 сделано для выявления наличия следующей страницы
+		)[start_page:end_page]
 
 		self.is_next_page = False if len(posts) < self.PAGE_SIZE else True
-		return posts  # [:self.PAGE_SIZE]
+		return posts
 
 	def get(self, request, *args, **kwargs):
 		self.page = self.request.GET.get('page', None)  # Параметр GET запроса ?page текущей страницы
@@ -349,7 +351,7 @@ class ProjectsListByYear(ListView):
 
 		return self.model.objects.filter(
 			Q(exhibition__slug=self.kwargs['exh_year']) & Q(project_id__isnull=False)
-		).distinct().prefetch_related('rated_portfolio').annotate(
+		).distinct().prefetch_related('ratings').annotate(
 			project_cover=Case(
 				When(Q(cover__exact='') | Q(cover__isnull=True), then=subquery),
 				default='cover',
@@ -458,40 +460,91 @@ class ExhibitionDetail(MetaSeoMixin, BannersMixin, DetailView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
+		from django.utils.timezone import now
+		from datetime import timedelta
 
-		win_nominations = self.object.nominations.filter(
-			nomination_for_winner__exhibition_id=self.object.id
-		).annotate(
-			exhibitor_name=F('nomination_for_winner__exhibitor__name'),
-			exhibitor_slug=F('nomination_for_winner__exhibitor__slug'),
-		).values('id', 'exhibitor_name', 'exhibitor_slug', 'title', 'slug')
+		today = now().date()
+		exhibition = self.object
 
-		# Добавляем слайды в баннер (основной + первые фото победных проектов)
+		# Определяем статус выставки
+		context['exhibition_status'] = 'upcoming' if today < exhibition.date_start else \
+			'active' if today <= exhibition.date_end else \
+				'finished'
+
+		# Показывать проекты в номинациях для:
+		# - Жюри и staff ВСЕГДА
+		# - Всех пользователей во время активной выставки
+		context['show_projects'] = (
+				self.request.user.is_staff or
+				is_jury_member(self.request.user) or
+				context['exhibition_status'] == 'active'
+		)
+
+		# Для завершенной выставки - показываем победителей
+		if context['exhibition_status'] == 'finished':
+			win_nominations = exhibition.nominations.filter(
+				nomination_for_winner__exhibition_id=exhibition.id
+			).annotate(
+				exhibitor_name=F('nomination_for_winner__exhibitor__name'),
+				exhibitor_slug=F('nomination_for_winner__exhibitor__slug'),
+			).values('id', 'exhibitor_name', 'exhibitor_slug', 'title', 'slug')
+			context['win_nominations'] = win_nominations
+		else:
+			context['win_nominations'] = None
+
+		# Загружаем проекты для показа если нужно
+		if context['show_projects']:
+			# Используем прямой запрос чтобы избежать рекурсии с related_name
+			from django.db.models import Prefetch
+
+			# Получаем портфолио связанные с этой выставкой и номинациями
+			portfolios = Portfolio.objects.filter(
+				exhibition=exhibition
+			).select_related('owner').prefetch_related('nominations')
+
+			# Группируем проекты по номинациям вручную
+			projects_by_nomination = {}
+			for portfolio in portfolios:
+				for nomination in portfolio.nominations.all():
+					if nomination.id not in projects_by_nomination:
+						projects_by_nomination[nomination.id] = []
+					projects_by_nomination[nomination.id].append({
+						'id': portfolio.id,
+						'title': portfolio.title,
+						'project_id': portfolio.project_id,
+						'owner_slug': portfolio.owner.slug,
+						'owner_name': portfolio.owner.name
+					})
+
+			context['projects_by_nomination'] = projects_by_nomination
+
+		# Баннер слайдер
 		banner_slider = []
-		if self.object.banner and self.object.banner.width > 0:
-			banner_slider.append(self.object.banner)
-			context['banner_height'] = f"{self.object.banner.height / self.object.banner.width * 100}%"
+		if exhibition.banner and exhibition.banner.width > 0:
+			banner_slider.append(exhibition.banner)
+			context['banner_height'] = f"{exhibition.banner.height / exhibition.banner.width * 100}%"
 
-		for nom in win_nominations:
-			cover = Image.objects.filter(
-				portfolio__exhibition=self.object.id,
-				portfolio__nominations=nom['id'],
-				portfolio__owner__slug=nom['exhibitor_slug'],
-			).values('file').first()
-
-			if cover:
-				banner_slider.append(cover['file'])
+		# Для завершенной выставки добавляем фото победителей в слайдер
+		if context['exhibition_status'] == 'finished' and context['win_nominations']:
+			for nom in context['win_nominations']:
+				cover = Image.objects.filter(
+					portfolio__exhibition=exhibition.id,
+					portfolio__nominations=nom['id'],
+					portfolio__owner__slug=nom['exhibitor_slug'],
+				).values('file').first()
+				if cover:
+					banner_slider.append(cover['file'])
 
 		context['html_classes'] = ['exhibition']
 		context['banner_slider'] = banner_slider
-		context['win_nominations'] = win_nominations
 		context['events_title'] = Events._meta.verbose_name_plural
 		context['gallery_title'] = Gallery._meta.verbose_name_plural
 		context['last_exh'] = self.model.objects.only('slug').first().slug
 		context['exh_year'] = self.kwargs['exh_year']
 		context['model_name'] = self.model.__name__.lower()
-		context['today'] = now().date()
+		context['today'] = today
 		context['cache_timeout'] = 2592000
+
 		return context
 
 
@@ -499,6 +552,7 @@ class WinnerProjectDetail(MetaSeoMixin, BannersMixin, DetailView):
 	""" Winner project detail """
 	model = Winners
 	template_name = 'exhibition/nominations_detail.html'
+
 	# slug_url_kwarg = 'name'
 
 	def get_object(self, queryset=None):
@@ -569,6 +623,7 @@ class ProjectDetail(MetaSeoMixin, DetailView):
 	model = Portfolio
 	context_object_name = 'portfolio'
 	template_name = 'exhibition/portfolio_detail.html'
+
 	# slug_url_kwarg = 'slug'
 
 	def get_object(self, queryset=None):
@@ -600,57 +655,72 @@ class ProjectDetail(MetaSeoMixin, DetailView):
 			else:
 				context['parent_link'] = '/category/'
 
-		# Обычный рейтинг от пользователей
-		rate = Rating.calculate(self.object).average
+		# Пересчитываем статистику рейтингов
+		if self.object:
+			ratings_aggregate = self.object.ratings.aggregate(
+				average=Avg('star'),
+				count=Count('id'),
+				jury_average=Avg('star', filter=Q(is_jury_rating=True)),
+				jury_count=Count('id', filter=Q(is_jury_rating=True))
+			)
+
+			rate = ratings_aggregate.get('average') or 0.0
+			jury_avg = ratings_aggregate.get('jury_average') or 0.0
+			jury_count = ratings_aggregate.get('jury_count') or 0
+		else:
+			rate = 0.0
+			jury_avg = 0.0
+			jury_count = 0
+
+		# Проверяем текущую оценку пользователя
+		user_rating = None
 		if self.request.user.is_authenticated:
-			context['user_score'] = Rating.objects.filter(
-				portfolio=self.object,
-				user=self.request.user
-			).values_list('star', flat=True).first()
+			user_rating = self.object.ratings.filter(user=self.request.user).first()
+			context['user_score'] = user_rating.star if user_rating else None
 		else:
 			context['user_score'] = None
 
-		context['average_rate'] = round(rate, 2)
-		context['round_rate'] = math.ceil(rate)
-		context['extra_rate_percent'] = int((rate - int(rate)) * 100)
+		context['is_jury'] = is_jury_member(self.request.user)
+		context['jury_can_rate'] = False
+		context['jury_avg'] = round(jury_avg, 2)
+		context['jury_count'] = jury_count
+
+		if self.object and self.object.exhibition and context['is_jury']:
+			can_jury_rate, _ = Rating.can_jury_rate_now(self.object)
+			context['jury_can_rate'] = can_jury_rate
+
+		context['user_can_rate'] = False
+		if self.request.user.is_authenticated:
+			if context['is_jury']:
+				context['user_can_rate'] = context['jury_can_rate']
+			else:
+				# Обычные пользователи И staff могут оценивать только после выставки
+				can_rate = not context['user_score']
+				if self.object and self.object.exhibition:
+					rating_deadline = self.object.exhibition.date_end - timedelta(days=1)
+					can_rate = can_rate and (now().date() > rating_deadline)
+
+				context['user_can_rate'] = can_rate
+
+		# Ключевое изменение: для жюри используем их личную оценку, вместо средней
+		if context['is_jury'] and user_rating:
+			# Жюри видят только свою оценку
+			display_rate = user_rating.star
+			context['round_rate'] = display_rate
+			context['extra_rate_percent'] = 0  # Полные звезды
+		else:
+			# Обычные пользователи видят средний рейтинг
+			display_rate = rate
+			context['round_rate'] = math.ceil(rate)
+			context['extra_rate_percent'] = int((rate - int(rate)) * 100)
+
+		context['average_rate'] = round(display_rate, 2)
+
 		context['rating_form'] = RatingForm(
-			initial={'star': int(rate)},
+			initial={'star': int(display_rate) if display_rate else 0},
 			user=self.request.user,
 			score=context['user_score']
 		)
-
-		# Рейтинг жюри (только для проектов участвующих в выставках)
-		context['is_jury'] = is_jury_member(self.request.user)
-		context['jury_can_rate'] = False
-		context['jury_score'] = None
-		context['jury_average'] = 0
-		context['jury_count'] = 0
-		
-		if self.object.exhibition:
-			# Проверяем, может ли жюри выставлять оценки (выставка не завершена)
-			exhibition_active = self.object.exhibition.date_end >= now().date()
-			context['exhibition_active'] = exhibition_active
-			context['jury_can_rate'] = context['is_jury'] and exhibition_active
-			
-			# Получаем оценку жюри, если пользователь - член жюри
-			if context['is_jury']:
-				context['jury_score'] = JuryRating.objects.filter(
-					portfolio=self.object,
-					jury=self.request.user,
-					exhibition=self.object.exhibition
-				).values_list('star', flat=True).first()
-			
-			# Средняя оценка жюри для данной выставки
-			jury_stats = JuryRating.calculate_jury_average(self.object.id, self.object.exhibition.id)
-			context['jury_average'] = round(jury_stats['average'], 2)
-			context['jury_count'] = jury_stats['count']
-			
-			context['jury_rating_form'] = JuryRatingForm(
-				initial={'star': int(context['jury_average'])},
-				user=self.request.user,
-				score=context['jury_score'],
-				can_rate=context['jury_can_rate']
-			)
 
 		context['html_classes'] = ['project']
 		context['owner'] = self.kwargs['owner']
@@ -712,7 +782,7 @@ class ProgressBarUploadHandler(FileUploadHandler):
 def get_nominations_for_exhibition(request):
 	""" AJAX view для получения номинаций по выбранной выставке """
 	exhibition_id = request.GET.get('exhibition_id')
-	
+
 	if exhibition_id:
 		try:
 			exhibition = Exhibitions.objects.get(id=exhibition_id)
@@ -720,8 +790,19 @@ def get_nominations_for_exhibition(request):
 			return JsonResponse({'nominations': list(nominations)})
 		except Exhibitions.DoesNotExist:
 			return JsonResponse({'nominations': []})
-	
+
 	return JsonResponse({'nominations': []})
+
+
+def get_nominations_categories_mapping(request):
+	""" API endpoint для получения маппинга номинаций к категориям """
+	nominations = Nominations.objects.select_related('category').all()
+	mapping = {}
+	for nom in nominations:
+		if nom.category:
+			mapping[str(nom.id)] = str(nom.category.id)
+
+	return JsonResponse(mapping)
 
 
 @csrf_exempt
@@ -729,7 +810,7 @@ def get_nominations_for_exhibition(request):
 def portfolio_upload(request, **kwargs):
 	""" Загрузка нового портфолио или редактирование существующего """
 	request.upload_handlers.insert(0, ProgressBarUploadHandler(request))
-	
+
 	pk = kwargs.pop('pk', None)
 	if pk:
 		portfolio = Portfolio.objects.get(id=pk)
@@ -740,11 +821,11 @@ def portfolio_upload(request, **kwargs):
 	# Разрешено: администраторам, редакторам (is_staff) и дизайнерам (группа Exhibitors)
 	is_staff = request.user.is_staff
 	is_exhibitor = request.user.groups.filter(name='Exhibitors').exists()
-	
+
 	if not is_staff and not is_exhibitor:
 		from django.http import HttpResponseForbidden
 		return HttpResponseForbidden('У вас нет прав для доступа к этой странице.')
-	
+
 	# Определяем владельца портфолио
 	if is_staff:
 		owner = 'staff'
@@ -754,7 +835,7 @@ def portfolio_upload(request, **kwargs):
 		except Exhibitors.DoesNotExist:
 			from django.http import HttpResponseForbidden
 			return HttpResponseForbidden('Профиль участника не найден.')
-	
+
 	# Проверка прав на редактирование существующего портфолио
 	if pk and not is_staff:
 		if portfolio.owner != owner:
@@ -799,13 +880,8 @@ def portfolio_upload(request, **kwargs):
 
 				# Если это AJAX запрос, возвращаем JSON с URL для перенаправления
 				if request.headers.get('X-REQUESTED-WITH') == 'XMLHttpRequest':
-					if not pk:
-						# Для нового портфолио перенаправляем на страницу успеха
-						redirect_url = '/account'
-					else:
-						# Для редактирования возвращаем в аккаунт
-						redirect_url = '/account'
-					
+					redirect_url = '/account'
+
 					return JsonResponse({
 						'status': 'success',
 						'location': redirect_url,

@@ -1,0 +1,87 @@
+@use "sass:color"
+
+body
+	display: flex
+	flex-direction: column
+	min-height: 100vh
+	margin: 0
+	padding: 0
+
+*
+	box-sizing: border-box
+
+::-moz-focus-inner
+	border: 0 !important
+
+
+::selection
+	color: white
+	background-color: var(--main-color)
+
+a
+	text-decoration: none
+	outline: none
+	cursor: pointer
+
+ul
+	padding-inline-start: 0.8rem
+	li
+		margin-bottom: 0.5rem
+
+button
+	min-height: 2rem
+	font-weight: 400
+	font-size: 1rem
+	text-align: center
+	text-decoration: none
+	vertical-align: middle
+	background-color: transparent
+	border: none
+	user-select: none
+	cursor: pointer
+	transition: all 200ms ease-in-out
+
+	&:disabled, &.disabled
+		opacity: 0.5
+
+form
+	position: relative
+
+input, textarea, select
+	font-size: 1rem
+	padding: 0.75rem
+	border: 1px solid lightgrey
+	background-color: transparent
+	background-clip: padding-box
+	appearance: none
+
+	&:active, &:hover, &:focus
+		outline-color: var(--main-color)
+
+label + *
+	margin-top: 5px
+
+.asteriskField
+	padding-left: 3px
+	color: darkred
+
+.form-control, .btn
+	border-radius: var(--border-radius)
+
+svg.icon
+	width: 100%
+	height: 100%
+
+.box-shadow
+	box-shadow: 0 0 2.2rem -0.3rem color.adjust(#000, $alpha: -0.8)
+
+.no-select
+	user-select: none
+	-webkit-tap-highlight-color: color.adjust(black, $alpha: -1)
+	-webkit-touch-callout: none
+
+figure
+	margin: 0
+
+.disabled
+	opacity: 0.5

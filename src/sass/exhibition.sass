@@ -1,0 +1,164 @@
+@use "main/mixins"
+@use "main/vars" as *
+@use "main/modal"
+@use "main/gallery"
+
+.exhibition
+	ol
+		list-style: none
+
+	p span
+		font-weight: 700
+
+	.excerpt
+		margin: 0
+
+	.description
+		ol, ul
+			display: grid
+			margin-bottom: 1rem
+
+		p, li
+			color: $light-text-color
+
+		img
+			max-width: 450px
+			margin: 0.3em 2vh 2vh 0
+			+mixins.media-max(xl)
+				max-width: 375px
+			+mixins.media-max(md)
+				display: block
+				float: none !important
+				margin: 0 0 1.5vh
+			+mixins.media-max(sm)
+				max-width: 100%
+				margin: 0 0 1em
+
+	.expanded .description
+		margin-bottom: 1.5vh
+
+	.banners-container
+		visibility: visible
+		flex: 100%
+
+		.image-ratio
+			position: relative
+			width: 100%
+			height: 0
+			padding-bottom: 400px
+
+			img
+				position: absolute
+				height: 100%
+				width: 100%
+				object-fit: cover
+
+	.exhibition-container
+		p
+			margin: 0
+			padding-top: 0.5rem
+
+		> div
+			position: relative
+			padding: 3vh 0
+
+			&:first-child
+				padding-top: 0
+
+	.exhibition-details
+		.exhibition-description
+			margin: 0 auto 3vh
+			width: max-content
+
+			p
+				padding: 0 0 0.5em
+
+		.details-block
+			padding: 1em
+			border: 1px solid $border-color
+			border-radius: $border-radius
+
+		img
+			width: auto !important
+			margin: 2vh 0
+
+		p
+			color: $light-text-color
+			letter-spacing: 1.5px
+
+			a
+				text-decoration: underline dotted
+
+	.event-datetime p
+		margin-bottom: 0
+
+	.nominations-block
+		.subtitle
+			text-transform: lowercase
+
+		a.exhibitor-link
+			color: $text-color
+
+	.exh-title
+		justify-content: start
+		user-select: none
+
+		~ ol
+			padding: 0
+
+			> li
+				padding: 1em
+				background-color: $highlight-block-bg
+
+				&:not(.collapsed):not(.expanded):not(:last-child)
+					padding-bottom: 0
+
+		~ ul
+			margin-bottom: 0
+
+			> li
+				padding-top: 0.75em
+
+		li
+			margin-bottom: 0
+
+			.event-details
+				> p
+					margin-bottom: 0
+
+			a
+				font-size: 1.2rem
+
+			&:last-child
+				padding-bottom: 1em
+				border: 0
+
+
+		&:not(.subtitle)
+			margin-top: 1.3rem
+			text-transform: uppercase
+
+			+mixins.media-max(sm)
+				font-size: 1.4rem
+
+		&::after
+			margin-left: 7px
+
+		&.collapsed,
+		&.expanded
+			padding-right: 0.75em
+
+	.subtitle ~ *
+		flex: 100%
+
+.winners-list
+	display: flex
+	flex-direction: column
+	gap: 1.5rem
+
+	> li
+		padding: 1.2em !important
+		background-color: $highlight-block-bg
+
+	ul li
+		list-style-type: square

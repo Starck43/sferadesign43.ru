@@ -1,0 +1,49 @@
+@use "sass:color"
+
+$breakpoints: (xs: 320,sm: 576px,md: 768px,lg: 992px,xl: 1200px,xxl: 1400px)
+
+$font-family-header: "Corbel"
+$font-family-text: "Calibri"
+$base-font-size: 16px
+
+$container-max_w: 1800px
+$content-width_max: 1200px
+$content-margin: 250px
+
+$container-margin-xs: 0.75rem
+$container-margin-sm: 1rem
+$container-margin-md: 1.5rem
+$container-margin-lg: 2vw
+$col-width-md: 150px //991-
+$col-width-lg: 180px //992+
+$col-width-xl: 220px //1200+
+$col-width-xxl: 20%  //1400+
+
+$person-logo-max_w: 300px
+$brand-logo-width: 180px
+$border-thickness: 3px
+$border-radius: 0.25rem
+
+$main-color: #160D32
+$primary-color: #d1bee1
+$border-color: $main-color
+$menu-bg: $main-color
+$menu-text-color: #fff
+$submenu-bg: color.adjust($menu-bg, $lightness: 10%)
+
+$highlight-block-bg: ghostwhite
+$highlight-border-color: #cccccc
+
+$link-color: color.adjust($main-color, $lightness: 10%)
+$link-hover-color: color.adjust($link-color, $lightness: 20%)
+$header-color: $main-color
+$text-color: #222
+$light-text-color: #555
+$cell-text-color: $main-color
+$overlay-color: color.scale(#000, $alpha: -60%)
+$box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .3)
+$star-off-color: #bbb
+$star-on-color: orange
+$comment-text: $text-color
+$success-color: green
+$comment-bg: $highlight-block-bg

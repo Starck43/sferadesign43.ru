@@ -30,7 +30,7 @@
 	{% comment %}
 	<section class="organizers-container">
 		<header><h2>{{ organizers.first|verbose_name_plural }}</h2></header>
-		<div class="organizers-list row">
+		<div class="organizers-list">
 			{% for org in organizers %}
 			{% with org.site  as org_url %}
 			<div class="organizer-item">
@@ -51,9 +51,9 @@
 	{% if exhibitions_list.first.partners.first %}
 	<section class="partners-container">
 		<header><h2>{{ exhibitions_list.first.partners.first|verbose_name_plural }}</h2></header>
-		<div class="partners-list row">
+		<div class="partners-list">
 			{% for partner in exhibitions_list.first.partners.all %}
-			<div class="partner-item col-6 col-sm-4 col-md-3">
+			<div class="partner-item">
 				<a class="person-link ratio ratio-1x1" href="{{ partner.get_absolute_url }}">
 					{% thumbnail partner.logo "150x150" as img %}
 					<img class="lazyload" src="{{ img.url }}" alt="{{ partner.name }}">
