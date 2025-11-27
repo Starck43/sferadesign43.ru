@@ -8,7 +8,7 @@
 
 {% block content %}
 
-	{% cache 2592000 persons absolute_url exh_year %}
+	{% cache cache_timeout persons absolute_url exh_year %}
 	<ol>
 		{% for person in object_list %}
 		<li>

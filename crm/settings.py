@@ -155,10 +155,9 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SITE_ID = 1
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
-ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 # ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
@@ -190,11 +189,18 @@ FILE_UPLOAD_HANDLERS = [
 	"django.core.files.uploadhandler.TemporaryFileUploadHandler"
 ]
 
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
 # sorl-thumbnail settings
 THUMBNAIL_REDIS_URL = env('THUMBNAIL_REDIS_URL', str, None)
 if THUMBNAIL_REDIS_URL:
 	THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
-	THUMBNAIL_REDIS_URL = THUMBNAIL_REDIS_URL
 
 THUMBNAIL_QUALITY = 80
 THUMBNAIL_UPSCALE = False

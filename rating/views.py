@@ -164,24 +164,22 @@ def add_review(request, pk):
 @csrf_exempt
 @login_required
 def edit_review(request, pk=None):
-	print(f"✏️ Edit review called: pk={pk}, method={request.method}")
 
 	if request.method == 'GET':
 		try:
 			instance = Reviews.objects.get(pk=pk, user=request.user)
-			print(f"✅ Found review: {instance.message}")
 
+			cleaned_message = re.sub(r"\s+", " ", instance.message.strip())
 			return JsonResponse({
 				'action': f'/review/edit/{pk}/',
-				'form':
-					f'''
-						<div class="form-group">
-							<textarea name="message" class="form-control" rows="5" placeholder="Введите ваш комментарий...">
-								{re.sub(r"\s+", " ", instance.message.strip())}
-							</textarea>
-						</div>
-						<input type="hidden" name="csrfmiddlewaretoken" value="{request.META['CSRF_COOKIE']}">
-					''',
+				'form': f'''
+					<div class="form-group">
+						<textarea name="message" class="form-control" rows="5" placeholder="Введите ваш комментарий...">
+							{cleaned_message}
+						</textarea>
+					</div>
+					<input type="hidden" name="csrfmiddlewaretoken" value="{request.META['CSRF_COOKIE']}">
+				''',
 				'author_reply': instance.parent.fullname if instance.parent else ''
 			})
 

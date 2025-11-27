@@ -9,9 +9,13 @@ admin.site.site_header = 'Рейтинг'
 
 @admin.register(Rating)
 class RatingAdmin(admin.ModelAdmin):
-	list_display = ('portfolio__exhibition', 'portfolio', 'star', 'fullname', 'is_jury_rating',)
+	list_display = ('get_exhibition', 'portfolio', 'star', 'fullname', 'is_jury_rating',)
 	readonly_fields = ('ip',)
 	list_filter = ('star',)
+
+	@admin.display(description='Выставка')
+	def get_exhibition(self, obj):
+		return obj.portfolio.exhibition
 
 	def save_model(self, request, obj, form, change):
 		super().save_model(request, obj, form, change)
