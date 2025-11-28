@@ -10,6 +10,7 @@ from allauth.socialaccount.signals import social_account_removed
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.files.uploadhandler import FileUploadHandler
+from django.db import connection, OperationalError
 from django.db.models import Q, OuterRef, Subquery, Avg, CharField, Case, When, Count
 from django.dispatch import receiver
 from django.forms import inlineformset_factory
@@ -21,7 +22,7 @@ from django.utils.timezone import now
 # from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.detail import DetailView
-# from django.views.generic import View
+from django.views.generic import View
 from django.views.generic.list import ListView
 from sorl.thumbnail import get_thumbnail
 from watson.views import SearchMixin
@@ -1071,3 +1072,20 @@ def user_signed_up_(request, user, **kwargs):
 		'group': list(user.groups.all().values_list('name', flat=True)),
 	})
 	SendEmailAsync('Регистрация нового пользователя на сайте sd43.ru!', template)
+
+
+class HealthCheckView(View):
+	def get(self, request):
+		# Проверяем подключение к БД
+		try:
+			with connection.cursor() as cursor:
+				cursor.execute("SELECT 1")
+			db_status = "connected"
+		except OperationalError:
+			db_status = "disconnected"
+
+		return JsonResponse({
+			"status": "healthy",
+			"database": db_status,
+			"service": "sferadesign"
+		}, status=200 if db_status == "connected" else 503)

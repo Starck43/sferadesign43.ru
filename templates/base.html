@@ -15,7 +15,7 @@
     <meta property="og:site_name" content="{{ main_title }}">
     <meta property="og:type" content="{% block meta_og_type %}website{% endblock %}">
     <meta property="og:title" content="{% block meta_og_title %}{{ meta.title }}{% endblock %}">
-    <meta property="og:image" content="{% block meta_og_image %}{{ site_url }}{% get_media_prefix %}sd-logo-2.png{% endblock %}">
+    <meta property="og:image" content="{% block meta_og_image %}{{ site_url }}{% get_media_prefix %}site/sd-logo-2.png{% endblock %}">
     <meta property="og:description" content="{% block meta_og_description %}{% if meta.description %}{{ meta.description }}{% else %}{{ default_meta.description }}{% endif %}{% endblock %}">
 
     <link rel="canonical" href="{{ site_url }}{{ request.path }}"/>
@@ -113,7 +113,7 @@
 <div id="site-header">
     {# <div class="year-text">{{exhibitions_list.first.slug}}</div> #}
     <a id="branding" class="brand-logo ratio ratio-1x1 loading" href="/">
-        <img class="lazyload" src="{% get_media_prefix %}sd-logo-2.png" loading="lazy" alt="{{ main_title }}">
+        <img class="lazyload" src="{% get_media_prefix %}site/sd-logo-2.png" loading="lazy" alt="{{ main_title }}">
     </a>
     {% block site_title %}{% endblock site_title %}
     {% block link %}{% endblock link %}

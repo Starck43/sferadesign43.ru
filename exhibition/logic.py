@@ -36,7 +36,7 @@ DEFAULT_KEEP_META = getattr(settings, 'DJANGORESIZED_DEFAULT_KEEP_META', False)
 def get_image_html(obj, width=50, height=None, css_class='', crop='center'):
 
 	if not obj or not obj.name:
-		return format_html('<img src="/media/no-image.png" width="{}" class="{}"/>', width, css_class)
+		return format_html('<img src="/media/site/no-image.png" width="{}" class="{}"/>', width, css_class)
 
 	file_ext = path.splitext(obj.name)[1].lower()
 

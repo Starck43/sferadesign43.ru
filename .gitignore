@@ -3,16 +3,23 @@
 # dependencies
 /node_modules
 
-
-# production
 /build
 /.idea
 
 # development
 resources/
+src/
+
 media/*
+!media/.gitkeep
+!media/site/
+!media/site/**
+
 static/*
-src/img/
+!static/fonts/
+!static/favicons/
+!static/fonts/*
+!static/favicons/*
 
 # Django #
 __pycache__/
