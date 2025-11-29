@@ -20,4 +20,6 @@ redis
 sorl-thumbnail
 Wand
 zipp
-psycopg2
+gunicorn
+psycopg2-binary
+requests
