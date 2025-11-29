@@ -19,7 +19,6 @@ urlpatterns = [
 	re_path(r'^chaining/', include('smart_selects.urls')),
 	re_path(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 	path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type='text/plain')),
-
 ]
 
 if settings.DEBUG:

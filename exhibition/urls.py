@@ -49,6 +49,7 @@ urlpatterns = [
 	path('portfolio/new/', views.portfolio_upload, kwargs={'pk': None}, name='portfolio-upload-url'),
 	path('portfolio/edit/<pk>', views.portfolio_upload, name='portfolio-upload-url'),
 	re_path(r'^success/$', views.success_message, name='success-message-url'),
+	path('health/', views.HealthCheckView.as_view(), name='health-check'),
 
 	# path('<str:section>/about/', views.about_us, name='about-us-url'),
 	# path('about/', views.about_us, name='about-us-url'),
