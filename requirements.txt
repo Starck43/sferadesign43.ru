@@ -15,6 +15,7 @@ django-static-jquery-ui
 django-tabbed-changeform-admin
 django-uuslug
 django-watson
+PyJWT
 Pillow
 redis
 sorl-thumbnail

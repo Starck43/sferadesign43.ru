@@ -108,10 +108,6 @@ DATABASES = {
 	'default': env.db()
 }
 
-DB_URL = env.db()
-if DB_URL.get('ENGINE') == 'django.db.backends.mysql':
-	DATABASES['default']['OPTIONS'] = {'init_command': "SET sql_mode='STRICT_TRANS_TABLES'", 'charset': 'utf8mb4', }
-
 CACHES = {
 	'default': env.cache('REDIS_URL')
 }
