@@ -22,5 +22,5 @@ sorl-thumbnail
 Wand
 zipp
 gunicorn
-psycopg2
+psycopg[binary]
 requests
