@@ -104,8 +104,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'crm.wsgi.application'
 
+db_config = env.db()
+
+if db_config['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'django.db.backends.postgresql']:
+	db_config['ENGINE'] = 'django.db.backends.postgresql'
+
 DATABASES = {
-	'default': env.db()
+	'default': db_config
 }
 
 CACHES = {
@@ -187,12 +192,12 @@ FILE_UPLOAD_HANDLERS = [
 ]
 
 STORAGES = {
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
-    },
-    'staticfiles': {
-        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
-    },
+	'default': {
+		'BACKEND': 'django.core.files.storage.FileSystemStorage',
+	},
+	'staticfiles': {
+		'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+	},
 }
 # sorl-thumbnail settings
 THUMBNAIL_REDIS_URL = env('THUMBNAIL_REDIS_URL', str, None)
@@ -245,7 +250,6 @@ CKEDITOR_CONFIGS = {
 }
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-
 
 LOGGING = {
 	'version': 1,
