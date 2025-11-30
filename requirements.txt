@@ -17,10 +17,10 @@ django-uuslug
 django-watson
 PyJWT
 Pillow
+psycopg[binary,pool]
+gunicorn
 redis
 sorl-thumbnail
 Wand
 zipp
-gunicorn
-psycopg[binary]
 requests
