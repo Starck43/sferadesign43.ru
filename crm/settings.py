@@ -1,29 +1,25 @@
 import os
-import sys
-import environ
+from dotenv import load_dotenv
+import dj_database_url
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env()
-if os.path.exists(BASE_DIR / '.env'):
-	env.read_env(BASE_DIR / '.env')
+load_dotenv()
 
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = env.bool('DEBUG', False)
-
-ALLOWED_HOSTS = env('ALLOWED_HOSTS', list, ['localhost'])
+# Основные настройки
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key')
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
-
 INSTALLED_APPS = [
 	'jazzmin',
-
 	'django_static_jquery_ui',
 	'django_tabbed_changeform_admin',
 	'django.contrib.admin',
 	'django.contrib.auth',
-	'django.contrib.sites',  # added for django-allauth
+	'django.contrib.sites',
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
 	'django.contrib.messages',
@@ -43,9 +39,6 @@ INSTALLED_APPS = [
 	'allauth.socialaccount.providers.vk',
 	'allauth.socialaccount.providers.odnoklassniki',
 	'allauth.socialaccount.providers.google',
-	# 'allauth.socialaccount.providers.mailru',
-	# 'allauth.socialaccount.providers.yandex',
-
 	'exhibition',
 	'rating',
 	'blog',
@@ -54,9 +47,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-	# 'django.middleware.cache.CacheMiddleware',
-	# 'django.middleware.cache.UpdateCacheMiddleware',
-
 	'django.middleware.security.SecurityMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.middleware.common.CommonMiddleware',
@@ -64,12 +54,9 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 	'django.middleware.cache.FetchFromCacheMiddleware',
-	# watson search
-	# 'django.middleware.transaction.TransactionMiddleware',
 	'watson.middleware.SearchContextMiddleware',
-	'exhibition.middleware.AjaxMiddleware',  # custom middlewares
+	'exhibition.middleware.AjaxMiddleware',
 	'allauth.account.middleware.AccountMiddleware',
 ]
 
@@ -94,8 +81,6 @@ TEMPLATES = [
 				'django.template.context_processors.request',
 				'django.contrib.auth.context_processors.auth',
 				'django.contrib.messages.context_processors.messages',
-
-				# custom context for using in all templates
 				'exhibition.context_processors.common_context',
 			],
 		},
@@ -104,17 +89,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'crm.wsgi.application'
 
-db_config = env.db()
-
-if db_config['ENGINE'] in ['django.db.backends.postgresql_psycopg2', 'django.db.backends.postgresql']:
-	db_config['ENGINE'] = 'django.db.backends.postgresql'
-
+# Database configuration
 DATABASES = {
-	'default': db_config
+	"default": dj_database_url.config(
+		default='sqlite:///db.sqlite3',
+		conn_max_age=600
+	)
 }
 
+# Cache configuration
+REDIS_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')
 CACHES = {
-	'default': env.cache('REDIS_URL')
+	'default': {
+		'BACKEND': 'django_redis.cache.RedisCache',
+		'LOCATION': REDIS_URL,
+		'OPTIONS': {
+			'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+		}
+	}
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -132,9 +124,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-	# Need to log in by username in Django admin, regardless of `allauth`
 	'django.contrib.auth.backends.ModelBackend',
-	# `allauth` specific authentication methods, such as login by e-mail
 	'allauth.account.auth_backends.AuthenticationBackend',
 )
 
@@ -151,9 +141,7 @@ SOCIALACCOUNT_PROVIDERS = {
 	},
 	'odnoklassniki': {
 		'SCOPE': ['VALUABLE_ACCESS', 'LONG_ACCESS_TOKEN', 'GET_EMAIL'],
-		# 'FIELDS': [ 'uid', 'first_name', 'last_name', 'name', 'email', ],
 	}
-
 }
 
 SITE_ID = 1
@@ -162,7 +150,6 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
-# ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
 ACCOUNT_USERNAME_MIN_LENGTH = 4
 ACCOUNT_MAX_EMAIL_ADDRESSES = 2
 SOCIALACCOUNT_QUERY_EMAIL = True
@@ -178,13 +165,22 @@ SOCIALACCOUNT_FORMS = {
 	'signup': 'exhibition.forms.CustomSocialSignupForm',
 }
 
-EMAIL_CONFIG = env.email_url('EMAIL_URL')
-EMAIL_RECIPIENTS = env('EMAIL_RECIPIENTS', list, [])
-EMAIL_HOST_USER = EMAIL_CONFIG['EMAIL_HOST_USER']
-DEFAULT_FROM_EMAIL = EMAIL_CONFIG['EMAIL_HOST_USER']
-vars().update(EMAIL_CONFIG)
+# Email configuration
+EMAIL_URL = os.getenv('EMAIL_URL', '')
+if EMAIL_URL:
+	import urllib.parse
 
-ADMINS = [('Starck', EMAIL_RECIPIENTS)]
+	url = urllib.parse.urlparse(EMAIL_URL)
+	EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+	EMAIL_HOST = url.hostname
+	EMAIL_PORT = url.port or 587
+	EMAIL_HOST_USER = url.username
+	EMAIL_HOST_PASSWORD = url.password
+	EMAIL_USE_TLS = True if url.scheme == 'smtps' else False
+	DEFAULT_FROM_EMAIL = EMAIL_HOST_USER if 'EMAIL_HOST_USER' in locals() else 'webmaster@localhost'
+
+EMAIL_RECIPIENTS = os.getenv('EMAIL_RECIPIENTS', 'saloon.as@gmail.com').split(',')
+ADMINS = [('Starck', email) for email in EMAIL_RECIPIENTS]
 
 FILE_UPLOAD_HANDLERS = [
 	"django.core.files.uploadhandler.MemoryFileUploadHandler",
@@ -199,8 +195,9 @@ STORAGES = {
 		'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
 	},
 }
+
 # sorl-thumbnail settings
-THUMBNAIL_REDIS_URL = env('THUMBNAIL_REDIS_URL', str, None)
+THUMBNAIL_REDIS_URL = os.getenv('THUMBNAIL_REDIS_URL', 'redis://127.0.0.1:6379/1')
 if THUMBNAIL_REDIS_URL:
 	THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
 
@@ -223,7 +220,6 @@ CKEDITOR_IMAGE_BACKEND = 'pillow'
 AWS_QUERYSTRING_AUTH = False
 CKEDITOR_CONFIGS = {
 	'default': {
-		# 'skin': 'mono',
 		'toolbar': [
 			{'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
 			{
@@ -245,7 +241,6 @@ CKEDITOR_CONFIGS = {
 		'height': 200,
 		'tabSpaces': 4,
 		'removePlugins': 'flash,iframe',
-		# 'toolbarCanCollapse': True,
 	},
 }
 
@@ -280,7 +275,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-PUBLIC_ROOT = env('PUBLIC_ROOT', default='')
+PUBLIC_ROOT = os.getenv('PUBLIC_ROOT', '')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, PUBLIC_ROOT, 'media')
