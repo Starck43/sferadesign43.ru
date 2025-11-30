@@ -22,4 +22,5 @@ sorl-thumbnail
 Wand
 zipp
 gunicorn
+psycopg2
 requests
