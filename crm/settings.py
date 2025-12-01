@@ -93,7 +93,7 @@ WSGI_APPLICATION = 'crm.wsgi.application'
 DATABASES = {
 	"default": dj_database_url.config(
 		default='sqlite:///db.sqlite3',
-		conn_max_age=600
+		conn_max_age=600,
 	)
 }
 
@@ -275,10 +275,8 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-PUBLIC_ROOT = os.getenv('PUBLIC_ROOT', '')
-
 MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, PUBLIC_ROOT, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = 'static/'
 
@@ -287,7 +285,7 @@ if DEBUG:
 		BASE_DIR / 'static'
 	]
 else:
-	STATIC_ROOT = os.path.join(BASE_DIR, PUBLIC_ROOT, 'static')
+	STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 FILES_UPLOAD_FOLDER = 'uploads/'
 
