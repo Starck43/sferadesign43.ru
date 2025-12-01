@@ -17,6 +17,7 @@ django-watson
 python-dotenv
 dj-database-url
 PyJWT
+cryptography
 Pillow
 psycopg[c]
 gunicorn
