@@ -19,11 +19,11 @@ dj-database-url
 PyJWT
 cryptography
 Pillow
-psycopg[c]
-gunicorn
+psycopg[binary]
 redis
 sorl-thumbnail
 Wand
 zipp
 requests
+gunicorn # only for production
 

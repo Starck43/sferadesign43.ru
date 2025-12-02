@@ -94,6 +94,7 @@ DATABASES = {
 	"default": dj_database_url.config(
 		default='sqlite:///db.sqlite3',
 		conn_max_age=600,
+		conn_health_checks=True,
 	)
 }
 
@@ -253,11 +254,18 @@ LOGGING = {
 		'console': {
 			'format': '%(asctime)s [%(levelname)s]: %(message)s'
 		},
+		'verbose': {
+			'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+		},
 	},
 	'handlers': {
 		'console': {
 			'class': 'logging.StreamHandler',
 			'formatter': 'console'
+		},
+		'thumbnail_console': {
+			'class': 'logging.StreamHandler',
+			'formatter': 'verbose'
 		},
 	},
 	'loggers': {
@@ -265,8 +273,23 @@ LOGGING = {
 			'level': 'INFO',
 			'handlers': ['console'],
 			'propagate': True
-		}
-	},
+		},
+		'sorl.thumbnail': {
+			'level': 'ERROR',  # Только ошибки
+			'handlers': ['thumbnail_console'],
+			'propagate': False,  # Не передавать родителю
+		},
+		'django': {
+			'level': 'INFO',
+			'handlers': ['console'],
+			'propagate': False,
+		},
+		'exhibition': {
+			'level': 'DEBUG',
+			'handlers': ['console'],
+			'propagate': False,
+		},
+	}
 }
 
 LANGUAGE_CODE = 'ru-RU'
