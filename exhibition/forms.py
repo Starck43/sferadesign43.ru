@@ -471,7 +471,12 @@ class UsersListForm(forms.Form):
 	subquery = Subquery(Exhibitions.objects.filter(exhibitors=OuterRef('pk')).values('slug')[:1])
 	subquery2 = Subquery(EmailAddress.objects.filter(user_id=OuterRef('user_id')).values('verified')[:1])
 	users = UserMultipleModelChoiceField(
-		label=format_html('Имя [Email]<span>Последняя выставка</span><span>Верификация</span>'),
+		label=format_html(
+			'{}<span>{}</span><span>{}</span>',
+			'Имя [Email]',
+			'Последняя выставка',
+			'Верификация'
+		),
 		widget=forms.CheckboxSelectMultiple(),
 		queryset=Exhibitors.objects.distinct().filter(user__is_active=True).annotate(
 			user_email=F('user__email'),
