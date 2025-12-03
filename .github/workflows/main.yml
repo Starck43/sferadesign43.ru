@@ -1,0 +1,189 @@
+name: sd43 CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'  # Укажите вашу версию Node.js
+  DOMAIN_NAME: 'sd43.ru'
+  PROJECT_NAME: 'sd43'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: |
+          if [ -f "package.json" ]; then
+            npm ci
+            echo "✅ npm dependencies installed"
+          else
+            echo "⚠️  No package.json found, skipping npm install"
+          fi
+
+      - name: Build assets
+        run: |
+          if [ -f "package.json" ]; then
+            echo "📦 Building assets..."
+            npm run build
+          
+            # Проверяем что сборка прошла успешно
+            if [ -d "static/js" ] || [ -d "static/css" ]; then
+              echo "✅ Assets built successfully"
+              find static/ -type f -name "*.js" -o -name "*.css" | head -10
+            else
+              echo "⚠️  No js/css directories found after build"
+            fi
+          else
+            echo "⏭️  Skipping build - no package.json"
+          fi
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Create rsync exclude file
+        run: |
+          cat > .deploy/rsync_exclude.txt << 'EOF'
+          .git/
+          .github/
+          .env
+          *.env
+          venv/
+          resources/
+          media/*
+          !media/site/
+          static/
+          !static/fonts/
+          !static/favicons/
+          EOF
+          
+          # Добавляем миграции если нужно исключить
+          find . -path "*/migrations/*.py" -not -name "__init__.py" 2>/dev/null | head -5 >> .deploy/rsync_exclude.txt || true
+          find . -path "*/migrations/*.pyc" 2>/dev/null | head -5 >> .deploy/rsync_exclude.txt || true
+
+      - name: Prepare deployment structure
+        run: |
+          REMOTE_USER="${{ vars.SSH_USER }}"
+          REMOTE_HOST="${{ vars.SSH_HOST }}"
+          REMOTE_DIR="/home/starck/domains/${{ env.DOMAIN_NAME }}"
+
+          echo "🚀 Preparing deployment to $REMOTE_DIR"
+
+          # Создаем только корневую директорию проекта
+          ssh "$REMOTE_USER@$REMOTE_HOST" "
+            mkdir -p '$REMOTE_DIR'
+            chown -R starck:starck '$REMOTE_DIR' 2>/dev/null || true
+          "
+
+      - name: Sync files to server
+        run: |
+          REMOTE_USER="${{ vars.SSH_USER }}"
+          REMOTE_HOST="${{ vars.SSH_HOST }}"
+          REMOTE_DIR="/home/starck/domains/${{ env.DOMAIN_NAME }}"
+          
+          echo "📤 Syncing files to server..."
+          
+          # Основная синхронизация
+          rsync -avz \
+            --delete \
+            --exclude-from=.deploy/rsync_exclude.txt \
+            --chmod=Du=rwx,Dg=rx,Do=rx,Fu=rw,Fg=r,Fo=r \
+            ./ \
+            "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/"
+          
+          # Отдельно синхронизируем папку site если она есть
+          if [ -d "./media/site" ]; then
+            echo "📁 Syncing media/site directory..."
+            rsync -avz \
+              ./media/site/ \
+              "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/media/site/"
+          fi
+          
+          echo "✅ Files synced successfully"
+
+      - name: Run deployment script
+        run: |
+          REMOTE_USER="${{ vars.SSH_USER }}"
+          REMOTE_HOST="${{ vars.SSH_HOST }}"
+          REMOTE_DIR="/home/starck/domains/${{ env.DOMAIN_NAME }}"
+          
+          echo "🔄 Running deployment script..."
+          
+          ssh "$REMOTE_USER@$REMOTE_HOST" "
+            set -e
+            cd '$REMOTE_DIR'
+          
+            # Делаем скрипт исполняемым
+            chmod +x .deploy/deployment_script.sh 2>/dev/null || true
+          
+            # Выполняем деплой
+            bash .deploy/deployment_script.sh \
+              '${{ env.PROJECT_NAME }}' \
+              '$REMOTE_DIR' \
+              '${{ vars.DJANGO_ADMIN_EMAIL }}' \
+              '${{ vars.DJANGO_ADMIN_SUPERUSER }}' \
+              '${{ secrets.DJANGO_ADMIN_PASSWORD }}'
+          "
+          
+          echo "✅ Deployment script executed"
+
+      - name: Verify deployment
+        run: |
+          REMOTE_USER="${{ vars.SSH_USER }}"
+          REMOTE_HOST="${{ vars.SSH_HOST }}"
+          
+          echo "🔍 Verifying deployment..."
+          
+          ssh "$REMOTE_USER@$REMOTE_HOST" "
+            # Проверяем что сервис работает
+            if systemctl is-active --quiet sd43.service; then
+              echo '✅ Service sd43.service is running'
+          
+              # Быстрая проверка статуса
+              systemctl status sd43.service --no-pager | head -10
+            else
+              echo '❌ Service sd43.service is not running!'
+              systemctl status sd43.service --no-pager
+              exit 1
+            fi
+          
+            # Проверяем сокет
+            if [ -S '/run/gunicorn.sd43.sock' ]; then
+              echo '✅ Socket /run/gunicorn.sd43.sock exists'
+              ls -la /run/gunicorn.sd43.sock
+            else
+              echo '⚠️  Socket not found, checking service...'
+            fi
+          
+            # Проверяем nginx конфиг
+            if sudo nginx -t 2>/dev/null; then
+              echo '✅ Nginx configuration is valid'
+            fi
+          "
+          
+          echo "🎉 Deployment completed successfully!"

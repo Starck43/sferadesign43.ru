@@ -1,0 +1,11 @@
+[Unit]
+Description=gunicorn socket for sd43
+
+[Socket]
+ListenStream=/run/gunicorn.sd43.sock
+SocketUser=starck
+SocketGroup=starck
+SocketMode=0660
+
+[Install]
+WantedBy=sockets.target
