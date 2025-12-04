@@ -1,8 +1,8 @@
 [Unit]
-Description=gunicorn socket for sd43
+Description=gunicorn socket for %i
 
 [Socket]
-ListenStream=/run/gunicorn.sd43.sock
+ListenStream=/run/gunicorn.%i.sock
 SocketUser=starck
 SocketGroup=starck
 SocketMode=0660

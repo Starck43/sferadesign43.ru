@@ -1,25 +1,28 @@
 [Unit]
-Description=gunicorn daemon for sd43
+Description=gunicorn daemon for %i
 After=network.target postgresql.service redis-server.service
 Requires=postgresql.service redis-server.service
 
 [Service]
+Type=notify
 User=starck
 Group=starck
-WorkingDirectory=/home/starck/domains/sd43.ru
-Environment="PATH=/home/starck/domains/sd43.ru/venv/bin"
+WorkingDirectory=/home/starck/domains/%i
+Environment="PATH=/home/starck/domains/%i/venv/bin"
 Environment="DJANGO_SETTINGS_MODULE=crm.settings"
-Environment="PYTHONPATH=/home/starck/domains/sd43.ru"
+Environment="PYTHONPATH=/home/starck/domains/%i"
 
-ExecStart=/home/starck/domains/sd43.ru/venv/bin/gunicorn \
+ExecStart=/home/starck/domains/%i/venv/bin/gunicorn \
     --access-logfile - \
     --workers 3 \
-    --bind unix:/run/gunicorn.sd43.sock \
+    --bind unix:/run/gunicorn.%i.sock \
     crm.wsgi:application
 
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
