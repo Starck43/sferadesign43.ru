@@ -22,6 +22,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -89,18 +99,6 @@ jobs:
           else
             echo "📁 node_modules not found, nothing to clean"
           fi
-
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add SSH host to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
 
       - name: Create rsync exclude file
         run: |
