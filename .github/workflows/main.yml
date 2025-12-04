@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '20'  # Укажите вашу версию Node.js
+  NODE_VERSION: '22'
   DOMAIN_NAME: 'sd43.ru'
   PROJECT_NAME: 'sd43'
 
