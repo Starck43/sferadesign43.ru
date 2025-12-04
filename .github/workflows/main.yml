@@ -90,7 +90,6 @@ jobs:
             echo "✅ node_modules removed"
 
             rm -f package-lock.json
-            rm -rf src
 
             if [ ! -d "node_modules" ]; then
               echo "📁 Current directory size:"
@@ -107,6 +106,7 @@ jobs:
           .github/
           .env
           *.env
+          node_modules/
           venv/
           resources/
           docs/
