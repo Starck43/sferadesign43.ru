@@ -20,8 +20,8 @@ fi
 # Проверяем существование виртуального окружения
 if [ ! -d "$VENV_DIR" ]; then
     python3.12 -m venv "$VENV_DIR"
-    $PIP install -r "$PROJECT_DIR"/requirements.txt
     $PIP install --upgrade pip
+    $PIP install -r "$PROJECT_DIR"/requirements.txt
 
     mkdir -p "$PROJECT_DIR"/media
     mkdir -p "$PROJECT_DIR"/static
@@ -31,10 +31,17 @@ if [ ! -d "$VENV_DIR" ]; then
     $PYTHON "$PROJECT_DIR"/manage.py migrate --noinput
     $PYTHON "$PROJECT_DIR"/manage.py collectstatic --noinput
 
-    echo "Creating superuser"
-    printf "from django.contrib.auth.models import User\nUser.objects.create_superuser('%s', '%s', '%s')" \
-        "$DJANGO_ADMIN_SUPERUSER" "$DJANGO_ADMIN_EMAIL" "$DJANGO_ADMIN_PASSWORD" | \
-        $PYTHON "$PROJECT_DIR"/manage.py shell
+    echo "Checking if superuser exists..."
+    $PYTHON "$PROJECT_DIR"/manage.py shell -c "
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    if User.objects.filter(username='$DJANGO_ADMIN_SUPERUSER').exists():
+        print('✅ Superuser $DJANGO_ADMIN_SUPERUSER already exists')
+    else:
+        print('👤 Creating superuser $DJANGO_ADMIN_SUPERUSER...')
+        User.objects.create_superuser('$DJANGO_ADMIN_SUPERUSER', '$DJANGO_ADMIN_EMAIL', '$DJANGO_ADMIN_PASSWORD')
+        print('✅ Superuser created')
+    "
 
     echo "Created a new Python environment."
 

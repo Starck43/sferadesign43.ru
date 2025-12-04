@@ -54,6 +54,24 @@ jobs:
             echo "⏭️  Skipping build - no package.json"
           fi
 
+      - name: Clean up node_modules
+        run: |
+          if [ -d "node_modules" ]; then
+            echo "🧹 Cleaning up node_modules..."
+            rm -rf node_modules
+            echo "✅ node_modules removed"
+
+            rm -f package-lock.json
+            rm -rf src
+
+            if [ ! -d "node_modules" ]; then
+              echo "📁 Current directory size:"
+              du -sh . || true
+            fi
+          else
+            echo "📁 node_modules not found, nothing to clean"
+          fi
+
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -75,14 +93,17 @@ jobs:
           *.env
           venv/
           resources/
+          docs/
           media/*
           !media/site/
           static/
           !static/fonts/
           !static/favicons/
+          *.md
+          *.jpg
           EOF
           
-          # Добавляем миграции если нужно исключить
+          # Добавляем миграции для исключения, если есть
           find . -path "*/migrations/*.py" -not -name "__init__.py" 2>/dev/null | head -5 >> .deploy/rsync_exclude.txt || true
           find . -path "*/migrations/*.pyc" 2>/dev/null | head -5 >> .deploy/rsync_exclude.txt || true
 
