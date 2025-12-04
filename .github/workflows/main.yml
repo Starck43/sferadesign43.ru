@@ -100,6 +100,28 @@ jobs:
             chown -R starck:starck '$REMOTE_DIR' 2>/dev/null || true
           "
 
+      - name: Create .env file from secret
+        run: |
+          REMOTE_USER="${{ vars.SSH_USER }}"
+          REMOTE_HOST="${{ vars.SSH_HOST }}"
+          REMOTE_DIR="/home/starck/domains/${{ env.DOMAIN_NAME }}"
+
+          # Создаем .env файл из секрета
+          cat > /tmp/.env << 'EOF'
+          ${{ secrets.PROD_ENV_FILE }}
+          EOF
+
+          # Копируем на сервер
+          scp /tmp/.env "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/.env"
+
+          # Устанавливаем права
+          ssh "$REMOTE_USER@$REMOTE_HOST" "chmod 600 '$REMOTE_DIR/.env' && chown starck:starck '$REMOTE_DIR/.env'"
+
+          # Удаляем локальную копию
+          rm -f /tmp/.env
+
+          echo "✅ .env file deployed"
+
       - name: Sync files to server
         run: |
           REMOTE_USER="${{ vars.SSH_USER }}"

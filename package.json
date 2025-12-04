@@ -7,7 +7,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Starck43/sferadesign.git"
+    "url": "git+https://github.com/Starck43/sd43.ru"
   },
   "author": "S.Shabalin",
   "license": "ISC",
@@ -29,7 +29,7 @@
     "autoprefixer": "^10.4.20",
     "esbuild": "0.25.0",
     "esbuild-sass-plugin": "^3.3.1",
-    "glob": "^11.0.0",
+    "glob": "11.1.0",
     "postcss": "^8.4.49",
     "postcss-import": "^16.1.0",
     "sass": "^1.83.4"
